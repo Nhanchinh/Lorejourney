@@ -12,6 +12,7 @@ import com.example.game.GameConstants
 import com.example.game.R
 import com.example.game.animation.AnimationManager
 import com.example.game.core.GameStateManager
+import com.example.game.SaveManager
 
 class SettingsScreen(
     private val gameStateManager: GameStateManager,
@@ -75,6 +76,28 @@ class SettingsScreen(
         isAntiAlias = true
         color = Color.parseColor("#607D8B")
         style = Paint.Style.FILL
+    }
+    
+    // Thêm các Paint objects cho reset button
+    private val resetButtonPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#F44336") // Màu đỏ cảnh báo
+        style = Paint.Style.FILL
+    }
+
+    private val resetTextPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.WHITE
+        textAlign = Paint.Align.CENTER
+        textSize = 32f
+        isFakeBoldText = true
+    }
+
+    private val borderPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 3f
     }
     
     // UI Elements

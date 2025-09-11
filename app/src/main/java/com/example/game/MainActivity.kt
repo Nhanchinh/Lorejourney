@@ -13,6 +13,9 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // Initialize SaveManager
+        SaveManager.init(this)
+        
         // Fullscreen
         window.setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,

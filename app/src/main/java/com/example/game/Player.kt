@@ -115,4 +115,12 @@ class Player(startX: Float, startY: Float) {
     fun getCurrentTileY(): Int = (y / GameConstants.TILE_SIZE).toInt()
     
     fun isCurrentlyMoving(): Boolean = isMoving
+
+    fun checkLevelComplete(gameMap: GameMap): Boolean {
+        val tileX = (x / GameConstants.TILE_SIZE).toInt()
+        val tileY = (y / GameConstants.TILE_SIZE).toInt()
+        val currentTile = gameMap.getTile(tileX, tileY)
+        
+        return currentTile == com.example.game.map.TileConstants.TILE_END
+    }
 }

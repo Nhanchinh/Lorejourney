@@ -8,6 +8,9 @@ import com.example.game.GameConstants
 import com.example.game.R
 import com.example.game.animation.AnimationManager
 import com.example.game.core.GameStateManager
+import com.example.game.SaveManager
+import android.graphics.LinearGradient
+import android.graphics.Shader
 
 class LevelSelectScreen(
     private val gameStateManager: GameStateManager,
@@ -153,6 +156,21 @@ class LevelSelectScreen(
         textAlign = Paint.Align.CENTER
         textSize = 36f  // TO HƠN NỮA từ 30f lên 36f
     }
+
+    // Thêm các Paint objects cho locked levels
+    private val lockedButtonPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#757575")
+    }
+
+    private val lockedTextPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#BDBDBD")
+        textAlign = Paint.Align.CENTER
+        textSize = 44f
+        isFakeBoldText = true
+        setShadowLayer(2f, 1f, 1f, Color.BLACK)
+    }
     
     init {
         loadBackground()
@@ -227,92 +245,133 @@ class LevelSelectScreen(
     
     private fun drawChapterButtons(canvas: Canvas) {
         for (i in chapterButtons.indices) {
-            val chapter = chapters[i]
+            val level = i + 1
             val button = chapterButtons[i]
             val isSelected = i == selectedChapter
             
-            // Gradient đẹp cho mỗi chapter
-            val gradient = if (chapter.isUnlocked) {
-                LinearGradient(
-                    button.left, button.top, button.left, button.bottom,
-                    intArrayOf(chapter.primaryColor, chapter.secondaryColor),
-                    floatArrayOf(0f, 1f),
-                    Shader.TileMode.CLAMP
-                )
+            // Kiểm tra xem level có unlock không
+            val isUnlocked = level <= GameConstants.MAX_UNLOCKED_LEVEL
+            
+            // Debug log
+            if (i == 0) { // Chỉ log một lần
+                println("Drawing buttons - Max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL}, Selected: $selectedChapter")
+            }
+            
+            // Gradient cho button background
+            val buttonGradient = if (isUnlocked) {
+                if (isSelected) {
+                    // Gradient sáng hơn cho selected button
+                    LinearGradient(
+                        button.left, button.top, button.left, button.bottom,
+                        intArrayOf(
+                            Color.parseColor("#FFD54F"), // Sáng hơn
+                            Color.parseColor("#FFCA28"),
+                            Color.parseColor("#FFC107")
+                        ),
+                        floatArrayOf(0f, 0.5f, 1f),
+                        Shader.TileMode.CLAMP
+                    )
+                } else {
+                    // Gradient bình thường cho unlocked button
+                    LinearGradient(
+                        button.left, button.top, button.left, button.bottom,
+                        intArrayOf(
+                            Color.parseColor("#FFC107"),
+                            Color.parseColor("#FF8F00"),
+                            Color.parseColor("#E65100")
+                        ),
+                        floatArrayOf(0f, 0.5f, 1f),
+                        Shader.TileMode.CLAMP
+                    )
+                }
             } else {
+                // Gradient cho locked button
                 LinearGradient(
                     button.left, button.top, button.left, button.bottom,
                     intArrayOf(
+                        Color.parseColor("#757575"),
                         Color.parseColor("#616161"),
                         Color.parseColor("#424242")
                     ),
-                    floatArrayOf(0f, 1f),
+                    floatArrayOf(0f, 0.5f, 1f),
                     Shader.TileMode.CLAMP
                 )
             }
             
+            // Tạo paint cho button
             val buttonPaint = Paint().apply {
                 isAntiAlias = true
-                shader = gradient
+                shader = buttonGradient
             }
             
-            // Vẽ button với bo tròn đẹp
-            canvas.drawRoundRect(button, 16f, 16f, buttonPaint)
-            canvas.drawRoundRect(button, 16f, 16f, buttonBorderPaint)  // THÊM BORDER TRẮNG NHẠT
+            // Chọn text paint
+            val textPaint = if (isUnlocked) {
+                chapterTextPaint
+            } else {
+                lockedTextPaint
+            }
             
-            // Border nếu được chọn
-            if (isSelected) {
+            // Vẽ button
+            canvas.drawRoundRect(button, 20f, 20f, buttonPaint)
+            
+            // Vẽ border - sáng hơn cho selected
+            if (isSelected && isUnlocked) {
+                // Border sáng cho selected button
                 val selectedBorderPaint = Paint().apply {
                     isAntiAlias = true
                     style = Paint.Style.STROKE
                     strokeWidth = 4f
-                    color = Color.parseColor("#00E5FF")
-                    setShadowLayer(6f, 0f, 0f, Color.parseColor("#00E5FF"))
+                    color = Color.parseColor("#00E676") // Xanh lá sáng
                 }
-                canvas.drawRoundRect(button, 16f, 16f, selectedBorderPaint)
+                canvas.drawRoundRect(button, 20f, 20f, selectedBorderPaint)
+            } else {
+                // Border bình thường
+                canvas.drawRoundRect(button, 20f, 20f, buttonBorderPaint)
             }
             
-            // Text chapter - với positioning cho text to hơn và button cao hơn
-            chapterTextPaint.alpha = if (chapter.isUnlocked) 255 else 150
+            // Vẽ text
+            val text = if (isUnlocked) level.toString() else "🔒"
             canvas.drawText(
-                chapter.name,
+                text,
                 button.centerX(),
-                button.centerY() + 15f,  // Điều chỉnh cho text to hơn và button cao hơn
-                chapterTextPaint
+                button.centerY() + 8f,
+                textPaint
             )
-            
-            // Lock icon - với positioning cho button cao hơn
-            if (!chapter.isUnlocked) {
-                canvas.drawText("🔒", button.right - 40f, button.centerY() + 15f, lockIconPaint)
-            }
         }
     }
     
     private fun drawDescriptionPanel(canvas: Canvas) {
+        val selectedLevel = selectedChapter + 1
         val selectedChapterData = chapters[selectedChapter]
+        val isUnlocked = selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL // SỬA DÒNG NÀY
         
         // Background trong suốt với gradient subtle
         val bgGradient = LinearGradient(
             descriptionRect.left, descriptionRect.top,
             descriptionRect.left, descriptionRect.bottom,
             intArrayOf(
-                Color.parseColor("#1A237E"),
-                Color.parseColor("#0D47A1"),
-                Color.parseColor("#01579B")
+                Color.parseColor("#263238"),
+                Color.parseColor("#37474F")
             ),
-            floatArrayOf(0f, 0.5f, 1f),
+            floatArrayOf(0f, 1f),
             Shader.TileMode.CLAMP
         )
         descriptionBgPaint.shader = bgGradient
         
-        canvas.drawRoundRect(descriptionRect, 20f, 20f, descriptionBgPaint)
-        canvas.drawRoundRect(descriptionRect, 20f, 20f, descriptionBorderPaint)
+        canvas.drawRoundRect(descriptionRect, 15f, 15f, descriptionBgPaint)
+        canvas.drawRoundRect(descriptionRect, 15f, 15f, buttonBorderPaint)
         
-        // Chapter title - với spacing cho text to hơn
+        // Level title
+        val levelTitle = if (isUnlocked) {
+            "LEVEL ${selectedLevel}: ${selectedChapterData.title}"
+        } else {
+            "LEVEL ${selectedLevel}: LOCKED"
+        }
+        
         canvas.drawText(
-            selectedChapterData.title,
-            descriptionRect.left + 30f,
-            descriptionRect.top + 60f,  // Điều chỉnh cho text to hơn
+            levelTitle,
+            descriptionRect.centerX(),
+            descriptionRect.top + 60f,
             chapterTitlePaint
         )
         
@@ -324,20 +383,29 @@ class LevelSelectScreen(
             difficultyPaint
         )
         
-        // Description text - với spacing cho text to hơn
+        // Description
+        val description = if (isUnlocked) {
+            selectedChapterData.description
+        } else {
+            "Complete previous levels to unlock this challenge."
+        }
+        
         drawWrappedText(
             canvas,
-            selectedChapterData.description,
+            description,
             descriptionRect.left + 30f,
-            descriptionRect.top + 140f,  // Điều chỉnh cho text to hơn
+            descriptionRect.top + 140f,
             descriptionRect.width() - 60f,
             descriptionTextPaint
         )
     }
     
     private fun drawPlayButton(canvas: Canvas) {
-        val selectedChapterData = chapters[selectedChapter]
-        val isPlayable = selectedChapterData.isUnlocked
+        val selectedLevel = selectedChapter + 1
+        val isPlayable = selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL // SỬA DÒNG NÀY
+        
+        // Debug log
+        println("DrawPlayButton - Selected: $selectedLevel, Max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL}, Playable: $isPlayable")
         
         // Gradient cho play button
         val gradient = if (isPlayable) {
@@ -398,33 +466,42 @@ class LevelSelectScreen(
     }
     
     override fun handleTouch(event: MotionEvent): Boolean {
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                val x = event.x
-                val y = event.y
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val x = event.x
+            val y = event.y
+            
+            println("Touch detected - Current max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL}")
+            
+            if (backButton.contains(x, y)) {
+                gameStateManager.changeState(GameConstants.STATE_MENU)
+                return true
+            }
+            
+            // Check chapter button clicks
+            for (i in chapterButtons.indices) {
+                val level = i + 1
+                val button = chapterButtons[i]
                 
-                if (backButton.contains(x, y)) {
-                    // SLIDE BACK ANIMATION
-                    animationManager.startTransition(com.example.game.animation.AnimationManager.TransitionType.SLIDE_RIGHT)
-                    gameStateManager.changeState(GameConstants.STATE_MENU)
-                    return true
-                }
-                
-                for (i in chapterButtons.indices) {
-                    if (chapterButtons[i].contains(x, y)) {
-                        selectedChapter = i
-                        return true
-                    }
-                }
-                
-                if (playButton.contains(x, y) && chapters[selectedChapter].isUnlocked) {
-                    // ZOOM INTO GAME
-                    animationManager.startTransition(com.example.game.animation.AnimationManager.TransitionType.ZOOM)
-                    gameStateManager.startLevel(selectedChapter + 1)
+                if (button.contains(x, y)) {
+                    selectedChapter = i
+                    println("Selected chapter $i (Level $level) - Unlocked: ${level <= GameConstants.MAX_UNLOCKED_LEVEL}")
                     return true
                 }
             }
+            
+            // Play button
+            if (playButton.contains(x, y)) {
+                val selectedLevel = selectedChapter + 1
+                if (selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL) {
+                    println("Starting level $selectedLevel")
+                    gameStateManager.startLevel(selectedLevel)
+                } else {
+                    println("Cannot start locked level $selectedLevel (max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL})")
+                }
+                return true
+            }
         }
+        
         return false
     }
     

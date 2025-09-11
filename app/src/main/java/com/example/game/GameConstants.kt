@@ -21,5 +21,9 @@ object GameConstants {
     const val STATE_MENU = 0
     const val STATE_LEVEL_SELECT = 1
     const val STATE_PLAYING = 2
-    const val STATE_SETTINGS = 3  // THÊM STATE MỚI
+    const val STATE_SETTINGS = 3
+    
+    // Level progress
+    var MAX_UNLOCKED_LEVEL = 1 // Bắt đầu chỉ mở level 1
+    const val TOTAL_LEVELS = 5 // Tổng số level trong game
 }
