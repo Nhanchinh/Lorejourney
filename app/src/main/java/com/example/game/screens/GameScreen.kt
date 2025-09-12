@@ -14,6 +14,7 @@ import com.example.game.core.GameStateManager
 import com.example.game.map.TileConstants
 import com.example.game.SaveManager
 import com.example.game.gameMechanic.PushLogic
+import com.example.game.SpritePlayer
 
 class GameScreen(
     private val gameStateManager: GameStateManager,
@@ -22,9 +23,9 @@ class GameScreen(
 ) : Screen() {
     
     private lateinit var gameMap: GameMap
-    private lateinit var player: Player
+    private lateinit var player: SpritePlayer
     private lateinit var camera: Camera
-    private lateinit var pushLogic: PushLogic
+    private var pushLogic: PushLogic? = null
     
     // UI Elements
     private val pauseButton = RectF()
@@ -101,20 +102,25 @@ class GameScreen(
         // Load map sử dụng centralized logic từ GameMap
         gameMap = GameMap.loadLevel(context, levelId)
         
-        // Initialize push logic
-        pushLogic = PushLogic(gameMap)
+        // Initialize push logic chỉ cho level 1
+        if (levelId == 1) {
+            pushLogic = PushLogic(gameMap)
+        }
         
         // Debug: In thông tin map
         println("Map loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
         
-        // Sử dụng spawn position từ map
-        player = Player(
+        // Sử dụng SpritePlayer
+        player = SpritePlayer(
             (gameMap.playerSpawnX * GameConstants.TILE_SIZE).toFloat(),
-            (gameMap.playerSpawnY * GameConstants.TILE_SIZE).toFloat()
+            (gameMap.playerSpawnY * GameConstants.TILE_SIZE).toFloat(),
+            context
         )
         
-        // Connect push logic to player
-        player.setPushLogic(pushLogic)
+        // Connect push logic cho level 1
+        if (levelId == 1 && pushLogic != null) {
+            player.setPushLogic(pushLogic!!)
+        }
         
         camera = Camera()
     }
@@ -290,9 +296,11 @@ class GameScreen(
         canvas.drawText("Level $levelId", 20f, 40f, pauseTextPaint)
         canvas.drawText("Tile: (${player.getCurrentTileX()}, ${player.getCurrentTileY()})", 20f, 70f, pauseTextPaint)
         
-        // Show puzzle progress
-        val (completed, total) = pushLogic.getProgress()
-        canvas.drawText("Progress: $completed/$total", 20f, 100f, pauseTextPaint)
+        // Show puzzle progress chỉ cho level 1
+        if (levelId == 1 && pushLogic != null) {
+            val (completed, total) = pushLogic!!.getProgress()
+            canvas.drawText("Progress: $completed/$total", 20f, 100f, pauseTextPaint)
+        }
         
         pauseTextPaint.textAlign = Paint.Align.CENTER
         pauseTextPaint.textSize = 24f
