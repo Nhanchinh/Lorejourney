@@ -21,6 +21,10 @@ class GameMap(private val simpleMap: SimpleGameMap) {
         return simpleMap.isWalkable(x, y)
     }
     
+    fun setTile(x: Int, y: Int, tileId: Int) {
+        simpleMap.setTile(x, y, tileId)
+    }
+    
     fun draw(canvas: Canvas, camera: Camera) {
         simpleMap.draw(canvas, camera)
     }

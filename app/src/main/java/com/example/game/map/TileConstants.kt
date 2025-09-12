@@ -37,19 +37,40 @@ object TileConstants {
     const val TILE_ICE = 41
     const val TILE_SAND = 42
     
+    // Push puzzle tiles - NEW
+    const val TILE_PUSHABLE_STONE = 50   // Đá có thể đẩy
+    const val TILE_TARGET = 51           // Vị trí đích
+    const val TILE_STONE_ON_TARGET = 52  // Đá đã vào đích
+    
     /**
      * Check if tile is walkable
      */
     fun isWalkable(tileId: Int): Boolean {
         return when (tileId) {
             TILE_EMPTY, TILE_FLOOR, TILE_GRASS, TILE_DIRT, TILE_SAND,
-            TILE_KEY, TILE_BUTTON, TILE_DOOR, TILE_HOUSE_FLOOR, TILE_END -> true
+            TILE_KEY, TILE_BUTTON, TILE_DOOR, TILE_HOUSE_FLOOR, TILE_END,
+            TILE_TARGET -> true  // Target có thể đi qua
             
             TILE_WALL, TILE_WATER, TILE_STONE, TILE_TREE, TILE_ROCK,
             TILE_BUSH, TILE_HOUSE_WALL, TILE_ROOF, TILE_WINDOW,
-            TILE_LAVA, TILE_ICE -> false
+            TILE_LAVA, TILE_ICE,
+            TILE_PUSHABLE_STONE, TILE_STONE_ON_TARGET -> false  // Đá không thể đi qua
             
             else -> true // Default to walkable
         }
+    }
+    
+    /**
+     * Check if tile có thể đẩy
+     */
+    fun isPushable(tileId: Int): Boolean {
+        return tileId == TILE_PUSHABLE_STONE || tileId == TILE_STONE_ON_TARGET
+    }
+    
+    /**
+     * Check if tile là target position
+     */
+    fun isTarget(tileId: Int): Boolean {
+        return tileId == TILE_TARGET || tileId == TILE_STONE_ON_TARGET
     }
 }

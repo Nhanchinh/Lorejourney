@@ -25,6 +25,12 @@ class SimpleGameMap(private val mapData: MapLoader.MapData) {
         return TileConstants.isWalkable(tileId)
     }
     
+    fun setTile(x: Int, y: Int, tileId: Int) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            mapData.tiles[y][x] = tileId
+        }
+    }
+    
     fun draw(canvas: Canvas, camera: Camera) {
         val tileSize = GameConstants.TILE_SIZE.toFloat()
         

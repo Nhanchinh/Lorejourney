@@ -147,6 +147,22 @@ class TileRenderer {
         strokeWidth = 3f
     }
     
+    // Push puzzle paints
+    private val pushableStonePaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#8D6E63") // Màu nâu đá
+    }
+    
+    private val targetPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#FFC107") // Màu vàng target
+    }
+    
+    private val stoneOnTargetPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#4CAF50") // Màu xanh khi hoàn thành
+    }
+    
     // RectF để tái sử dụng cho drawRoundRect
     private val tempRect = RectF()
     
@@ -318,6 +334,54 @@ class TileRenderer {
                     isFakeBoldText = true
                 }
                 canvas.drawText("E", centerX, centerY + textPaint.textSize/3, textPaint)
+            }
+            
+            TileConstants.TILE_PUSHABLE_STONE -> {
+                canvas.drawRect(x, y, x + size, y + size, floorPaint) // Background
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                val stoneSize = size * 0.75f
+                
+                // Vẽ đá
+                canvas.drawCircle(centerX, centerY, stoneSize/2, pushableStonePaint)
+                canvas.drawCircle(centerX, centerY, stoneSize/2, borderPaint)
+                
+                // Texture lines để nhận biết đá có thể đẩy
+                canvas.drawLine(x + size*0.25f, y + size*0.35f, x + size*0.75f, y + size*0.35f, borderPaint)
+                canvas.drawLine(x + size*0.25f, y + size*0.65f, x + size*0.75f, y + size*0.65f, borderPaint)
+            }
+            
+            TileConstants.TILE_TARGET -> {
+                canvas.drawRect(x, y, x + size, y + size, floorPaint) // Background
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                val targetSize = size * 0.6f
+                
+                // Vẽ target như hình tròn với cross
+                canvas.drawCircle(centerX, centerY, targetSize/2, targetPaint)
+                canvas.drawCircle(centerX, centerY, targetSize/2, borderPaint)
+                
+                // Cross pattern
+                canvas.drawLine(centerX - targetSize/3, centerY, centerX + targetSize/3, centerY, borderPaint)
+                canvas.drawLine(centerX, centerY - targetSize/3, centerX, centerY + targetSize/3, borderPaint)
+            }
+            
+            TileConstants.TILE_STONE_ON_TARGET -> {
+                canvas.drawRect(x, y, x + size, y + size, floorPaint) // Background
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                
+                // Vẽ target background (nhỏ hơn)
+                canvas.drawCircle(centerX, centerY, size*0.4f, targetPaint)
+                
+                // Vẽ stone on top
+                canvas.drawCircle(centerX, centerY, size*0.35f, stoneOnTargetPaint)
+                canvas.drawCircle(centerX, centerY, size*0.35f, borderPaint)
+                
+                // Small check mark để show completed
+                val checkSize = size * 0.15f
+                canvas.drawLine(centerX - checkSize, centerY, centerX - checkSize/2, centerY + checkSize/2, borderPaint)
+                canvas.drawLine(centerX - checkSize/2, centerY + checkSize/2, centerX + checkSize, centerY - checkSize/2, borderPaint)
             }
             
             else -> {
