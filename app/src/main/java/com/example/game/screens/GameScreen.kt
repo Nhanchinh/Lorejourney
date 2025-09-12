@@ -12,9 +12,6 @@ import com.example.game.GameMap
 import com.example.game.Player
 import com.example.game.core.GameStateManager
 import com.example.game.map.TileConstants
-import com.example.game.map.MapLoader
-import com.example.game.map.TileRenderer
-import com.example.game.map.SimpleGameMap
 import com.example.game.SaveManager
 
 class GameScreen(
@@ -99,42 +96,8 @@ class GameScreen(
     }
     
     private fun initLevel() {
-        // Load map theo levelId từ assets hoặc fallback
-        gameMap = try {
-            // Thử load từ assets trước
-            val loadedMap = GameMap.loadFromAssets(context, "level$levelId.txt")
-            println("Loaded map from assets: level$levelId.txt") // Debug log
-            loadedMap
-        } catch (e: Exception) {
-            println("Failed to load from assets: ${e.message}") // Debug log
-            // Nếu không có file, dùng map mặc định theo level
-            when (levelId) {
-                1 -> {
-                    println("Using hardcoded level 1 map") // Debug log
-                    createLevel1Map()
-                }
-                2 -> {
-                    println("Using hardcoded level 2 map") // Debug log
-                    createLevel2Map()
-                }
-                3 -> {
-                    println("Using hardcoded level 3 map") // Debug log
-                    createLevel3Map()
-                }
-                4 -> {
-                    println("Using hardcoded level 4 map") // Debug log
-                    createLevel4Map()
-                }
-                5 -> {
-                    println("Using hardcoded level 5 map") // Debug log
-                    createLevel5Map()
-                }
-                else -> {
-                    println("Using test map for level $levelId") // Debug log
-                    GameMap.createTestMap()
-                }
-            }
-        }
+        // Load map sử dụng centralized logic từ GameMap
+        gameMap = GameMap.loadLevel(context, levelId)
         
         // Debug: In thông tin map
         println("Map loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
@@ -146,126 +109,6 @@ class GameScreen(
         )
         
         camera = Camera()
-    }
-
-    private fun createLevel1Map(): GameMap {
-        val mapString = """
-12
-10
-1
-1
-1,1,1,1,1,1,1,1,1,1,1,1
-1,2,2,2,2,2,2,2,2,2,2,1
-1,2,3,20,3,3,21,3,3,22,2,1
-1,2,3,3,3,3,3,3,3,3,2,1
-1,2,2,12,2,2,2,2,12,2,2,1
-1,2,31,31,10,31,31,11,31,2,1
-1,2,31,31,31,31,31,31,31,2,1
-1,2,2,2,2,13,2,2,2,14,2,1
-1,2,4,4,4,4,4,4,4,4,2,1
-1,1,1,1,1,1,1,1,1,1,1,1
-        """.trimIndent()
-        return GameMap.loadFromString(mapString)
-    }
-
-    private fun createLevel2Map(): GameMap {
-        val mapString = """
-15
-12
-2
-2
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-1,2,2,2,2,2,2,2,2,2,2,2,2,2,1
-1,2,3,3,20,3,3,1,3,3,21,3,3,2,1
-1,2,3,3,3,3,3,1,3,3,3,3,3,2,1
-1,2,20,3,3,22,3,1,3,21,3,3,20,2,1
-1,1,1,1,1,12,1,1,1,12,1,1,1,1,1
-1,2,31,31,31,31,31,31,31,31,31,31,2,1
-1,2,31,10,31,31,31,31,31,31,11,31,2,1
-1,2,31,31,31,13,31,31,13,31,31,31,2,1
-1,2,2,2,2,2,2,2,2,2,2,14,2,2,1
-1,2,4,4,4,4,4,40,40,4,4,4,4,4,1
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-        """.trimIndent()
-        return GameMap.loadFromString(mapString)
-    }
-
-    private fun createLevel3Map(): GameMap {
-        val mapString = """
-18
-14
-1
-1
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1
-1,2,3,20,3,3,21,3,3,1,3,3,22,3,3,20,2,1
-1,2,3,3,3,3,3,3,3,1,3,3,3,3,3,3,2,1
-1,2,20,3,3,22,3,3,3,12,3,3,21,3,3,20,2,1
-1,1,1,1,1,1,1,1,1,12,1,1,1,1,1,1,1,1
-1,2,31,31,31,31,31,31,31,31,31,31,31,31,31,31,2,1
-1,2,31,10,31,31,31,13,31,31,13,31,31,31,11,31,2,1
-1,2,31,31,31,31,31,31,31,31,31,31,31,31,31,31,2,1
-1,2,31,31,31,13,31,31,31,31,31,31,13,31,31,31,2,1
-1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,14,2,1
-1,2,4,4,4,40,40,4,4,12,4,4,40,40,4,4,2,1
-1,2,42,42,42,42,42,42,42,2,42,42,42,42,42,42,2,1
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-    """.trimIndent()
-        return GameMap.loadFromString(mapString)
-    }
-
-    private fun createLevel4Map(): GameMap {
-        val mapString = """
-20
-16
-2
-2
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1
-1,2,3,20,3,3,21,3,3,3,3,3,3,22,3,3,20,3,2,1
-1,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,1
-1,2,20,3,3,22,3,3,3,3,3,3,3,3,21,3,3,20,2,1
-1,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,1
-1,1,1,12,1,1,1,1,1,1,1,1,1,1,1,1,12,1,1,1
-1,2,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,2,1
-1,2,31,10,31,31,31,31,31,31,31,31,31,31,31,31,11,31,2,1
-1,2,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,2,1
-1,2,31,31,31,13,31,31,31,31,31,31,31,31,13,31,31,31,2,1
-1,2,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,2,1
-1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,14,2,1
-1,2,40,40,40,4,4,4,41,41,41,41,41,4,4,4,40,40,2,1
-1,2,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,2,1
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-    """.trimIndent()
-        return GameMap.loadFromString(mapString)
-    }
-
-    private fun createLevel5Map(): GameMap {
-        val mapString = """
-22
-18
-1
-1
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1
-1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,2,1
-1,2,1,20,1,2,1,21,1,2,1,22,1,2,1,20,1,2,1,21,2,1
-1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,2,1
-1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1
-1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1
-1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1
-1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,2,1
-1,2,1,10,1,2,1,11,1,2,1,12,1,2,1,13,1,2,1,31,2,1
-1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,2,1
-1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1
-1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1
-1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1
-1,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,14,2,1
-1,2,40,40,41,41,40,40,41,41,40,40,41,41,40,40,41,41,40,40,2,1
-1,2,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,42,2,1
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-    """.trimIndent()
-        return GameMap.loadFromString(mapString)
     }
     
     override fun update(deltaTime: Long) {

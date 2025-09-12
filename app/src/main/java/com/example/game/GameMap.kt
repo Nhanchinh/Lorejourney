@@ -26,6 +26,22 @@ class GameMap(private val simpleMap: SimpleGameMap) {
     }
     
     companion object {
+        /**
+         * Centralized method để load level theo ID
+         */
+        fun loadLevel(context: Context, levelId: Int): GameMap {
+            // Thử load từ assets trước
+            return try {
+                val loadedMap = loadFromAssets(context, "level$levelId.txt")
+                println("Loaded map from assets: level$levelId.txt")
+                loadedMap
+            } catch (e: Exception) {
+                println("Failed to load from assets: ${e.message}")
+                // Fallback về test map
+                createTestMap()
+            }
+        }
+        
         fun createLevel1(): GameMap {
             val simpleMap = SimpleGameMap.createDefaultMap()
             return GameMap(simpleMap)
