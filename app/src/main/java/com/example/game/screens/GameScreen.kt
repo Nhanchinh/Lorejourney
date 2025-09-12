@@ -99,7 +99,6 @@ class GameScreen(
     }
     
     private fun initLevel() {
-        // Load map sử dụng centralized logic từ GameMap
         gameMap = GameMap.loadLevel(context, levelId)
         
         // Initialize push logic chỉ cho level 1
@@ -110,11 +109,12 @@ class GameScreen(
         // Debug: In thông tin map
         println("Map loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
         
-        // Sử dụng SpritePlayer
+        // Sử dụng SpritePlayer với gameMap
         player = SpritePlayer(
             (gameMap.playerSpawnX * GameConstants.TILE_SIZE).toFloat(),
             (gameMap.playerSpawnY * GameConstants.TILE_SIZE).toFloat(),
-            context
+            context,
+            gameMap  // ←── THÊM LẠI gameMap VÀO ĐÂY
         )
         
         // Connect push logic cho level 1
@@ -152,18 +152,16 @@ class GameScreen(
             completeLevel()
         }
         
+        // Continuous movement handling
         if (isButtonPressed) {
-            moveTimer += deltaTime
-            
-            if (moveTimer >= moveInterval && !player.isCurrentlyMoving()) {
-                moveTimer = 0
-                when (currentDirection) {
-                    "UP" -> player.move(0, -1, gameMap)
-                    "DOWN" -> player.move(0, 1, gameMap)
-                    "LEFT" -> player.move(-1, 0, gameMap)
-                    "RIGHT" -> player.move(1, 0, gameMap)
-                }
+            when (currentDirection) {
+                "UP" -> player.startMoving("UP")
+                "DOWN" -> player.startMoving("DOWN")
+                "LEFT" -> player.startMoving("LEFT")
+                "RIGHT" -> player.startMoving("RIGHT")
             }
+        } else {
+            player.stopAllMovement()
         }
     }
 
@@ -358,35 +356,23 @@ class GameScreen(
                 
                 when {
                     upButton.contains(event.x, event.y) -> {
-                        if (currentDirection != "UP") {
-                            currentDirection = "UP"
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        currentDirection = "UP"
+                        isButtonPressed = true
                         return true
                     }
                     downButton.contains(event.x, event.y) -> {
-                        if (currentDirection != "DOWN") {
-                            currentDirection = "DOWN"
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        currentDirection = "DOWN"
+                        isButtonPressed = true
                         return true
                     }
                     leftButton.contains(event.x, event.y) -> {
-                        if (currentDirection != "LEFT") {
-                            currentDirection = "LEFT"
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        currentDirection = "LEFT"
+                        isButtonPressed = true
                         return true
                     }
                     rightButton.contains(event.x, event.y) -> {
-                        if (currentDirection != "RIGHT") {
-                            currentDirection = "RIGHT"
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        currentDirection = "RIGHT"
+                        isButtonPressed = true
                         return true
                     }
                     touchpadBase.contains(event.x, event.y) -> {
@@ -395,30 +381,24 @@ class GameScreen(
                         val deltaX = event.x - centerX
                         val deltaY = event.y - centerY
                         
-                        val newDirection = if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        currentDirection = if (Math.abs(deltaX) > Math.abs(deltaY)) {
                             if (deltaX > 0) "RIGHT" else "LEFT"
                         } else {
                             if (deltaY > 0) "DOWN" else "UP"
                         }
                         
-                        if (currentDirection != newDirection) {
-                            currentDirection = newDirection
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        isButtonPressed = true
                         return true
                     }
                     else -> {
                         isButtonPressed = false
                         currentDirection = ""
-                        moveTimer = 0
                     }
                 }
             }
             MotionEvent.ACTION_UP -> {
                 isButtonPressed = false
                 currentDirection = ""
-                moveTimer = 0
                 return true
             }
         }
