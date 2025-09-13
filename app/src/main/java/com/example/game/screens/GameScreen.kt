@@ -246,6 +246,11 @@ class GameScreen(
         
         canvas.restore()
         drawUI(canvas)
+        
+        // THÊM: Vẽ completion message nếu level completed
+        if (levelCompleted) {
+            drawCompletionMessage(canvas)
+        }
     }
     
     private fun drawUI(canvas: Canvas) {

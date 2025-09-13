@@ -9,8 +9,8 @@ object GameConstants {
     const val TILE_BUTTON = 5
     
     // Game settings
-    const val TILE_SIZE = 64
-    const val PLAYER_SPEED = 4
+    const val TILE_SIZE = 96
+    const val PLAYER_SPEED = 64
     const val ANIMATION_FRAME_DURATION = 150L
     
     // Screen dimensions

@@ -27,8 +27,8 @@ class SpritePlayer(
     // Movement state - ĐƠN GIẢN HÓA
     private var velocityX = 0f
     private var velocityY = 0f
-    private val moveSpeed = 150f // Giảm tốc độ
-    private val maxVelocity = 200f
+    private val moveSpeed = GameConstants.PLAYER_SPEED.toFloat() * 5f // Kết nối với GameConstants
+    private val maxVelocity = GameConstants.PLAYER_SPEED.toFloat() * 8f // Tỷ lệ với PLAYER_SPEED
     
     // Input state
     private var isMovingUp = false
