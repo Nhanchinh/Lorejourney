@@ -42,6 +42,11 @@ object TileConstants {
     const val TILE_TARGET = 51           // Vị trí đích
     const val TILE_STONE_ON_TARGET = 52  // Đá đã vào đích
     
+    // Shadow system tiles - NEW
+    const val TILE_SHADOW_SPAWN = 60     // Ô spawn bóng
+    const val TILE_SHADOW_TRIGGER = 61   // Ô cần bóng để mở cửa
+    const val TILE_SHADOW_DOOR = 62      // Cửa được mở bởi bóng
+    
     /**
      * Check if tile is walkable
      */
@@ -72,5 +77,19 @@ object TileConstants {
      */
     fun isTarget(tileId: Int): Boolean {
         return tileId == TILE_TARGET || tileId == TILE_STONE_ON_TARGET
+    }
+
+    /**
+     * Check if tile là shadow spawn
+     */
+    fun isShadowSpawn(tileId: Int): Boolean {
+        return tileId == TILE_SHADOW_SPAWN
+    }
+
+    /**
+     * Check if tile là shadow trigger
+     */
+    fun isShadowTrigger(tileId: Int): Boolean {
+        return tileId == TILE_SHADOW_TRIGGER
     }
 }

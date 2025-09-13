@@ -22,6 +22,7 @@ object GameConstants {
     const val STATE_LEVEL_SELECT = 1
     const val STATE_PLAYING = 2
     const val STATE_SETTINGS = 3
+    const val STATE_PAUSED = 4
     
     // Level progress
     var MAX_UNLOCKED_LEVEL = 1 // Bắt đầu chỉ mở level 1

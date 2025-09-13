@@ -163,6 +163,39 @@ class TileRenderer {
         color = Color.parseColor("#4CAF50") // Màu xanh khi hoàn thành
     }
     
+    // Shadow system paints
+    private val shadowSpawnPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#6A1B9A") // Màu tím đậm
+    }
+
+    private val shadowTriggerPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#E1BEE7") // Màu tím nhạt
+    }
+
+    private val shadowDoorPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#4A148C") // Màu tím rất đậm
+    }
+    
+    // Thêm các Paint objects cho shadow tiles (sau dòng 180):
+
+    private val shadowWhitePaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#FFFFFF")
+    }
+
+    private val shadowGoldPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#FFD700")
+    }
+
+    private val shadowFramePaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#2E1065")
+    }
+    
     // RectF để tái sử dụng cho drawRoundRect
     private val tempRect = RectF()
     
@@ -382,6 +415,79 @@ class TileRenderer {
                 val checkSize = size * 0.15f
                 canvas.drawLine(centerX - checkSize, centerY, centerX - checkSize/2, centerY + checkSize/2, borderPaint)
                 canvas.drawLine(centerX - checkSize/2, centerY + checkSize/2, centerX + checkSize, centerY - checkSize/2, borderPaint)
+            }
+            
+            TileConstants.TILE_SHADOW_SPAWN -> {
+                // Draw base floor
+                canvas.drawRect(x, y, x + size, y + size, floorPaint)
+                
+                // Draw shadow spawn symbol
+                canvas.drawRect(x, y, x + size, y + size, shadowSpawnPaint)
+                
+                // Draw spawn indicator (circle in center)
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                val radius = size * 0.3f
+                canvas.drawCircle(centerX, centerY, radius, shadowWhitePaint)
+                canvas.drawCircle(centerX, centerY, radius, borderPaint)
+                
+                // Draw "S" for spawn
+                val textPaint = Paint().apply {
+                    color = Color.BLACK
+                    textAlign = Paint.Align.CENTER
+                    textSize = size * 0.4f
+                    isFakeBoldText = true
+                }
+                canvas.drawText("S", centerX, centerY + size * 0.1f, textPaint)
+            }
+
+            TileConstants.TILE_SHADOW_TRIGGER -> {
+                // Draw base floor
+                canvas.drawRect(x, y, x + size, y + size, floorPaint)
+                
+                // Draw trigger background
+                canvas.drawRect(x, y, x + size, y + size, shadowTriggerPaint)
+                canvas.drawRect(x, y, x + size, y + size, borderPaint)
+                
+                // Draw trigger symbol (diamond)
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                val halfSize = size * 0.25f
+                
+                val diamondPaint = Paint().apply {
+                    color = Color.parseColor("#9C27B0")
+                    isAntiAlias = true
+                }
+                
+                // Draw diamond shape
+                val path = android.graphics.Path()
+                path.moveTo(centerX, centerY - halfSize) // top
+                path.lineTo(centerX + halfSize, centerY) // right
+                path.lineTo(centerX, centerY + halfSize) // bottom
+                path.lineTo(centerX - halfSize, centerY) // left
+                path.close()
+                
+                canvas.drawPath(path, diamondPaint)
+                canvas.drawPath(path, borderPaint)
+            }
+
+            TileConstants.TILE_SHADOW_DOOR -> {
+                // Draw shadow door (closed)
+                canvas.drawRect(x, y, x + size, y + size, shadowDoorPaint)
+                canvas.drawRect(x, y, x + size, y + size, borderPaint)
+                
+                // Draw door details
+                val doorHandleX = x + size * 0.8f
+                val doorHandleY = y + size * 0.5f
+                val handleRadius = size * 0.05f
+                
+                canvas.drawCircle(doorHandleX, doorHandleY, handleRadius, shadowGoldPaint)
+                
+                // Draw door frame
+                val frameWidth = size * 0.1f
+                canvas.drawRect(x + frameWidth, y + frameWidth, 
+                               x + size - frameWidth, y + size - frameWidth, 
+                               shadowFramePaint)
             }
             
             else -> {
