@@ -151,7 +151,7 @@ class ShadowEntity(
     fun isOnShadowTrigger(gameMap: GameMap): Boolean {
         val tileX = getCurrentTileX()
         val tileY = getCurrentTileY()
-        val tileId = gameMap.getTile(tileX, tileY)
+        val tileId = gameMap.getTile(tileX, tileY, 2) // Check active layer
         return TileConstants.isShadowTrigger(tileId)
     }
     

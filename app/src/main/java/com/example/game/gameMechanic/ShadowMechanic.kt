@@ -66,12 +66,12 @@ class ShadowMechanic(
         
         val playerTileX = player.getCurrentTileX()
         val playerTileY = player.getCurrentTileY()
-        val currentTile = gameMap.getTile(playerTileX, playerTileY)
+        val currentTile = gameMap.getTile(playerTileX, playerTileY, 2) // Check active layer
         
         if (TileConstants.isShadowSpawn(currentTile)) {
             playerEntity?.let { pe ->
                 shadowEntity = ShadowEntity(player.x, player.y, context, pe)
-                println("🌟 Shadow spawned at tile ($playerTileX, $playerTileY)")
+                println("🌟 Shadow spawned at tile ($playerTileX, $playerTileY) on active layer")
             }
         }
     }
@@ -88,22 +88,22 @@ class ShadowMechanic(
         var doorsOpened = 0
         for (y in 0 until gameMap.height) {
             for (x in 0 until gameMap.width) {
-                if (gameMap.getTile(x, y) == TileConstants.TILE_SHADOW_DOOR) {
-                    gameMap.setTile(x, y, TileConstants.TILE_FLOOR)
+                if (gameMap.getTile(x, y, 2) == TileConstants.TILE_SHADOW_DOOR) { // Check active layer
+                    gameMap.setTile(x, y, TileConstants.TILE_EMPTY, 2) // Set empty on active layer
                     doorsOpened++
                 }
             }
         }
         if (doorsOpened > 0) {
-            println("🚪 Opened $doorsOpened shadow door(s)")
+            println("🚪 Opened $doorsOpened shadow door(s) on active layer")
         }
     }
     
     fun isPuzzleComplete(): Boolean {
-        // Puzzle complete khi không còn shadow door nào
+        // Puzzle complete khi không còn shadow door nào (trên active layer)
         for (y in 0 until gameMap.height) {
             for (x in 0 until gameMap.width) {
-                if (gameMap.getTile(x, y) == TileConstants.TILE_SHADOW_DOOR) {
+                if (gameMap.getTile(x, y, 2) == TileConstants.TILE_SHADOW_DOOR) {
                     return false
                 }
             }

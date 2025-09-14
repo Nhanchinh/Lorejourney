@@ -77,6 +77,13 @@ class SpritePlayer(
     private var lastPushTime = 0L
     private var pushCooldown = 500L // 500ms cooldown between pushes
     
+    // Ice sliding variables
+    private var isOnIce = false
+    private var iceSlideDirection = Direction.DOWN
+    private var iceSlideSpeed = 0f
+    private val maxIceSlideSpeed = moveSpeed * 1.5f
+    private var lastIceCheck = 0L
+    
     init {
         loadSpriteSheet()
     }
@@ -103,6 +110,7 @@ class SpritePlayer(
     
     fun setPushLogic(pushLogic: PushLogic) {
         this.pushLogic = pushLogic
+        println("🔄 PushLogic has been set for SpritePlayer!")
     }
     
     // Update method để handle push cooldown
@@ -114,14 +122,23 @@ class SpritePlayer(
             snapCooldown -= deltaTime
         }
         
-        // Update movement (includes push logic)
-        updateSimpleMovement(deltaSeconds)
+        // Check if currently on ice
+        checkIceStatus()
+        
+        // Update movement (includes push logic and ice sliding)
+        if (isOnIce) {
+            updateIceSliding(deltaSeconds)
+        } else {
+            updateSimpleMovement(deltaSeconds)
+        }
         
         // Update animation
         updateAnimation(deltaTime)
         
-        // Handle snapping
-        handleSnapping(deltaTime)
+        // Handle snapping (only if not on ice)
+        if (!isOnIce) {
+            handleSnapping(deltaTime)
+        }
     }
     
     private fun updateSimpleMovement(deltaSeconds: Float) {
@@ -145,6 +162,18 @@ class SpritePlayer(
             
             // Reset snap trigger
             shouldSnap = false
+            
+            // If on ice and trying to move, check if we should start sliding
+            if (isOnIce && iceSlideSpeed <= 0f) {
+                // Player is on ice and trying to move - start sliding
+                if (Math.abs(velocityX) > Math.abs(velocityY)) {
+                    iceSlideDirection = if (velocityX > 0) Direction.RIGHT else Direction.LEFT
+                } else {
+                    iceSlideDirection = if (velocityY > 0) Direction.DOWN else Direction.UP
+                }
+                iceSlideSpeed = moveSpeed * 0.8f
+                println("🧊 Starting ice slide from input: direction $iceSlideDirection")
+            }
         } else {
             // Not moving - decelerate
             velocityX *= 0.6f
@@ -163,10 +192,11 @@ class SpritePlayer(
         // Calculate new position
         val newX = x + velocityX * deltaSeconds
         val newY = y + velocityY * deltaSeconds
-        
+        println("🔄 Checking position validity for new coordinates: "+!isPositionValid(newX, newY))
         // Check for push mechanics TRƯỚC KHI check collision
         if (!isPositionValid(newX, newY)) {
             // Position invalid - check if it's because of pushable stone
+            println("tryPushStone")
             if (tryPushStone(newX, newY)) {
                 // Push succeeded - allow movement
                 x = newX
@@ -181,6 +211,89 @@ class SpritePlayer(
             // Normal movement
             x = newX
             y = newY
+        }
+    }
+    
+    private fun checkIceStatus() {
+        val tileSize = GameConstants.TILE_SIZE.toFloat()
+        val centerX = x + tileSize / 2
+        val centerY = y + tileSize / 2
+        val tileX = (centerX / tileSize).toInt()
+        val tileY = (centerY / tileSize).toInt()
+        
+        // Check main layer for ice tiles
+        val currentTile = gameMap.getTile(tileX, tileY, 1) // Main layer
+        val wasOnIce = isOnIce
+        isOnIce = TileConstants.isIce(currentTile)
+        
+        // If just stepped onto ice, start sliding in current movement direction
+        if (isOnIce && !wasOnIce) {
+            println("🧊 Player stepped onto ice tile $currentTile at ($tileX, $tileY)")
+            // Determine slide direction from current movement
+            if (Math.abs(velocityX) > Math.abs(velocityY)) {
+                iceSlideDirection = if (velocityX > 0) Direction.RIGHT else Direction.LEFT
+            } else {
+                iceSlideDirection = if (velocityY > 0) Direction.DOWN else Direction.UP
+            }
+            
+            // Set initial ice slide speed based on current velocity
+            iceSlideSpeed = Math.max(moveSpeed * 0.8f, 
+                Math.sqrt((velocityX * velocityX + velocityY * velocityY).toDouble()).toFloat())
+            
+            println("🧊 Starting ice slide in direction: $iceSlideDirection with speed: $iceSlideSpeed")
+        }
+        
+        // If left ice, stop sliding
+        if (!isOnIce && wasOnIce) {
+            println("🧊 Player left ice, stopping slide")
+            iceSlideSpeed = 0f
+        }
+    }
+    
+    private fun updateIceSliding(deltaSeconds: Float) {
+        if (iceSlideSpeed <= 0f) {
+            // No sliding happening, allow normal movement but check for ice exit
+            updateSimpleMovement(deltaSeconds)
+            return
+        }
+        
+        // Calculate slide movement
+        val slideVelX = when (iceSlideDirection) {
+            Direction.LEFT -> -iceSlideSpeed
+            Direction.RIGHT -> iceSlideSpeed
+            else -> 0f
+        }
+        
+        val slideVelY = when (iceSlideDirection) {
+            Direction.UP -> -iceSlideSpeed
+            Direction.DOWN -> iceSlideSpeed
+            else -> 0f
+        }
+        
+        // Calculate new position
+        val newX = x + slideVelX * deltaSeconds
+        val newY = y + slideVelY * deltaSeconds
+        
+        // Check if new position is valid
+        if (isPositionValid(newX, newY)) {
+            x = newX
+            y = newY
+            
+            // Update velocity for animation
+            velocityX = slideVelX
+            velocityY = slideVelY
+            currentDirection = iceSlideDirection
+            
+            // Slightly increase slide speed (acceleration on ice)
+            iceSlideSpeed = Math.min(iceSlideSpeed * 1.02f, maxIceSlideSpeed)
+            
+        } else {
+            // Hit obstacle - stop sliding
+            println("🧊 Ice slide stopped by obstacle")
+            iceSlideSpeed = 0f
+            velocityX = 0f
+            velocityY = 0f
+            shouldSnap = true
         }
     }
     
@@ -234,13 +347,14 @@ class SpritePlayer(
         val tileX = (centerX / tileSize).toInt()
         val tileY = (centerY / tileSize).toInt()
         
-        val tileId = gameMap.getTile(tileX, tileY)
-        
-        // Allow movement to pushable stones (will be handled by tryPushStone)
-        if (TileConstants.isPushable(tileId)) {
+        // Check active layer for pushable stones
+        val activeTile = gameMap.getTile(tileX, tileY, 2) // Active layer
+        if (TileConstants.isPushable(activeTile)) {
+            println("🔍 Found pushable stone on active layer at ($tileX, $tileY): $activeTile")
             return false // This will trigger push check
         }
         
+        // Check walkability (main layer terrain)
         return gameMap.isWalkable(tileX, tileY)
     }
     
@@ -295,30 +409,53 @@ class SpritePlayer(
         isMovingDown = false
         isMovingLeft = false
         isMovingRight = false
+        
+        // DON'T stop ice sliding - let player slide until they hit obstacle or leave ice
+        // Removed: if (isOnIce) { iceSlideSpeed = 0f }
     }
     
     fun isCurrentlyMoving(): Boolean {
-        return Math.abs(velocityX) > 10f || Math.abs(velocityY) > 10f
+        return Math.abs(velocityX) > 10f || Math.abs(velocityY) > 10f || iceSlideSpeed > 0f
     }
     
     // Existing methods remain the same
     fun move(dx: Int, dy: Int, gameMap: GameMap): Boolean {
-        // For push mechanics in level 1
         val currentTileX = getCurrentTileX()
         val currentTileY = getCurrentTileY()
         
         val newTileX = currentTileX + dx
         val newTileY = currentTileY + dy
         
-        // Check push logic first (if available)
-        val nextTile = gameMap.getTile(newTileX, newTileY)
-        if (TileConstants.isPushable(nextTile)) {
+        println("🚶 SpritePlayer trying to move from ($currentTileX, $currentTileY) to ($newTileX, $newTileY)")
+        
+        // Check normal movement first
+        if (gameMap.isWalkable(newTileX, newTileY)) {
+            println("✅ Normal movement allowed")
+            x = newTileX * GameConstants.TILE_SIZE.toFloat()
+            y = newTileY * GameConstants.TILE_SIZE.toFloat()
+            return true
+        }
+        
+        // Check push logic - pushable objects are on active layer (layer 2)
+        val mainTile = gameMap.getTile(newTileX, newTileY, 1) // Main layer
+        val activeTile = gameMap.getTile(newTileX, newTileY, 2) // Active layer
+        println("🔍 Main layer tile at ($newTileX, $newTileY): $mainTile")
+        println("🔍 Active layer tile at ($newTileX, $newTileY): $activeTile")
+        
+        if (TileConstants.isPushable(activeTile)) {
+            println("🔄 Found pushable tile $activeTile, checking push logic...")
+            println("🔄 PushLogic available: ${pushLogic != null}")
+            
             if (pushLogic?.tryPush(currentTileX, currentTileY, dx, dy) == true) {
-                // Move to new tile position
+                println("✅ Push successful, moving player")
                 x = newTileX * GameConstants.TILE_SIZE.toFloat()
                 y = newTileY * GameConstants.TILE_SIZE.toFloat()
                 return true
+            } else {
+                println("❌ Push failed")
             }
+        } else {
+            println("❌ Tile $activeTile is not pushable")
         }
         
         return false
@@ -402,7 +539,6 @@ class SpritePlayer(
         if (currentTime - lastPushTime < pushCooldown) {
             return false // Still in cooldown
         }
-        
         val tileSize = GameConstants.TILE_SIZE.toFloat()
         
         // Get current tile position
@@ -424,13 +560,16 @@ class SpritePlayer(
             return false
         }
         
-        // Check if target tile has pushable stone
-        val targetTile = gameMap.getTile(targetTileX, targetTileY)
+        // Check if target tile has pushable stone - CHECK ACTIVE LAYER (layer 2)
+        val targetTile = gameMap.getTile(targetTileX, targetTileY, 2) // Active layer where pushable objects are
+        println("🔍 Checking active layer at ($targetTileX, $targetTileY): tile = $targetTile")
         if (!TileConstants.isPushable(targetTile)) {
+            println("❌ No pushable stone found on active layer")
             return false
         }
-        
+        print(" Attempting to push stone...3"  )
         // Try to push the stone
+        println("🔄 Attempting push with PushLogic from ($currentTileX, $currentTileY) direction ($dx, $dy)")
         if (pushLogic?.tryPush(currentTileX, currentTileY, dx, dy) == true) {
             lastPushTime = currentTime
             println("🪨 Successfully pushed stone from ($currentTileX, $currentTileY) direction ($dx, $dy)")
@@ -445,6 +584,8 @@ class SpritePlayer(
             shouldSnap = true
             
             return true
+        } else {
+            println("❌ PushLogic.tryPush() returned false")
         }
         
         return false

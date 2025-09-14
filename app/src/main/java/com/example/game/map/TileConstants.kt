@@ -4,48 +4,62 @@ package com.example.game.map
  * Constants cho các loại tile trong game
  */
 object TileConstants {
-    // Basic tiles
-    const val TILE_EMPTY = 0
-    const val TILE_WALL = 1
-    const val TILE_FLOOR = 2
-    const val TILE_GRASS = 3
-    const val TILE_WATER = 4
-    const val TILE_STONE = 5
-    const val TILE_DIRT = 6
+    // Sprite sheet tiles: 0-271 (reserved for sprite-based rendering)
+    // Code-based tiles: 272+ (hand-drawn/procedural tiles)
     
-    // Interactive tiles
+    // Basic tiles - offset by 272
+    const val TILE_EMPTY = 0  // Keep 0 as empty
+    const val TILE_WALL = 273  // 1 + 272
+    const val TILE_FLOOR = 274  // 2 + 272
+    const val TILE_GRASS = 275  // 3 + 272
+    const val TILE_WATER = 276  // 4 + 272
+    const val TILE_STONE = 277  // 5 + 272
+    const val TILE_DIRT = 278  // 6 + 272
+    
+    // Interactive tiles - special IDs remain low for compatibility
     const val TILE_KEY = 10
     const val TILE_BUTTON = 11
     const val TILE_DOOR = 12
-    const val TILE_CHEST = 13
-    const val TILE_END = 14  // NEW: Tile kết thúc level
+    const val TILE_CHEST = 285  // 13 + 272
+    const val TILE_END = 14  // Keep for compatibility
     
-    // Decorative tiles
-    const val TILE_TREE = 20
-    const val TILE_ROCK = 21
-    const val TILE_FLOWER = 22
-    const val TILE_BUSH = 23
+    // Decorative tiles - offset by 272
+    const val TILE_TREE = 292  // 20 + 272
+    const val TILE_ROCK = 293  // 21 + 272
+    const val TILE_FLOWER = 294  // 22 + 272
+    const val TILE_BUSH = 295  // 23 + 272
     
-    // Building tiles
-    const val TILE_HOUSE_WALL = 30
-    const val TILE_HOUSE_FLOOR = 31
-    const val TILE_ROOF = 32
-    const val TILE_WINDOW = 33
+    // Building tiles - offset by 272
+    const val TILE_HOUSE_WALL = 302  // 30 + 272
+    const val TILE_HOUSE_FLOOR = 303  // 31 + 272
+    const val TILE_ROOF = 304  // 32 + 272
+    const val TILE_WINDOW = 305  // 33 + 272
     
-    // Special tiles
-    const val TILE_LAVA = 40
-    const val TILE_ICE = 41
-    const val TILE_SAND = 42
+    // Special tiles - offset by 272
+    const val TILE_LAVA = 312  // 40 + 272
+    const val TILE_ICE = 313  // 41 + 272
+    const val TILE_SAND = 314  // 42 + 272
     
-    // Push puzzle tiles - NEW
-    const val TILE_PUSHABLE_STONE = 50   // Đá có thể đẩy
-    const val TILE_TARGET = 51           // Vị trí đích
-    const val TILE_STONE_ON_TARGET = 52  // Đá đã vào đích
+    // Push puzzle tiles - offset by 272
+    const val TILE_PUSHABLE_STONE = 322   // 50 + 272 - Đá có thể đẩy
+    const val TILE_TARGET = 323           // 51 + 272 - Vị trí đích
+    const val TILE_STONE_ON_TARGET = 324  // 52 + 272 - Đá đã vào đích
     
-    // Shadow system tiles - NEW
-    const val TILE_SHADOW_SPAWN = 60     // Ô spawn bóng
-    const val TILE_SHADOW_TRIGGER = 61   // Ô cần bóng để mở cửa
-    const val TILE_SHADOW_DOOR = 62      // Cửa được mở bởi bóng
+    // Shadow system tiles - offset by 272
+    const val TILE_SHADOW_SPAWN = 332     // 60 + 272 - Ô spawn bóng
+    const val TILE_SHADOW_TRIGGER = 333   // 61 + 272 - Ô cần bóng để mở cửa
+    const val TILE_SHADOW_DOOR = 334      // 62 + 272 - Cửa được mở bởi bóng
+    
+    // Ice tiles for sliding mechanic (sprite-based IDs)
+    const val TILE_ICE_1 = 172  // Ice tile type 1
+    const val TILE_ICE_2 = 173  // Ice tile type 2
+    const val TILE_ICE_3 = 174  // Ice tile type 3
+    const val TILE_ICE_4 = 188  // Ice tile type 4
+    const val TILE_ICE_5 = 189  // Ice tile type 5
+    const val TILE_ICE_6 = 190  // Ice tile type 6
+    const val TILE_ICE_7 = 204  // Ice tile type 7
+    const val TILE_ICE_8 = 205  // Ice tile type 8
+    const val TILE_ICE_9 = 206  // Ice tile type 9
     
     /**
      * Check if tile is walkable
@@ -60,6 +74,9 @@ object TileConstants {
             TILE_BUSH, TILE_HOUSE_WALL, TILE_ROOF, TILE_WINDOW,
             TILE_LAVA, TILE_ICE,
             TILE_PUSHABLE_STONE, TILE_STONE_ON_TARGET -> false  // Đá không thể đi qua
+            
+            // Sprite-based tiles (1-271) are walkable by default unless specified
+            in 1..271 -> true
             
             else -> true // Default to walkable
         }
@@ -91,5 +108,13 @@ object TileConstants {
      */
     fun isShadowTrigger(tileId: Int): Boolean {
         return tileId == TILE_SHADOW_TRIGGER
+    }
+
+    /**
+     * Check if tile is ice (slippery surface)
+     */
+    fun isIce(tileId: Int): Boolean {
+        return tileId in listOf(TILE_ICE_1, TILE_ICE_2, TILE_ICE_3, TILE_ICE_4, 
+                               TILE_ICE_5, TILE_ICE_6, TILE_ICE_7, TILE_ICE_8, TILE_ICE_9)
     }
 }

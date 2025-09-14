@@ -47,10 +47,13 @@ class LevelSelectScreen(
             false, Color.parseColor("#BDBDBD"), Color.parseColor("#9E9E9E")), // Xám locked
         Chapter(5, "Chapter 5", "Final Trial", "Expert", 
             "Face the ultimate challenge in the Final Trial, where all your skills will be tested to their limits. This legendary realm combines the mysteries of all previous chapters into one epic conclusion. Only true masters can claim victory in this final confrontation.", 
-            false, Color.parseColor("#9575CD"), Color.parseColor("#7E57C2")) // Tím locked
+            false, Color.parseColor("#9575CD"), Color.parseColor("#7E57C2")), // Tím locked
+        Chapter(6, "Chapter 6", "Sprite Realm", "Master", 
+            "Enter the mystical Sprite Realm, where reality bends and ancient art comes to life. This special chapter uses advanced sprite-based graphics to create a unique visual experience. Master the art of visual puzzles in this stunning new dimension.", 
+            true, Color.parseColor("#00BCD4"), Color.parseColor("#0097A7")) // Cyan cho map6
     )
     
-    private var selectedChapter = 4 // Default Final Trial
+    private var selectedChapter = 5 // Default Chapter 6 (Sprite Realm) để showcase map6
     private val chapterButtons = mutableListOf<RectF>()
     private val backButton = RectF()
     private val playButton = RectF()
@@ -252,11 +255,6 @@ class LevelSelectScreen(
             // Kiểm tra xem level có unlock không
             val isUnlocked = level <= GameConstants.MAX_UNLOCKED_LEVEL
             
-            // Debug log
-            if (i == 0) { // Chỉ log một lần
-                println("Drawing buttons - Max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL}, Selected: $selectedChapter")
-            }
-            
             // Gradient cho button background
             val buttonGradient = if (isUnlocked) {
                 if (isSelected) {
@@ -403,10 +401,7 @@ class LevelSelectScreen(
     private fun drawPlayButton(canvas: Canvas) {
         val selectedLevel = selectedChapter + 1
         val isPlayable = selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL // SỬA DÒNG NÀY
-        
-        // Debug log
-        println("DrawPlayButton - Selected: $selectedLevel, Max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL}, Playable: $isPlayable")
-        
+
         // Gradient cho play button
         val gradient = if (isPlayable) {
             LinearGradient(

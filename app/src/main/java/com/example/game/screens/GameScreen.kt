@@ -104,11 +104,18 @@ class GameScreen(
     private fun initLevel() {
         gameMap = GameMap.loadLevel(context, levelId)
         
-        if (levelId == 1) {
+        // Initialize PushLogic for levels that have pushable objects
+        if (levelId == 1 || levelId == 2) {
             pushLogic = PushLogic(gameMap)
+            println("🔄 PushLogic initialized for level $levelId")
         }
         
-        println("Map loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
+        // Log thông tin đặc biệt cho map6
+        if (levelId == 6) {
+            println("Map6 (Sprite-based) loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
+        } else {
+            println("Map loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
+        }
         
         player = SpritePlayer(
             (gameMap.playerSpawnX * GameConstants.TILE_SIZE).toFloat(),
@@ -117,8 +124,10 @@ class GameScreen(
             gameMap
         )
         
-        if (levelId == 1 && pushLogic != null) {
+        // Set PushLogic for levels that need it
+        if ((levelId == 1 || levelId == 2) && pushLogic != null) {
             player.setPushLogic(pushLogic!!)
+            println("🔄 PushLogic assigned to player for level $levelId")
         }
         
         // CHỈ CÓ 3 dòng này cho shadow

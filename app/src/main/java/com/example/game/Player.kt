@@ -67,6 +67,8 @@ class Player(startX: Float, startY: Float) {
     }
     
     fun move(dx: Int, dy: Int, gameMap: GameMap): Boolean {
+        print("🔄 Trying to move")
+        
         if (isMoving) return false
         
         val currentTileX = (x / GameConstants.TILE_SIZE).toInt()
@@ -81,9 +83,9 @@ class Player(startX: Float, startY: Float) {
             return true
         }
         
-        // Check push logic
-        val nextTile = gameMap.getTile(newTileX, newTileY)
-        if (com.example.game.map.TileConstants.isPushable(nextTile)) {
+        // Check push logic - pushable objects are on active layer (layer 2)
+        val activeTile = gameMap.getTile(newTileX, newTileY, 2)
+        if (com.example.game.map.TileConstants.isPushable(activeTile)) {
             if (pushLogic?.tryPush(currentTileX, currentTileY, dx, dy) == true) {
                 startMovement(newTileX, newTileY)
                 return true

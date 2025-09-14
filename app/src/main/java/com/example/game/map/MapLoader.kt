@@ -21,8 +21,14 @@ object MapLoader {
         val height: Int,
         val playerSpawnX: Int,
         val playerSpawnY: Int,
-        val tiles: Array<IntArray>
+        val bottomLayer: Array<IntArray>,
+        val mainLayer: Array<IntArray>,
+        val activeLayer: Array<IntArray>
     ) {
+        // Compatibility property for old code that uses single tiles array
+        @Deprecated("Use specific layers instead")
+        val tiles: Array<IntArray> get() = mainLayer
+        
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -31,7 +37,9 @@ object MapLoader {
                    height == other.height &&
                    playerSpawnX == other.playerSpawnX &&
                    playerSpawnY == other.playerSpawnY &&
-                   tiles.contentDeepEquals(other.tiles)
+                   bottomLayer.contentDeepEquals(other.bottomLayer) &&
+                   mainLayer.contentDeepEquals(other.mainLayer) &&
+                   activeLayer.contentDeepEquals(other.activeLayer)
         }
 
         override fun hashCode(): Int {
@@ -39,7 +47,9 @@ object MapLoader {
             result = 31 * result + height
             result = 31 * result + playerSpawnX
             result = 31 * result + playerSpawnY
-            result = 31 * result + tiles.contentDeepHashCode()
+            result = 31 * result + bottomLayer.contentDeepHashCode()
+            result = 31 * result + mainLayer.contentDeepHashCode()
+            result = 31 * result + activeLayer.contentDeepHashCode()
             return result
         }
     }
@@ -82,26 +92,78 @@ object MapLoader {
             val playerSpawnX = lines[2].toInt()
             val playerSpawnY = lines[3].toInt()
             
-            if (lines.size < 4 + height) return null
+            // Check if we have enough lines for 3-layer format
+            val expectedLines = 4 + (height * 3) // 4 header lines + 3 layers * height
             
-            val tiles = Array(height) { IntArray(width) }
-            
-            for (y in 0 until height) {
-                val lineIndex = 4 + y
-                if (lineIndex >= lines.size) break
-                
-                val tileLine = lines[lineIndex]
-                val tileIds = tileLine.split(",").map { it.trim().toInt() }
-                
-                for (x in 0 until width) {
-                    tiles[y][x] = if (x < tileIds.size) tileIds[x] else TileConstants.TILE_EMPTY
-                }
+            if (lines.size >= expectedLines) {
+                // New 3-layer format
+                return parseThreeLayerFormat(lines, width, height, playerSpawnX, playerSpawnY)
+            } else if (lines.size >= 4 + height) {
+                // Old single-layer format - convert to 3 layers
+                return parseSingleLayerFormat(lines, width, height, playerSpawnX, playerSpawnY)
+            } else {
+                return null
             }
-            
-            return MapData(width, height, playerSpawnX, playerSpawnY, tiles)
         } catch (e: Exception) {
             e.printStackTrace()
             return null
+        }
+    }
+    
+    private fun parseThreeLayerFormat(lines: List<String>, width: Int, height: Int, playerSpawnX: Int, playerSpawnY: Int): MapData {
+        val bottomLayer = Array(height) { IntArray(width) }
+        val mainLayer = Array(height) { IntArray(width) }
+        val activeLayer = Array(height) { IntArray(width) }
+        
+        // Parse bottom layer
+        for (y in 0 until height) {
+            val lineIndex = 4 + y
+            parseLayerLine(lines[lineIndex], bottomLayer[y], width)
+        }
+        
+        // Parse main layer
+        for (y in 0 until height) {
+            val lineIndex = 4 + height + y
+            parseLayerLine(lines[lineIndex], mainLayer[y], width)
+        }
+        
+        // Parse active layer
+        for (y in 0 until height) {
+            val lineIndex = 4 + (height * 2) + y
+            parseLayerLine(lines[lineIndex], activeLayer[y], width)
+        }
+        
+        return MapData(width, height, playerSpawnX, playerSpawnY, bottomLayer, mainLayer, activeLayer)
+    }
+    
+    private fun parseSingleLayerFormat(lines: List<String>, width: Int, height: Int, playerSpawnX: Int, playerSpawnY: Int): MapData {
+        val mainLayer = Array(height) { IntArray(width) }
+        val bottomLayer = Array(height) { IntArray(width) } // Empty layer
+        val activeLayer = Array(height) { IntArray(width) } // Empty layer
+        
+        // Parse single layer into main layer
+        for (y in 0 until height) {
+            val lineIndex = 4 + y
+            if (lineIndex < lines.size) {
+                parseLayerLine(lines[lineIndex], mainLayer[y], width)
+            }
+        }
+        
+        // Fill bottom and active layers with empty tiles
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                bottomLayer[y][x] = TileConstants.TILE_EMPTY
+                activeLayer[y][x] = TileConstants.TILE_EMPTY
+            }
+        }
+        
+        return MapData(width, height, playerSpawnX, playerSpawnY, bottomLayer, mainLayer, activeLayer)
+    }
+    
+    private fun parseLayerLine(line: String, targetArray: IntArray, width: Int) {
+        val tileIds = line.split(",").map { it.trim().toInt() }
+        for (x in 0 until width) {
+            targetArray[x] = if (x < tileIds.size) tileIds[x] else TileConstants.TILE_EMPTY
         }
     }
 }
