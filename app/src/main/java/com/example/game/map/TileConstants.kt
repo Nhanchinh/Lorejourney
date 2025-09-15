@@ -45,6 +45,11 @@ object TileConstants {
     const val TILE_TARGET = 323           // 51 + 272 - Vị trí đích
     const val TILE_STONE_ON_TARGET = 324  // 52 + 272 - Đá đã vào đích
     
+    // Additional pushable tiles (sprite-based IDs)
+    const val TILE_PUSHABLE_CRATE = 42    // Thùng có thể đẩy
+    const val TILE_PUSHABLE_BARREL = 55   // Thùng gỗ có thể đẩy  
+    const val TILE_PUSHABLE_BLOCK = 152   // Khối đá có thể đẩy
+    
     // Shadow system tiles - offset by 272
     const val TILE_SHADOW_SPAWN = 332     // 60 + 272 - Ô spawn bóng
     const val TILE_SHADOW_TRIGGER = 333   // 61 + 272 - Ô cần bóng để mở cửa
@@ -60,7 +65,23 @@ object TileConstants {
     const val TILE_ICE_7 = 204  // Ice tile type 7
     const val TILE_ICE_8 = 205  // Ice tile type 8
     const val TILE_ICE_9 = 206  // Ice tile type 9
+    const val TILE_ICE_10 = 221  // Ice tile type 10
+    const val TILE_ICE_11 = 222  // Ice tile type 11
+    const val TILE_ICE_12 = 237  // Ice tile type 12
+    const val TILE_ICE_13 = 238  // Ice tile type 13
     
+    // Danh sách các tile không thể đi qua (sprite-based IDs)
+    private val NON_WALKABLE_SPRITE_TILES = setOf(
+        6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32,
+        39, 42, 43, 47, 48, 49, 50, 51, 52, 55, 56, 65, 66, 67, 68, 69, 70, 71, 72, 73,
+        85, 86, 87, 88, 89, 92, 93, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108,
+        111, 113, 114, 115, 116, 117, 118, 119, 121, 122, 124, 127, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140,
+        145, 146, 147, 148, 149, 150, 151, 152, 153, 161, 162, 163, 165, 166, 167, 168, 169, 170, 171,
+        177, 179, 182, 183, 184, 185, 186, 187, 192, 193, 194, 195, 198, 199, 200, 201, 202, 203,
+        208, 209, 210, 211, 214, 215, 216, 217, 218, 219, 224, 225, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236,
+        241, 242, 243, 244, 245, 248, 250, 253, 254, 264, 265, 266, 267, 268, 269, 270
+    )
+
     /**
      * Check if tile is walkable
      */
@@ -73,10 +94,11 @@ object TileConstants {
             TILE_WALL, TILE_WATER, TILE_STONE, TILE_TREE, TILE_ROCK,
             TILE_BUSH, TILE_HOUSE_WALL, TILE_ROOF, TILE_WINDOW,
             TILE_LAVA, TILE_ICE,
-            TILE_PUSHABLE_STONE, TILE_STONE_ON_TARGET -> false  // Đá không thể đi qua
+            TILE_PUSHABLE_STONE, TILE_STONE_ON_TARGET,
+            TILE_PUSHABLE_CRATE, TILE_PUSHABLE_BARREL, TILE_PUSHABLE_BLOCK -> false  // Các khối có thể đẩy không thể đi qua
             
-            // Sprite-based tiles (1-271) are walkable by default unless specified
-            in 1..271 -> true
+            // Sprite-based tiles (1-271) - check against non-walkable list
+            in 1..271 -> !NON_WALKABLE_SPRITE_TILES.contains(tileId)
             
             else -> true // Default to walkable
         }
@@ -86,7 +108,11 @@ object TileConstants {
      * Check if tile có thể đẩy
      */
     fun isPushable(tileId: Int): Boolean {
-        return tileId == TILE_PUSHABLE_STONE || tileId == TILE_STONE_ON_TARGET
+        return tileId == TILE_PUSHABLE_STONE || 
+               tileId == TILE_STONE_ON_TARGET ||
+               tileId == TILE_PUSHABLE_CRATE ||   // ID 42
+               tileId == TILE_PUSHABLE_BARREL ||  // ID 55
+               tileId == TILE_PUSHABLE_BLOCK      // ID 152
     }
     
     /**

@@ -105,10 +105,9 @@ class GameScreen(
         gameMap = GameMap.loadLevel(context, levelId)
         
         // Initialize PushLogic for levels that have pushable objects
-        if (levelId == 1 || levelId == 2) {
-            pushLogic = PushLogic(gameMap)
-            println("🔄 PushLogic initialized for level $levelId")
-        }
+        // For now, initialize for all levels to be safe
+        pushLogic = PushLogic(gameMap)
+        println("🔄 PushLogic initialized for level $levelId")
         
         // Log thông tin đặc biệt cho map6
         if (levelId == 6) {
@@ -125,9 +124,11 @@ class GameScreen(
         )
         
         // Set PushLogic for levels that need it
-        if ((levelId == 1 || levelId == 2) && pushLogic != null) {
+        if (pushLogic != null) {
             player.setPushLogic(pushLogic!!)
             println("🔄 PushLogic assigned to player for level $levelId")
+        } else {
+            println("⚠️ PushLogic is null for level $levelId")
         }
         
         // CHỈ CÓ 3 dòng này cho shadow

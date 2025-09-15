@@ -63,13 +63,8 @@ class PushLogic(private val gameMap: GameMap) {
     }
 
     private fun canPushTo(mainTileId: Int, activeTileId: Int): Boolean {
-        // Main layer phải walkable (floor, target, etc.)
-        val mainWalkable = when (mainTileId) {
-            TileConstants.TILE_FLOOR,
-            TileConstants.TILE_TARGET,
-            TileConstants.TILE_EMPTY -> true
-            else -> false
-        }
+        // Main layer phải walkable (sử dụng TileConstants.isWalkable)
+        val mainWalkable = TileConstants.isWalkable(mainTileId)
         
         // Active layer phải empty hoặc target
         val activeValid = when (activeTileId) {
@@ -78,12 +73,14 @@ class PushLogic(private val gameMap: GameMap) {
             else -> false
         }
         
+        println("🔍 canPushTo check - main: $mainTileId (walkable: $mainWalkable), active: $activeTileId (valid: $activeValid)")
         return mainWalkable && activeValid
     }
 
     private fun performPush(fromX: Int, fromY: Int, toX: Int, toY: Int) {
         val destinationActiveTile = gameMap.getTile(toX, toY, 2) // Active layer
         val destinationMainTile = gameMap.getTile(toX, toY, 1) // Main layer
+        val originalStoneTile = gameMap.getTile(fromX, fromY, 2) // Lấy loại đá gốc
 
         // Update destination tile on active layer
         val newDestinationTile = when {
@@ -91,7 +88,7 @@ class PushLogic(private val gameMap: GameMap) {
                 println("✅ Stone pushed onto target at ($toX, $toY)")
                 TileConstants.TILE_STONE_ON_TARGET
             }
-            else -> TileConstants.TILE_PUSHABLE_STONE
+            else -> originalStoneTile // Giữ nguyên loại đá gốc (42, 55, 152, etc.)
         }
         gameMap.setTile(toX, toY, newDestinationTile, 2) // Set on active layer
 
