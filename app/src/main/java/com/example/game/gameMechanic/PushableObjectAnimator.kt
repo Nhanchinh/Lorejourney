@@ -1,6 +1,7 @@
 package com.example.game.gameMechanic
 
 import com.example.game.GameConstants
+import kotlin.math.sqrt
 
 /**
  * Quản lý animation cho các đối tượng có thể đẩy
@@ -31,8 +32,40 @@ class PushableObjectAnimator {
     
     companion object {
         private const val PUSH_ANIMATION_DURATION = 0.3f // 300ms
+        private const val ICE_SLIDE_DURATION_BASE = 0.2f // 200ms base
+        private const val ICE_SLIDE_DURATION_PER_TILE = 0.1f // +100ms per tile
     }
     
+    /**
+     * Bắt đầu animation trượt băng cho đá
+     */
+    fun startIceSlideAnimation(
+        tileId: Int,
+        fromX: Int, 
+        fromY: Int, 
+        toX: Int, 
+        toY: Int
+    ) {
+        val key = "${fromX}_${fromY}_${toX}_${toY}_ice"
+        val tileSize = GameConstants.TILE_SIZE.toFloat()
+        
+        // Tính khoảng cách để xác định duration
+        val distance = sqrt(((toX - fromX) * (toX - fromX) + (toY - fromY) * (toY - fromY)).toDouble()).toFloat()
+        val duration = ICE_SLIDE_DURATION_BASE + (distance * ICE_SLIDE_DURATION_PER_TILE)
+        
+        val animation = AnimationInfo(
+            tileId = tileId,
+            startX = fromX * tileSize,
+            startY = fromY * tileSize,
+            endX = toX * tileSize,
+            endY = toY * tileSize,
+            duration = duration
+        )
+        
+        activeAnimations[key] = animation
+        println("🧊 Started ice slide animation for tile $tileId from ($fromX, $fromY) to ($toX, $toY), duration: ${duration}s")
+    }
+
     /**
      * Bắt đầu animation đẩy đá
      */

@@ -77,16 +77,79 @@ class PushLogic(private val gameMap: GameMap) {
             return false // Không thể đẩy đến vị trí này
         }
 
+        // Check xem đá có trượt trên băng không
+        val finalDestination = calculateIceSlideDestination(pushToX, pushToY, dx, dy)
+        
         // Bắt đầu animation và lưu pending action
-        val actionKey = "${stoneTileX}_${stoneTileY}_${pushToX}_${pushToY}"
-        pendingPushActions[actionKey] = PendingPushAction(stoneTileX, stoneTileY, pushToX, pushToY, stoneTile)
-        animator.startPushAnimation(stoneTile, stoneTileX, stoneTileY, pushToX, pushToY)
+        val actionKey = "${stoneTileX}_${stoneTileY}_${finalDestination.first}_${finalDestination.second}"
+        pendingPushActions[actionKey] = PendingPushAction(stoneTileX, stoneTileY, finalDestination.first, finalDestination.second, stoneTile)
+        
+        if (finalDestination.first != pushToX || finalDestination.second != pushToY) {
+            // Có trượt trên băng - animation dài hơn
+            println("🧊 Stone will slide on ice from ($pushToX, $pushToY) to (${finalDestination.first}, ${finalDestination.second})")
+            animator.startIceSlideAnimation(stoneTile, stoneTileX, stoneTileY, finalDestination.first, finalDestination.second)
+        } else {
+            // Push bình thường
+            animator.startPushAnimation(stoneTile, stoneTileX, stoneTileY, pushToX, pushToY)
+        }
         
         // XÓA nguồn ngay lập tức để tránh duplicate
         clearSourceTile(stoneTileX, stoneTileY)
         
-        println("🔄 Started push animation from ($stoneTileX, $stoneTileY) to ($pushToX, $pushToY)")
+        println("🔄 Started push animation from ($stoneTileX, $stoneTileY) to (${finalDestination.first}, ${finalDestination.second})")
         return true
+    }
+
+    /**
+     * Tính toán vị trí cuối cùng của đá sau khi trượt trên băng
+     */
+    private fun calculateIceSlideDestination(startX: Int, startY: Int, dx: Int, dy: Int): Pair<Int, Int> {
+        var currentX = startX
+        var currentY = startY
+        
+        // Kiểm tra xem vị trí bắt đầu có phải băng không
+        val startTile = gameMap.getTile(startX, startY, 1) // Main layer
+        if (!TileConstants.isIce(startTile)) {
+            // Không phải băng, không trượt
+            return Pair(startX, startY)
+        }
+        
+        println("🧊 Stone landed on ice at ($startX, $startY), calculating slide destination...")
+        
+        // Tiếp tục trượt theo hướng cho đến khi gặp chướng ngại hoặc rời khỏi băng
+        while (true) {
+            val nextX = currentX + dx
+            val nextY = currentY + dy
+            
+            // Check bounds
+            if (nextX < 0 || nextX >= gameMap.width || nextY < 0 || nextY >= gameMap.height) {
+                println("🧊 Hit boundary, stopping at ($currentX, $currentY)")
+                break
+            }
+            
+            // Check xem vị trí tiếp theo có thể đi vào không
+            val nextMainTile = gameMap.getTile(nextX, nextY, 1)
+            val nextActiveTile = gameMap.getTile(nextX, nextY, 2)
+            
+            if (!canPushTo(nextMainTile, nextActiveTile)) {
+                println("🧊 Hit obstacle, stopping at ($currentX, $currentY)")
+                break
+            }
+            
+            // Di chuyển đến vị trí tiếp theo
+            currentX = nextX
+            currentY = nextY
+            
+            // Kiểm tra xem vẫn còn trên băng không
+            val currentTile = gameMap.getTile(currentX, currentY, 1)
+            if (!TileConstants.isIce(currentTile)) {
+                println("🧊 Left ice surface, stopping at ($currentX, $currentY)")
+                break
+            }
+        }
+        
+        println("🧊 Final slide destination: ($currentX, $currentY)")
+        return Pair(currentX, currentY)
     }
 
     private fun canPushTo(mainTileId: Int, activeTileId: Int): Boolean {
