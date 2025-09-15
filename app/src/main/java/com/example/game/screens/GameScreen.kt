@@ -9,10 +9,12 @@ import android.view.MotionEvent
 import com.example.game.Camera
 import com.example.game.GameConstants
 import com.example.game.GameMap
-import com.example.game.Player
 import com.example.game.core.GameStateManager
 import com.example.game.map.TileConstants
 import com.example.game.SaveManager
+import com.example.game.gameMechanic.PushLogic
+import com.example.game.SpritePlayer
+import com.example.game.gameMechanic.ShadowMechanic
 
 class GameScreen(
     private val gameStateManager: GameStateManager,
@@ -21,10 +23,14 @@ class GameScreen(
 ) : Screen() {
     
     private lateinit var gameMap: GameMap
-    private lateinit var player: Player
+    private lateinit var player: SpritePlayer
     private lateinit var camera: Camera
+    private var pushLogic: PushLogic? = null
     
-    // UI Elements
+    // CHỈ CÓ shadowMechanic
+    private var shadowMechanic: ShadowMechanic? = null
+    
+    // UI Elements (giữ nguyên tất cả)
     private val pauseButton = RectF()
     private val pauseButtonPaint = Paint().apply {
         isAntiAlias = true
@@ -96,17 +102,39 @@ class GameScreen(
     }
     
     private fun initLevel() {
-        // Load map sử dụng centralized logic từ GameMap
         gameMap = GameMap.loadLevel(context, levelId)
         
-        // Debug: In thông tin map
-        println("Map loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
+        // Initialize PushLogic for levels that have pushable objects
+        if (levelId == 1 || levelId == 2) {
+            pushLogic = PushLogic(gameMap)
+            println("🔄 PushLogic initialized for level $levelId")
+        }
         
-        // Sử dụng spawn position từ map
-        player = Player(
+        // Log thông tin đặc biệt cho map6
+        if (levelId == 6) {
+            println("Map6 (Sprite-based) loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
+        } else {
+            println("Map loaded - Width: ${gameMap.width}, Height: ${gameMap.height}, SpawnX: ${gameMap.playerSpawnX}, SpawnY: ${gameMap.playerSpawnY}")
+        }
+        
+        player = SpritePlayer(
             (gameMap.playerSpawnX * GameConstants.TILE_SIZE).toFloat(),
-            (gameMap.playerSpawnY * GameConstants.TILE_SIZE).toFloat()
+            (gameMap.playerSpawnY * GameConstants.TILE_SIZE).toFloat(),
+            context,
+            gameMap
         )
+        
+        // Set PushLogic for levels that need it
+        if ((levelId == 1 || levelId == 2) && pushLogic != null) {
+            player.setPushLogic(pushLogic!!)
+            println("🔄 PushLogic assigned to player for level $levelId")
+        }
+        
+        // CHỈ CÓ 3 dòng này cho shadow
+        if (levelId == 3) {
+            shadowMechanic = ShadowMechanic(context, gameMap, player)
+            shadowMechanic!!.initialize()
+        }
         
         camera = Camera()
     }
@@ -115,7 +143,6 @@ class GameScreen(
         if (levelCompleted) {
             completionTimer += deltaTime
             if (completionTimer >= completionDelay) {
-                // Sửa từ setState() thành changeState()
                 gameStateManager.changeState(GameConstants.STATE_LEVEL_SELECT)
             }
             return
@@ -125,156 +152,216 @@ class GameScreen(
         camera.update(player.getCenterX(), player.getCenterY(), gameMap.width, gameMap.height)
         updateUIPositions()
         
-        // Kiểm tra hoàn thành level
-        if (player.checkLevelComplete(gameMap)) {
+        // CHỈ CÓ 1 dòng này
+        shadowMechanic?.update(deltaTime)
+        
+        val isComplete = if (levelId == 1) {
+            player.checkPuzzleComplete()
+        } else if (levelId == 3) {
+            // CHỈ CÓ dòng này
+            player.checkLevelComplete(gameMap) && (shadowMechanic?.isPuzzleComplete() ?: true)
+        } else {
+            player.checkLevelComplete(gameMap)
+        }
+
+        if (isComplete) {
             completeLevel()
         }
         
         if (isButtonPressed) {
-            moveTimer += deltaTime
-            
-            if (moveTimer >= moveInterval && !player.isCurrentlyMoving()) {
-                moveTimer = 0
-                when (currentDirection) {
-                    "UP" -> player.move(0, -1, gameMap)
-                    "DOWN" -> player.move(0, 1, gameMap)
-                    "LEFT" -> player.move(-1, 0, gameMap)
-                    "RIGHT" -> player.move(1, 0, gameMap)
-                }
+            when (currentDirection) {
+                "UP" -> player.startMoving("UP")
+                "DOWN" -> player.startMoving("DOWN")
+                "LEFT" -> player.startMoving("LEFT")
+                "RIGHT" -> player.startMoving("RIGHT")
             }
+        } else {
+            player.stopAllMovement()
         }
     }
 
     private fun completeLevel() {
         if (!levelCompleted) {
             levelCompleted = true
-            completionTimer = 0
-            
-            println("🎉 LEVEL $levelId COMPLETED! 🎉")
-            
-            // Unlock level tiếp theo và save
-            if (levelId >= GameConstants.MAX_UNLOCKED_LEVEL && levelId < GameConstants.TOTAL_LEVELS) {
-                SaveManager.unlockLevel(levelId + 1)
-            }
-            
-            // TODO: Có thể thêm effect, sound, animation ở đây
+            SaveManager.unlockLevel(levelId + 1)
         }
     }
     
     private fun updateUIPositions() {
-        if (GameConstants.SCREEN_WIDTH <= 0 || GameConstants.SCREEN_HEIGHT <= 0) return
+        val screenWidth = GameConstants.SCREEN_WIDTH.toFloat()
+        val screenHeight = GameConstants.SCREEN_HEIGHT.toFloat()
         
-        val screenW = GameConstants.SCREEN_WIDTH
-        val screenH = GameConstants.SCREEN_HEIGHT
+        // TĂNG KÍCH THƯỚC: Pause button bên phải (to hơn)
+        pauseButton.set(screenWidth - 180f, 20f, screenWidth - 20f, 120f)
         
-        // Pause button
-        pauseButton.set(screenW - 150f, 20f, screenW - 20f, 100f)
+        // TĂNG KÍCH THƯỚC: Touchpad bên trái (to hơn)
+        val touchpadSize = minOf(screenWidth, screenHeight) * 0.5f // Tăng từ 0.4f lên 0.5f
+        val margin = 30f
+        val touchpadLeft = margin
+        val touchpadBottom = screenHeight - margin
+        val touchpadRight = touchpadLeft + touchpadSize
+        val touchpadTop = touchpadBottom - touchpadSize
         
-        // HUGE touchpad
-        val touchpadSize = minOf(screenW, screenH) * 0.4f
-        val buttonSize = touchpadSize * 0.3f
-        val margin = 40f
+        touchpadBase.set(touchpadLeft, touchpadTop, touchpadRight, touchpadBottom)
         
-        val touchpadCenterX = margin + touchpadSize / 2
-        val touchpadCenterY = screenH - margin - touchpadSize / 2
+        // TĂNG KÍCH THƯỚC: Directional buttons to hơn
+        val buttonSize = touchpadSize * 0.35f // Tăng từ 0.25f lên 0.35f
+        val centerX = touchpadBase.centerX()
+        val centerY = touchpadBase.centerY()
+        val buttonOffset = touchpadSize * 0.25f // Khoảng cách từ center
         
-        touchpadBase.set(
-            touchpadCenterX - touchpadSize / 2,
-            touchpadCenterY - touchpadSize / 2,
-            touchpadCenterX + touchpadSize / 2,
-            touchpadCenterY + touchpadSize / 2
-        )
-        
-        val buttonOffset = touchpadSize * 0.25f
-        
+        // Up button (to hơn)
         upButton.set(
-            touchpadCenterX - buttonSize/2,
-            touchpadCenterY - buttonOffset - buttonSize/2,
-            touchpadCenterX + buttonSize/2,
-            touchpadCenterY - buttonOffset + buttonSize/2
+            centerX - buttonSize/2, 
+            centerY - buttonOffset - buttonSize/2,
+            centerX + buttonSize/2, 
+            centerY - buttonOffset + buttonSize/2
         )
         
+        // Down button (to hơn)
         downButton.set(
-            touchpadCenterX - buttonSize/2,
-            touchpadCenterY + buttonOffset - buttonSize/2,
-            touchpadCenterX + buttonSize/2,
-            touchpadCenterY + buttonOffset + buttonSize/2
+            centerX - buttonSize/2, 
+            centerY + buttonOffset - buttonSize/2,
+            centerX + buttonSize/2, 
+            centerY + buttonOffset + buttonSize/2
         )
         
+        // Left button (to hơn)
         leftButton.set(
-            touchpadCenterX - buttonOffset - buttonSize/2,
-            touchpadCenterY - buttonSize/2,
-            touchpadCenterX - buttonOffset + buttonSize/2,
-            touchpadCenterY + buttonSize/2
+            centerX - buttonOffset - buttonSize/2, 
+            centerY - buttonSize/2,
+            centerX - buttonOffset + buttonSize/2, 
+            centerY + buttonSize/2
         )
         
+        // Right button (to hơn)
         rightButton.set(
-            touchpadCenterX + buttonOffset - buttonSize/2,
-            touchpadCenterY - buttonSize/2,
-            touchpadCenterX + buttonOffset + buttonSize/2,
-            touchpadCenterY + buttonSize/2
+            centerX + buttonOffset - buttonSize/2, 
+            centerY - buttonSize/2,
+            centerX + buttonOffset + buttonSize/2, 
+            centerY + buttonSize/2
         )
     }
     
     override fun draw(canvas: Canvas) {
-        canvas.drawColor(Color.parseColor("#222222"))
-        
-        if (GameConstants.SCREEN_WIDTH <= 0 || GameConstants.SCREEN_HEIGHT <= 0) return
-        
         canvas.save()
         camera.apply(canvas)
         
         gameMap.draw(canvas, camera)
         player.draw(canvas)
         
+        // CHỈ CÓ 1 dòng này
+        shadowMechanic?.draw(canvas)
+        
         canvas.restore()
         drawUI(canvas)
         
-        // Vẽ thông báo hoàn thành level
+        // THÊM: Vẽ completion message nếu level completed
         if (levelCompleted) {
             drawCompletionMessage(canvas)
         }
     }
     
     private fun drawUI(canvas: Canvas) {
-        // Touchpad
+        // Draw pause button đẹp hơn
+        val pauseBackgroundPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.parseColor("#44000000") // Semi-transparent background
+        }
+        
+        val pauseIconPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        
+        val pauseBorderPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.parseColor("#FFFFFF")
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        
+        // Draw pause button background
+        canvas.drawOval(pauseButton, pauseBackgroundPaint)
+        canvas.drawOval(pauseButton, pauseBorderPaint)
+        
+        // Draw pause icon (2 vertical bars thay vì ⏸ symbol)
+        val centerX = pauseButton.centerX()
+        val centerY = pauseButton.centerY()
+        val barWidth = 8f
+        val barHeight = 24f
+        val barSpacing = 6f
+        
+        // Left bar
+        canvas.drawRoundRect(
+            centerX - barSpacing - barWidth, centerY - barHeight/2,
+            centerX - barSpacing, centerY + barHeight/2,
+            4f, 4f, pauseIconPaint
+        )
+        
+        // Right bar  
+        canvas.drawRoundRect(
+            centerX + barSpacing, centerY - barHeight/2,
+            centerX + barSpacing + barWidth, centerY + barHeight/2,
+            4f, 4f, pauseIconPaint
+        )
+        
+        // Draw touchpad background
         canvas.drawOval(touchpadBase, touchpadBasePaint)
         canvas.drawOval(touchpadBase, controlBorderPaint)
         
-        // Direction buttons
-        val upPaint = if (currentDirection == "UP" && isButtonPressed) controlPressedPaint else controlPaint
-        val downPaint = if (currentDirection == "DOWN" && isButtonPressed) controlPressedPaint else controlPaint
-        val leftPaint = if (currentDirection == "LEFT" && isButtonPressed) controlPressedPaint else controlPaint
-        val rightPaint = if (currentDirection == "RIGHT" && isButtonPressed) controlPressedPaint else controlPaint
+        // Draw directional buttons with press states
+        val upPressed = currentDirection == "UP" && isButtonPressed
+        val downPressed = currentDirection == "DOWN" && isButtonPressed
+        val leftPressed = currentDirection == "LEFT" && isButtonPressed
+        val rightPressed = currentDirection == "RIGHT" && isButtonPressed
         
-        canvas.drawOval(upButton, upPaint)
+        // Up button
+        canvas.drawOval(upButton, if (upPressed) controlPressedPaint else controlPaint)
         canvas.drawOval(upButton, controlBorderPaint)
-        canvas.drawText("↑", upButton.centerX(), upButton.centerY() + 15, arrowPaint)
         
-        canvas.drawOval(downButton, downPaint)
+        // Down button
+        canvas.drawOval(downButton, if (downPressed) controlPressedPaint else controlPaint)
         canvas.drawOval(downButton, controlBorderPaint)
-        canvas.drawText("↓", downButton.centerX(), downButton.centerY() + 15, arrowPaint)
         
-        canvas.drawOval(leftButton, leftPaint)
+        // Left button
+        canvas.drawOval(leftButton, if (leftPressed) controlPressedPaint else controlPaint)
         canvas.drawOval(leftButton, controlBorderPaint)
-        canvas.drawText("←", leftButton.centerX(), leftButton.centerY() + 15, arrowPaint)
         
-        canvas.drawOval(rightButton, rightPaint)
+        // Right button
+        canvas.drawOval(rightButton, if (rightPressed) controlPressedPaint else controlPaint)
         canvas.drawOval(rightButton, controlBorderPaint)
-        canvas.drawText("→", rightButton.centerX(), rightButton.centerY() + 15, arrowPaint)
         
-        // Pause button
-        canvas.drawRoundRect(pauseButton, 15f, 15f, pauseButtonPaint)
-        canvas.drawRoundRect(pauseButton, 15f, 15f, controlBorderPaint)
-        canvas.drawText("PAUSE", pauseButton.centerX(), pauseButton.centerY() + 8, pauseTextPaint)
+        // Tăng kích thước arrows
+        val arrowPaintLarge = Paint().apply {
+            isAntiAlias = true
+            color = Color.BLACK
+            textAlign = Paint.Align.CENTER
+            textSize = 64f // Tăng từ 48f lên 64f
+            isFakeBoldText = true
+        }
         
-        // Info
-        pauseTextPaint.textAlign = Paint.Align.LEFT
-        pauseTextPaint.textSize = 20f
-        canvas.drawText("Level $levelId", 20f, 40f, pauseTextPaint)
-        canvas.drawText("Tile: (${player.getCurrentTileX()}, ${player.getCurrentTileY()})", 20f, 70f, pauseTextPaint)
-        pauseTextPaint.textAlign = Paint.Align.CENTER
-        pauseTextPaint.textSize = 24f
+        canvas.drawText("▲", upButton.centerX(), upButton.centerY() + 20f, arrowPaintLarge)
+        canvas.drawText("▼", downButton.centerX(), downButton.centerY() + 20f, arrowPaintLarge)
+        canvas.drawText("◀", leftButton.centerX(), leftButton.centerY() + 20f, arrowPaintLarge)
+        canvas.drawText("▶", rightButton.centerX(), rightButton.centerY() + 20f, arrowPaintLarge)
+        
+        // Shadow info display cho level 3
+        if (levelId == 3) {
+            shadowMechanic?.getShadowInfo()?.let { info ->
+                val infoPaint = Paint().apply {
+                    color = Color.WHITE
+                    textSize = 30f
+                    isAntiAlias = true
+                    setShadowLayer(2f, 1f, 1f, Color.BLACK)
+                }
+                canvas.drawText("Shadow: ${info.directionChangeCount}/4 turns", 
+                               50f, 150f, infoPaint)
+                canvas.drawText("Following: ${info.isFollowing}", 
+                               50f, 190f, infoPaint)
+            }
+        }
     }
 
     private fun drawCompletionMessage(canvas: Canvas) {
@@ -319,80 +406,57 @@ class GameScreen(
     
     override fun handleTouch(event: MotionEvent): Boolean {
         when (event.action) {
-            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                if (pauseButton.contains(event.x, event.y)) {
-                    if (event.action == MotionEvent.ACTION_DOWN) {
-                        gameStateManager.changeState(GameConstants.STATE_LEVEL_SELECT)
-                    }
-                    return true
-                }
-                
+            MotionEvent.ACTION_DOWN -> {
                 when {
+                    pauseButton.contains(event.x, event.y) -> {
+                        gameStateManager.pauseGame() // Thay vì changeState(STATE_MENU)
+                        return true
+                    }
                     upButton.contains(event.x, event.y) -> {
-                        if (currentDirection != "UP") {
-                            currentDirection = "UP"
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        currentDirection = "UP"
+                        isButtonPressed = true
                         return true
                     }
                     downButton.contains(event.x, event.y) -> {
-                        if (currentDirection != "DOWN") {
-                            currentDirection = "DOWN"
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        currentDirection = "DOWN"
+                        isButtonPressed = true
                         return true
                     }
                     leftButton.contains(event.x, event.y) -> {
-                        if (currentDirection != "LEFT") {
-                            currentDirection = "LEFT"
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        currentDirection = "LEFT"
+                        isButtonPressed = true
                         return true
                     }
                     rightButton.contains(event.x, event.y) -> {
-                        if (currentDirection != "RIGHT") {
-                            currentDirection = "RIGHT"
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
+                        currentDirection = "RIGHT"
+                        isButtonPressed = true
                         return true
-                    }
-                    touchpadBase.contains(event.x, event.y) -> {
-                        val centerX = touchpadBase.centerX()
-                        val centerY = touchpadBase.centerY()
-                        val deltaX = event.x - centerX
-                        val deltaY = event.y - centerY
-                        
-                        val newDirection = if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                            if (deltaX > 0) "RIGHT" else "LEFT"
-                        } else {
-                            if (deltaY > 0) "DOWN" else "UP"
-                        }
-                        
-                        if (currentDirection != newDirection) {
-                            currentDirection = newDirection
-                            isButtonPressed = true
-                            moveTimer = moveInterval
-                        }
-                        return true
-                    }
-                    else -> {
-                        isButtonPressed = false
-                        currentDirection = ""
-                        moveTimer = 0
                     }
                 }
             }
             MotionEvent.ACTION_UP -> {
                 isButtonPressed = false
                 currentDirection = ""
-                moveTimer = 0
                 return true
             }
         }
         return false
+    }
+
+    fun getCurrentProgress(): PauseScreen.GameProgress {
+        return PauseScreen.GameProgress(
+            playerX = player.x,
+            playerY = player.y,
+            shadowSpawned = shadowMechanic != null,
+            shadowX = 0f,
+            shadowY = 0f,
+            shadowDirectionChanges = 0,
+            doorsOpened = emptyList()
+        )
+    }
+
+    private fun getOpenedDoors(): List<Pair<Int, Int>> {
+        // Return list of opened door positions
+        return emptyList() // Implement based on your needs
     }
 }

@@ -17,8 +17,20 @@ class GameMap(private val simpleMap: SimpleGameMap) {
         return simpleMap.getTile(x, y)
     }
     
+    fun getTile(x: Int, y: Int, layer: Int): Int {
+        return simpleMap.getTile(x, y, layer)
+    }
+    
     fun isWalkable(x: Int, y: Int): Boolean {
         return simpleMap.isWalkable(x, y)
+    }
+    
+    fun setTile(x: Int, y: Int, tileId: Int) {
+        simpleMap.setTile(x, y, tileId)
+    }
+    
+    fun setTile(x: Int, y: Int, tileId: Int, layer: Int) {
+        simpleMap.setTile(x, y, tileId, layer)
     }
     
     fun draw(canvas: Canvas, camera: Camera) {
@@ -28,16 +40,24 @@ class GameMap(private val simpleMap: SimpleGameMap) {
     companion object {
         /**
          * Centralized method để load level theo ID
+         * Tất cả các level đều sử dụng sprite-based rendering
          */
         fun loadLevel(context: Context, levelId: Int): GameMap {
-            // Thử load từ assets trước
+            // Sử dụng sprite mode cho tất cả các level
             return try {
-                val loadedMap = loadFromAssets(context, "level$levelId.txt")
-                println("Loaded map from assets: level$levelId.txt")
-                loadedMap
+                val mapData = MapLoader.loadFromAssets(context, "level$levelId.txt")
+                val simpleMap = if (mapData != null) {
+                    println("Successfully loaded level$levelId data: ${mapData.width}x${mapData.height}")
+                    SimpleGameMap.createSpriteMap(context, mapData)
+                } else {
+                    println("Failed to load level$levelId data, using default")
+                    SimpleGameMap.createDefaultSpriteMap(context)
+                }
+                GameMap(simpleMap)
             } catch (e: Exception) {
-                println("Failed to load from assets: ${e.message}")
-                // Fallback về test map
+                println("Failed to load level$levelId: ${e.message}")
+                e.printStackTrace()
+                // Fallback
                 createTestMap()
             }
         }
@@ -50,17 +70,17 @@ class GameMap(private val simpleMap: SimpleGameMap) {
         fun createTestMap(): GameMap = createLevel1()
         
         /**
-         * Load map từ assets
+         * Load map từ assets với sprite mode
          */
         fun loadFromAssets(context: Context, fileName: String): GameMap {
             println("Attempting to load: $fileName") // Debug log
             val mapData = MapLoader.loadFromAssets(context, fileName)
             val simpleMap = if (mapData != null) {
                 println("Successfully loaded map data: ${mapData.width}x${mapData.height}") // Debug log
-                SimpleGameMap(mapData)
+                SimpleGameMap.createSpriteMap(context, mapData)
             } else {
                 println("Failed to load map data, using default") // Debug log
-                SimpleGameMap.createDefaultMap()
+                SimpleGameMap.createDefaultSpriteMap(context)
             }
             return GameMap(simpleMap)
         }
@@ -76,6 +96,13 @@ class GameMap(private val simpleMap: SimpleGameMap) {
                 SimpleGameMap.createDefaultMap()
             }
             return GameMap(simpleMap)
+        }
+        
+        /**
+         * Cleanup resources cho GameMap
+         */
+        fun cleanup(gameMap: GameMap) {
+            gameMap.simpleMap.cleanup()
         }
     }
 }

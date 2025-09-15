@@ -1,5 +1,6 @@
 package com.example.game.map
 
+import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -7,8 +8,13 @@ import android.graphics.RectF
 
 /**
  * Renderer để vẽ các tile khác nhau
+ * Hỗ trợ cả vẽ bằng code (legacy) và vẽ từ sprite sheet (default mode)
  */
 class TileRenderer {
+    
+    // Sprite manager cho tất cả các map (nullable)
+    private var tileSpriteManager: TileSpriteManager? = null
+    private var useSpriteMode = false
     
     // Paints cho các loại tile
     private val wallPaint = Paint().apply {
@@ -147,13 +153,106 @@ class TileRenderer {
         strokeWidth = 3f
     }
     
+    // Push puzzle paints
+    private val pushableStonePaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#8D6E63") // Màu nâu đá
+    }
+    
+    private val targetPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#FFC107") // Màu vàng target
+    }
+    
+    private val stoneOnTargetPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#4CAF50") // Màu xanh khi hoàn thành
+    }
+    
+    // Shadow system paints
+    private val shadowSpawnPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#6A1B9A") // Màu tím đậm
+    }
+
+    private val shadowTriggerPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#E1BEE7") // Màu tím nhạt
+    }
+
+    private val shadowDoorPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#4A148C") // Màu tím rất đậm
+    }
+    
+    // Thêm các Paint objects cho shadow tiles (sau dòng 180):
+
+    private val shadowWhitePaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#FFFFFF")
+    }
+
+    private val shadowGoldPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#FFD700")
+    }
+
+    private val shadowFramePaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#2E1065")
+    }
+    
     // RectF để tái sử dụng cho drawRoundRect
     private val tempRect = RectF()
     
     /**
+     * Khởi tạo sprite mode cho tất cả các map
+     */
+    fun initSpriteMode(context: Context) {
+        tileSpriteManager = TileSpriteManager(context)
+        useSpriteMode = tileSpriteManager?.isReady() == true
+        println("TileRenderer: Sprite mode ${if (useSpriteMode) "enabled" else "disabled"}")
+    }
+    
+    /**
+     * Bật/tắt sprite mode
+     */
+    fun setSpriteMode(enabled: Boolean) {
+        useSpriteMode = enabled && tileSpriteManager?.isReady() == true
+        println("TileRenderer: Sprite mode ${if (useSpriteMode) "enabled" else "disabled"}")
+    }
+    
+    /**
+     * Check xem có đang ở sprite mode không
+     */
+    fun isSpriteMode(): Boolean = useSpriteMode
+    
+    /**
      * Vẽ một tile tại vị trí (x, y) với size cho trước
+     * Hỗ trợ cả sprite mode và code-based mode
      */
     fun drawTile(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float) {
+        // Nếu đang ở sprite mode và có sprite manager
+        if (useSpriteMode && tileSpriteManager != null) {
+            drawTileSprite(canvas, tileId, x, y, size)
+            return
+        }
+        
+        // Fallback về code-based rendering (legacy mode)
+        drawTileCode(canvas, tileId, x, y, size)
+    }
+    
+    /**
+     * Vẽ tile từ sprite sheet (default mode)
+     */
+    private fun drawTileSprite(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float) {
+        tileSpriteManager?.drawSprite(canvas, tileId, x, y, size)
+    }
+    
+    /**
+     * Vẽ tile bằng code (legacy mode - fallback)
+     */
+    private fun drawTileCode(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float) {
         when (tileId) {
             TileConstants.TILE_EMPTY -> {
                 // Không vẽ gì
@@ -320,11 +419,141 @@ class TileRenderer {
                 canvas.drawText("E", centerX, centerY + textPaint.textSize/3, textPaint)
             }
             
+            TileConstants.TILE_PUSHABLE_STONE -> {
+                canvas.drawRect(x, y, x + size, y + size, floorPaint) // Background
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                val stoneSize = size * 0.75f
+                
+                // Vẽ đá
+                canvas.drawCircle(centerX, centerY, stoneSize/2, pushableStonePaint)
+                canvas.drawCircle(centerX, centerY, stoneSize/2, borderPaint)
+                
+                // Texture lines để nhận biết đá có thể đẩy
+                canvas.drawLine(x + size*0.25f, y + size*0.35f, x + size*0.75f, y + size*0.35f, borderPaint)
+                canvas.drawLine(x + size*0.25f, y + size*0.65f, x + size*0.75f, y + size*0.65f, borderPaint)
+            }
+            
+            TileConstants.TILE_TARGET -> {
+                canvas.drawRect(x, y, x + size, y + size, floorPaint) // Background
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                val targetSize = size * 0.6f
+                
+                // Vẽ target như hình tròn với cross
+                canvas.drawCircle(centerX, centerY, targetSize/2, targetPaint)
+                canvas.drawCircle(centerX, centerY, targetSize/2, borderPaint)
+                
+                // Cross pattern
+                canvas.drawLine(centerX - targetSize/3, centerY, centerX + targetSize/3, centerY, borderPaint)
+                canvas.drawLine(centerX, centerY - targetSize/3, centerX, centerY + targetSize/3, borderPaint)
+            }
+            
+            TileConstants.TILE_STONE_ON_TARGET -> {
+                canvas.drawRect(x, y, x + size, y + size, floorPaint) // Background
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                
+                // Vẽ target background (nhỏ hơn)
+                canvas.drawCircle(centerX, centerY, size*0.4f, targetPaint)
+                
+                // Vẽ stone on top
+                canvas.drawCircle(centerX, centerY, size*0.35f, stoneOnTargetPaint)
+                canvas.drawCircle(centerX, centerY, size*0.35f, borderPaint)
+                
+                // Small check mark để show completed
+                val checkSize = size * 0.15f
+                canvas.drawLine(centerX - checkSize, centerY, centerX - checkSize/2, centerY + checkSize/2, borderPaint)
+                canvas.drawLine(centerX - checkSize/2, centerY + checkSize/2, centerX + checkSize, centerY - checkSize/2, borderPaint)
+            }
+            
+            TileConstants.TILE_SHADOW_SPAWN -> {
+                // Draw base floor
+                canvas.drawRect(x, y, x + size, y + size, floorPaint)
+                
+                // Draw shadow spawn symbol
+                canvas.drawRect(x, y, x + size, y + size, shadowSpawnPaint)
+                
+                // Draw spawn indicator (circle in center)
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                val radius = size * 0.3f
+                canvas.drawCircle(centerX, centerY, radius, shadowWhitePaint)
+                canvas.drawCircle(centerX, centerY, radius, borderPaint)
+                
+                // Draw "S" for spawn
+                val textPaint = Paint().apply {
+                    color = Color.BLACK
+                    textAlign = Paint.Align.CENTER
+                    textSize = size * 0.4f
+                    isFakeBoldText = true
+                }
+                canvas.drawText("S", centerX, centerY + size * 0.1f, textPaint)
+            }
+
+            TileConstants.TILE_SHADOW_TRIGGER -> {
+                // Draw base floor
+                canvas.drawRect(x, y, x + size, y + size, floorPaint)
+                
+                // Draw trigger background
+                canvas.drawRect(x, y, x + size, y + size, shadowTriggerPaint)
+                canvas.drawRect(x, y, x + size, y + size, borderPaint)
+                
+                // Draw trigger symbol (diamond)
+                val centerX = x + size / 2
+                val centerY = y + size / 2
+                val halfSize = size * 0.25f
+                
+                val diamondPaint = Paint().apply {
+                    color = Color.parseColor("#9C27B0")
+                    isAntiAlias = true
+                }
+                
+                // Draw diamond shape
+                val path = android.graphics.Path()
+                path.moveTo(centerX, centerY - halfSize) // top
+                path.lineTo(centerX + halfSize, centerY) // right
+                path.lineTo(centerX, centerY + halfSize) // bottom
+                path.lineTo(centerX - halfSize, centerY) // left
+                path.close()
+                
+                canvas.drawPath(path, diamondPaint)
+                canvas.drawPath(path, borderPaint)
+            }
+
+            TileConstants.TILE_SHADOW_DOOR -> {
+                // Draw shadow door (closed)
+                canvas.drawRect(x, y, x + size, y + size, shadowDoorPaint)
+                canvas.drawRect(x, y, x + size, y + size, borderPaint)
+                
+                // Draw door details
+                val doorHandleX = x + size * 0.8f
+                val doorHandleY = y + size * 0.5f
+                val handleRadius = size * 0.05f
+                
+                canvas.drawCircle(doorHandleX, doorHandleY, handleRadius, shadowGoldPaint)
+                
+                // Draw door frame
+                val frameWidth = size * 0.1f
+                canvas.drawRect(x + frameWidth, y + frameWidth, 
+                               x + size - frameWidth, y + size - frameWidth, 
+                               shadowFramePaint)
+            }
+            
             else -> {
                 // Unknown tile - sử dụng grayPaint thay vì Color.GRAY
                 canvas.drawRect(x, y, x + size, y + size, grayPaint)
                 canvas.drawRect(x, y, x + size, y + size, borderPaint)
             }
         }
+    }
+    
+    /**
+     * Cleanup resources
+     */
+    fun cleanup() {
+        tileSpriteManager?.cleanup()
+        tileSpriteManager = null
+        useSpriteMode = false
     }
 }

@@ -3,7 +3,7 @@ package com.example.game
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-
+import com.example.game.gameMechanic.PushLogic
 class Player(startX: Float, startY: Float) {
     var x = startX
     var y = startY
@@ -41,6 +41,9 @@ class Player(startX: Float, startY: Float) {
     
     private val size = GameConstants.TILE_SIZE.toFloat() * 0.85f  // Lớn hơn (85% thay vì 80%)
     
+    // Thêm reference đến PushLogic
+    private var pushLogic: PushLogic? = null
+    
     fun update(deltaTime: Long) {
         if (isMoving) {
             animationTime += deltaTime
@@ -64,6 +67,8 @@ class Player(startX: Float, startY: Float) {
     }
     
     fun move(dx: Int, dy: Int, gameMap: GameMap): Boolean {
+        print("🔄 Trying to move")
+        
         if (isMoving) return false
         
         val currentTileX = (x / GameConstants.TILE_SIZE).toInt()
@@ -72,17 +77,32 @@ class Player(startX: Float, startY: Float) {
         val newTileX = currentTileX + dx
         val newTileY = currentTileY + dy
         
+        // Check normal movement first
         if (gameMap.isWalkable(newTileX, newTileY)) {
-            startX = x
-            startY = y
-            targetX = newTileX * GameConstants.TILE_SIZE.toFloat()
-            targetY = newTileY * GameConstants.TILE_SIZE.toFloat()
-            
-            isMoving = true
-            animationTime = 0
+            startMovement(newTileX, newTileY)
             return true
         }
+        
+        // Check push logic - pushable objects are on active layer (layer 2)
+        val activeTile = gameMap.getTile(newTileX, newTileY, 2)
+        if (com.example.game.map.TileConstants.isPushable(activeTile)) {
+            if (pushLogic?.tryPush(currentTileX, currentTileY, dx, dy) == true) {
+                startMovement(newTileX, newTileY)
+                return true
+            }
+        }
+        
         return false
+    }
+    
+    private fun startMovement(tileX: Int, tileY: Int) {
+        startX = x
+        startY = y
+        targetX = tileX * GameConstants.TILE_SIZE.toFloat()
+        targetY = tileY * GameConstants.TILE_SIZE.toFloat()
+        
+        isMoving = true
+        animationTime = 0
     }
     
     fun draw(canvas: Canvas) {
@@ -122,5 +142,13 @@ class Player(startX: Float, startY: Float) {
         val currentTile = gameMap.getTile(tileX, tileY)
         
         return currentTile == com.example.game.map.TileConstants.TILE_END
+    }
+
+    fun setPushLogic(pushLogic: PushLogic) {
+        this.pushLogic = pushLogic
+    }
+    
+    fun checkPuzzleComplete(): Boolean {
+        return pushLogic?.isPuzzleComplete() ?: false
     }
 }
