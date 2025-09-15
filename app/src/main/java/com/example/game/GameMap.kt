@@ -40,42 +40,22 @@ class GameMap(private val simpleMap: SimpleGameMap) {
     companion object {
         /**
          * Centralized method để load level theo ID
+         * Tất cả các level đều sử dụng sprite-based rendering
          */
         fun loadLevel(context: Context, levelId: Int): GameMap {
-            // Xử lý đặc biệt cho map6 (sprite-based)
-            if (levelId == 6) {
-                return loadMap6(context)
-            }
-            
-            // Thử load từ assets trước cho map 1-5 (code-based)
+            // Sử dụng sprite mode cho tất cả các level
             return try {
-                val loadedMap = loadFromAssets(context, "level$levelId.txt")
-                println("Loaded map from assets: level$levelId.txt")
-                loadedMap
-            } catch (e: Exception) {
-                println("Failed to load from assets: ${e.message}")
-                // Fallback về test map
-                createTestMap()
-            }
-        }
-        
-        /**
-         * Load map6 sử dụng sprite system
-         */
-        fun loadMap6(context: Context): GameMap {
-            return try {
-                println("Loading map6 with sprite system...")
-                val mapData = MapLoader.loadFromAssets(context, "level6.txt")
+                val mapData = MapLoader.loadFromAssets(context, "level$levelId.txt")
                 val simpleMap = if (mapData != null) {
-                    println("Successfully loaded map6 data: ${mapData.width}x${mapData.height}")
+                    println("Successfully loaded level$levelId data: ${mapData.width}x${mapData.height}")
                     SimpleGameMap.createSpriteMap(context, mapData)
                 } else {
-                    println("Failed to load map6 data, using default")
-                    SimpleGameMap.createDefaultMap()
+                    println("Failed to load level$levelId data, using default")
+                    SimpleGameMap.createDefaultSpriteMap(context)
                 }
                 GameMap(simpleMap)
             } catch (e: Exception) {
-                println("Failed to load map6: ${e.message}")
+                println("Failed to load level$levelId: ${e.message}")
                 e.printStackTrace()
                 // Fallback
                 createTestMap()
@@ -90,17 +70,17 @@ class GameMap(private val simpleMap: SimpleGameMap) {
         fun createTestMap(): GameMap = createLevel1()
         
         /**
-         * Load map từ assets
+         * Load map từ assets với sprite mode
          */
         fun loadFromAssets(context: Context, fileName: String): GameMap {
             println("Attempting to load: $fileName") // Debug log
             val mapData = MapLoader.loadFromAssets(context, fileName)
             val simpleMap = if (mapData != null) {
                 println("Successfully loaded map data: ${mapData.width}x${mapData.height}") // Debug log
-                SimpleGameMap(mapData)
+                SimpleGameMap.createSpriteMap(context, mapData)
             } else {
                 println("Failed to load map data, using default") // Debug log
-                SimpleGameMap.createDefaultMap()
+                SimpleGameMap.createDefaultSpriteMap(context)
             }
             return GameMap(simpleMap)
         }

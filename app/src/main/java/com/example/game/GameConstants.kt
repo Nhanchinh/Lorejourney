@@ -25,6 +25,6 @@ object GameConstants {
     const val STATE_PAUSED = 4
     
     // Level progress
-    var MAX_UNLOCKED_LEVEL = 6 // Mở tất cả level để test, bao gồm cả map6
-    const val TOTAL_LEVELS = 6 // Tổng số level trong game bao gồm map6
+    var MAX_UNLOCKED_LEVEL = 6 // Mở tất cả level để test
+    const val TOTAL_LEVELS = 6 // Tổng số level trong game
 }

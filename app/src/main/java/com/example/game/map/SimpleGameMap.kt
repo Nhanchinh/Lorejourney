@@ -146,9 +146,32 @@ class SimpleGameMap(
     
     companion object {
         /**
-         * Tạo map mặc định để test
+         * Tạo map mặc định để test với sprite mode disabled (để compatibility)
          */
         fun createDefaultMap(): SimpleGameMap {
+            val mapData = createDefaultMapData()
+            return SimpleGameMap(mapData)
+        }
+        
+        /**
+         * Tạo map6 sử dụng sprite mode
+         */
+        fun createSpriteMap(context: Context, mapData: MapLoader.MapData): SimpleGameMap {
+            return SimpleGameMap(mapData, context, useSpriteMode = true)
+        }
+        
+        /**
+         * Tạo default map với sprite mode
+         */
+        fun createDefaultSpriteMap(context: Context): SimpleGameMap {
+            val mapData = createDefaultMapData()
+            return SimpleGameMap(mapData, context, useSpriteMode = true)
+        }
+        
+        /**
+         * Tạo map data mặc định
+         */
+        private fun createDefaultMapData(): MapLoader.MapData {
             val mapString = """
 20
 15
@@ -171,16 +194,10 @@ class SimpleGameMap(
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
             """.trimIndent()
             
-            val mapData = MapLoader.loadFromString(mapString)
-            return if (mapData != null) {
-                SimpleGameMap(mapData)
-            } else {
-                // Fallback map nếu parse lỗi
-                createFallbackMap()
-            }
+            return MapLoader.loadFromString(mapString) ?: createFallbackMapData()
         }
         
-        private fun createFallbackMap(): SimpleGameMap {
+        private fun createFallbackMapData(): MapLoader.MapData {
             val width = 10
             val height = 10
             val bottomLayer = Array(height) { IntArray(width) }
@@ -205,15 +222,7 @@ class SimpleGameMap(
                 }
             }
             
-            val mapData = MapLoader.MapData(width, height, 1, 1, bottomLayer, mainLayer, activeLayer)
-            return SimpleGameMap(mapData)
-        }
-        
-        /**
-         * Tạo map6 sử dụng sprite mode
-         */
-        fun createSpriteMap(context: Context, mapData: MapLoader.MapData): SimpleGameMap {
-            return SimpleGameMap(mapData, context, useSpriteMode = true)
+            return MapLoader.MapData(width, height, 1, 1, bottomLayer, mainLayer, activeLayer)
         }
     }
 }

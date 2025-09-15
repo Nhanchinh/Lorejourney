@@ -8,11 +8,11 @@ import android.graphics.RectF
 
 /**
  * Renderer để vẽ các tile khác nhau
- * Hỗ trợ cả vẽ bằng code (legacy) và vẽ từ sprite sheet (map6)
+ * Hỗ trợ cả vẽ bằng code (legacy) và vẽ từ sprite sheet (default mode)
  */
 class TileRenderer {
     
-    // Sprite manager cho map6 (nullable)
+    // Sprite manager cho tất cả các map (nullable)
     private var tileSpriteManager: TileSpriteManager? = null
     private var useSpriteMode = false
     
@@ -206,7 +206,7 @@ class TileRenderer {
     private val tempRect = RectF()
     
     /**
-     * Khởi tạo sprite mode cho map6
+     * Khởi tạo sprite mode cho tất cả các map
      */
     fun initSpriteMode(context: Context) {
         tileSpriteManager = TileSpriteManager(context)
@@ -243,14 +243,14 @@ class TileRenderer {
     }
     
     /**
-     * Vẽ tile từ sprite sheet (map6 mode)
+     * Vẽ tile từ sprite sheet (default mode)
      */
     private fun drawTileSprite(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float) {
         tileSpriteManager?.drawSprite(canvas, tileId, x, y, size)
     }
     
     /**
-     * Vẽ tile bằng code (legacy mode cho map 1-5)
+     * Vẽ tile bằng code (legacy mode - fallback)
      */
     private fun drawTileCode(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float) {
         when (tileId) {
