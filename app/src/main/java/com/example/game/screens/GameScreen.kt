@@ -248,7 +248,7 @@ class GameScreen(
         canvas.save()
         camera.apply(canvas)
         
-        gameMap.draw(canvas, camera)
+        gameMap.draw(canvas, camera, pushLogic)
         player.draw(canvas)
         
         // CHỈ CÓ 1 dòng này

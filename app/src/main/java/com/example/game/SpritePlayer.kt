@@ -117,6 +117,9 @@ class SpritePlayer(
     fun update(deltaTime: Long) {
         val deltaSeconds = deltaTime / 1000f
         
+        // Update push logic animations
+        pushLogic?.update(deltaSeconds)
+        
         // Handle snap cooldown
         if (snapCooldown > 0) {
             snapCooldown -= deltaTime
