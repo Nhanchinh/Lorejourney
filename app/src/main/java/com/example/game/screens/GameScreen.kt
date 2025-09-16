@@ -131,11 +131,11 @@ class GameScreen(
             println("⚠️ PushLogic is null for level $levelId")
         }
         
-        // CHỈ CÓ 3 dòng này cho shadow
-        if (levelId == 3) {
-            shadowMechanic = ShadowMechanic(context, gameMap, player)
-            shadowMechanic!!.initialize()
-        }
+        
+         // Áp dụng shadow mechanic cho TẤT CẢ level
+        shadowMechanic = ShadowMechanic(context, gameMap, player)
+        shadowMechanic!!.initialize()
+        println(" Shadow mechanic initialized for level $levelId")
         
         camera = Camera()
     }
@@ -157,7 +157,7 @@ class GameScreen(
         shadowMechanic?.update(deltaTime)
         
         val isComplete = if (levelId == 1) {
-            player.checkPuzzleComplete()
+            player.checkLevelComplete(gameMap)
         } else if (levelId == 3) {
             // CHỈ CÓ dòng này
             player.checkLevelComplete(gameMap) && (shadowMechanic?.isPuzzleComplete() ?: true)
