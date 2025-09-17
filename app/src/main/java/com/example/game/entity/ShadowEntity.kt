@@ -21,7 +21,7 @@ class ShadowEntity(
     
     // Shadow properties
     private var isFollowing = true
-    private val followDistance = 4 // 4 tiles distance
+    private val followDistance = 2 // 2 tiles distance
     private var directionChangeCount = 0
     private val maxDirectionChanges = 4
     
@@ -124,26 +124,27 @@ class ShadowEntity(
     override fun draw(canvas: Canvas) {
         if (!isVisible) return
         
+        // Draw shadow as tile ID 47 instead of circle
+        val tileRenderer = com.example.game.map.TileRenderer()
+        tileRenderer.initSpriteMode(context)
+        tileRenderer.drawTile(canvas, 47, x, y, GameConstants.TILE_SIZE.toFloat())
+        
+        // Draw status indicator ở GIỮA tile thay vì phía trên
         val centerX = x + GameConstants.TILE_SIZE / 2f
-        val centerY = y + GameConstants.TILE_SIZE / 2f
-        val radius = size / 2f
+        val centerY = y + GameConstants.TILE_SIZE *2f / 3f  // Đặt ở giữa tile
         
-        // Draw shadow body
-        canvas.drawCircle(centerX, centerY, radius, shadowPaint)
-        canvas.drawCircle(centerX, centerY, radius, shadowBorderPaint)
-        
-        // Draw status indicator
         if (!isFollowing || directionChangeCount >= maxDirectionChanges) {
-            canvas.drawText("STOP", centerX, centerY - radius - 10f, textPaint)
+            canvas.drawText("STOP", centerX, centerY, textPaint)
         } else {
-            // Draw following indicator
+            // Draw following indicator với text TO HƠN
             val followPaint = Paint().apply {
-                color = Color.GREEN
+                color = Color.BLACK
                 textAlign = Paint.Align.CENTER
-                textSize = 16f
+                textSize = 20f  // Tăng từ 16f lên 24f (to hơn)
+                isFakeBoldText = true  // Làm chữ đậm hơn
             }
             canvas.drawText("${directionChangeCount}/$maxDirectionChanges", 
-                          centerX, centerY - radius - 10f, followPaint)
+                          centerX, centerY, followPaint)
         }
     }
     

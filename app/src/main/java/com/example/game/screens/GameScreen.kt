@@ -105,10 +105,9 @@ class GameScreen(
         gameMap = GameMap.loadLevel(context, levelId)
         
         // Initialize PushLogic for levels that have pushable objects
-        if (levelId == 1 || levelId == 2) {
-            pushLogic = PushLogic(gameMap)
-            println("🔄 PushLogic initialized for level $levelId")
-        }
+        // For now, initialize for all levels to be safe
+        pushLogic = PushLogic(gameMap)
+        println("🔄 PushLogic initialized for level $levelId")
         
         // Log thông tin đặc biệt cho map6
         if (levelId == 6) {
@@ -125,16 +124,18 @@ class GameScreen(
         )
         
         // Set PushLogic for levels that need it
-        if ((levelId == 1 || levelId == 2) && pushLogic != null) {
+        if (pushLogic != null) {
             player.setPushLogic(pushLogic!!)
             println("🔄 PushLogic assigned to player for level $levelId")
+        } else {
+            println("⚠️ PushLogic is null for level $levelId")
         }
         
-        // CHỈ CÓ 3 dòng này cho shadow
-        if (levelId == 3) {
-            shadowMechanic = ShadowMechanic(context, gameMap, player)
-            shadowMechanic!!.initialize()
-        }
+        
+         // Áp dụng shadow mechanic cho TẤT CẢ level
+        shadowMechanic = ShadowMechanic(context, gameMap, player)
+        shadowMechanic!!.initialize()
+        println(" Shadow mechanic initialized for level $levelId")
         
         camera = Camera()
     }
@@ -156,7 +157,7 @@ class GameScreen(
         shadowMechanic?.update(deltaTime)
         
         val isComplete = if (levelId == 1) {
-            player.checkPuzzleComplete()
+            player.checkLevelComplete(gameMap)
         } else if (levelId == 3) {
             // CHỈ CÓ dòng này
             player.checkLevelComplete(gameMap) && (shadowMechanic?.isPuzzleComplete() ?: true)
@@ -247,7 +248,7 @@ class GameScreen(
         canvas.save()
         camera.apply(canvas)
         
-        gameMap.draw(canvas, camera)
+        gameMap.draw(canvas, camera, pushLogic)
         player.draw(canvas)
         
         // CHỈ CÓ 1 dòng này

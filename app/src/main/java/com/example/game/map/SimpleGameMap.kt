@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import com.example.game.Camera
 import com.example.game.GameConstants
+import com.example.game.gameMechanic.PushLogic
 
 /**
  * Simple GameMap sử dụng hệ thống tile mới
@@ -90,7 +91,7 @@ class SimpleGameMap(
         setTile(x, y, tileId, 1) // Default to main layer
     }
     
-    fun draw(canvas: Canvas, camera: Camera) {
+    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null) {
         val tileSize = GameConstants.TILE_SIZE.toFloat()
         
         val padding = 2
@@ -98,6 +99,9 @@ class SimpleGameMap(
         val endX = (((camera.x + GameConstants.SCREEN_WIDTH) / tileSize).toInt() + padding).coerceAtMost(width - 1)
         val startY = ((camera.y / tileSize).toInt() - padding).coerceAtLeast(0)
         val endY = (((camera.y + GameConstants.SCREEN_HEIGHT) / tileSize).toInt() + padding).coerceAtMost(height - 1)
+        
+        // Get animated objects if available
+        val animatedObjects = pushLogic?.animator?.getAllAnimatedObjects() ?: emptyList()
         
         // Render layers in order: bottom -> main -> active
         // Bottom layer (background elements)
@@ -129,11 +133,17 @@ class SimpleGameMap(
             for (x in startX..endX) {
                 val tileId = getTile(x, y, 2) // Active layer
                 if (tileId != TileConstants.TILE_EMPTY) {
+                    // Always draw since we now manage map state properly
                     val drawX = x * tileSize
                     val drawY = y * tileSize
                     tileRenderer.drawTile(canvas, tileId, drawX, drawY, tileSize)
                 }
             }
+        }
+        
+        // Draw animated objects on top
+        animatedObjects.forEach { animated ->
+            tileRenderer.drawTile(canvas, animated.tileId, animated.x, animated.y, tileSize)
         }
     }
     

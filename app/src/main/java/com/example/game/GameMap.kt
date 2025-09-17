@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import com.example.game.map.SimpleGameMap
 import com.example.game.map.MapLoader
+import com.example.game.gameMechanic.PushLogic
 import android.content.Context
 
 class GameMap(private val simpleMap: SimpleGameMap) {
@@ -33,8 +34,8 @@ class GameMap(private val simpleMap: SimpleGameMap) {
         simpleMap.setTile(x, y, tileId, layer)
     }
     
-    fun draw(canvas: Canvas, camera: Camera) {
-        simpleMap.draw(canvas, camera)
+    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null) {
+        simpleMap.draw(canvas, camera, pushLogic)
     }
     
     companion object {

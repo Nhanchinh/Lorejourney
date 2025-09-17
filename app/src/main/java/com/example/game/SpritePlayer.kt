@@ -37,7 +37,7 @@ class SpritePlayer(
     private var isMovingRight = false
     
     // Animation - CHỈ DECLARE 1 LẦN
-    private var currentDirection = Direction.DOWN
+    private var currentDirection = Direction.IDLE
     private var currentFrame = 0
     private var frameTime = 0L
     private val frameInterval = 150L
@@ -52,12 +52,13 @@ class SpritePlayer(
     private var frameWidth = 0
     private var frameHeight = 0
     
-    // Direction enum theo layout sprite sheet
-    enum class Direction(val row: Int) {
-        DOWN(0),   // Row 0: đi xuống
-        UP(1),     // Row 1: đi lên
-        LEFT(2),   // Row 2: đi trái
-        RIGHT(3)   // Row 3: đi phải
+    // Direction enum theo layout sprite sheet mới (horizontal layout)
+    enum class Direction(val startFrame: Int) {
+        IDLE(0),   // Frames 0-3: đứng yên
+        LEFT(4),   // Frames 4-7: đi trái
+        RIGHT(8),  // Frames 8-11: đi phải
+        UP(12),    // Frames 12-15: đi lên
+        DOWN(16)   // Frames 16-19: đi xuống
     }
     
     private val paint = Paint().apply {
@@ -68,7 +69,7 @@ class SpritePlayer(
     private val srcRect = Rect()
     private val destRect = RectF()
     
-    private val size = GameConstants.TILE_SIZE.toFloat() * 2.5f
+    private val size = GameConstants.TILE_SIZE.toFloat() * 1.0f // 96 * 1.0 = 96 pixels - giữ nguyên kích thước tile
     
     // Push logic reference
     private var pushLogic: PushLogic? = null
@@ -79,7 +80,7 @@ class SpritePlayer(
     
     // Ice sliding variables
     private var isOnIce = false
-    private var iceSlideDirection = Direction.DOWN
+    private var iceSlideDirection = Direction.IDLE
     private var iceSlideSpeed = 0f
     private val maxIceSlideSpeed = moveSpeed * 1.5f
     private var lastIceCheck = 0L
@@ -92,16 +93,18 @@ class SpritePlayer(
         try {
             spriteSheet = BitmapFactory.decodeResource(
                 context.resources, 
-                R.drawable.basic_charakter_spritesheet
+                R.drawable.player_sprite_sheet
             )
             
             spriteSheet?.let { bitmap ->
-                // Calculate frame dimensions (4x4 grid)
-                frameWidth = bitmap.width / 4  // 4 columns
-                frameHeight = bitmap.height / 4 // 4 rows
+                // Calculate frame dimensions (horizontal layout: 20 frames x 1 row)
+                frameWidth = bitmap.width / 44  // 20 frames total (5 animations × 4 frames each)
+                frameHeight = bitmap.height     // 1 row only
                 
-                println("✅ Sprite sheet loaded: ${bitmap.width}x${bitmap.height}")
-                println("✅ Frame size: ${frameWidth}x${frameHeight}")
+                println("✅ New sprite sheet loaded: ${bitmap.width}x${bitmap.height}")
+                println("✅ Frame size: ${frameWidth}x${frameHeight} (24x24 expected)")
+                println("✅ Aspect ratio: ${frameWidth.toFloat() / frameHeight.toFloat()}")
+                println("✅ Display size: $size pixels")
             }
         } catch (e: Exception) {
             println("❌ Failed to load sprite sheet: ${e.message}")
@@ -116,6 +119,9 @@ class SpritePlayer(
     // Update method để handle push cooldown
     fun update(deltaTime: Long) {
         val deltaSeconds = deltaTime / 1000f
+        
+        // Update push logic animations
+        pushLogic?.update(deltaSeconds)
         
         // Handle snap cooldown
         if (snapCooldown > 0) {
@@ -363,21 +369,28 @@ class SpritePlayer(
             Math.abs(velocityX) > Math.abs(velocityY) -> {
                 if (velocityX > 0) Direction.RIGHT else Direction.LEFT
             }
-            else -> {
-                if (velocityY > 0) Direction.DOWN else Direction.UP
-            }
+            velocityY > 0 -> Direction.DOWN
+            velocityY < 0 -> Direction.UP
+            else -> Direction.IDLE
         }
     }
     
     private fun updateAnimation(deltaTime: Long) {
         if (Math.abs(velocityX) > 15f || Math.abs(velocityY) > 15f) {
+            // Moving - animate
             frameTime += deltaTime
             if (frameTime >= frameInterval) {
                 currentFrame = (currentFrame + 1) % totalFrames
                 frameTime = 0
             }
         } else {
-            currentFrame = 0 // Idle frame
+            // Not moving - use idle animation
+            currentDirection = Direction.IDLE
+            frameTime += deltaTime
+            if (frameTime >= frameInterval) {
+                currentFrame = (currentFrame + 1) % totalFrames
+                frameTime = 0
+            }
         }
     }
     
@@ -465,22 +478,29 @@ class SpritePlayer(
         val sprite = spriteSheet
         
         if (sprite != null && frameWidth > 0 && frameHeight > 0) {
-            // Calculate source rectangle trong sprite sheet
-            val srcX = currentFrame * frameWidth
-            val srcY = currentDirection.row * frameHeight
+            // Calculate source rectangle trong sprite sheet (horizontal layout)
+            val frameIndex = currentDirection.startFrame + (currentFrame % 4) // 4 frames per animation
+            val srcX = frameIndex * frameWidth
+            val srcY = 0 // Chỉ có 1 row
             
             srcRect.set(srcX, srcY, srcX + frameWidth, srcY + frameHeight)
             
-            // Calculate destination rectangle on screen
+            // Calculate destination rectangle on screen với tỷ lệ gốc
             val centerX = x + GameConstants.TILE_SIZE / 2f
             val centerY = y + GameConstants.TILE_SIZE / 2f
-            val halfSize = size / 2
+            
+            // Giữ nguyên tỷ lệ aspect ratio của sprite gốc (24x24 = 1:1)
+            val spriteAspectRatio = frameWidth.toFloat() / frameHeight.toFloat()
+            val displaySize = size
+            
+            val displayWidth = displaySize
+            val displayHeight = displaySize / spriteAspectRatio
             
             destRect.set(
-                centerX - halfSize,
-                centerY - halfSize,
-                centerX + halfSize,
-                centerY + halfSize
+                centerX - displayWidth / 2,
+                centerY - displayHeight / 2,
+                centerX + displayWidth / 2,
+                centerY + displayHeight / 2
             )
             
             canvas.drawBitmap(sprite, srcRect, destRect, paint)
