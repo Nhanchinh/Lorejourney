@@ -240,11 +240,11 @@
                 </div>
                 <div class="input-group">
                     <label>Player Spawn X:</label>
-                    <input type="number" id="playerX" value="8" min="1">
+                    <input type="number" id="playerX" value="7" min="0">
                 </div>
                 <div class="input-group">
                     <label>Player Spawn Y:</label>
-                    <input type="number" id="playerY" value="5" min="1">
+                    <input type="number" id="playerY" value="4" min="0">
                 </div>
                 <div class="input-group">
                     <label>Dark Map:</label>
@@ -334,8 +334,8 @@
                     <strong>📝 FORMAT GAME:</strong><br>
                     • Dòng 1: Chiều rộng map (width)<br>
                     • Dòng 2: Chiều cao map (height)<br>
-                    • Dòng 3: Vị trí X của player spawn (1-based, từ trái sang phải)<br>
-                    • Dòng 4: Vị trí Y của player spawn (1-based, từ trên xuống dưới)<br>
+                    • Dòng 3: Vị trí X của player spawn (0-based, từ trái sang phải)<br>
+                    • Dòng 4: Vị trí Y của player spawn (0-based, từ trên xuống dưới)<br>
                     • Tiếp theo: Bottom Layer (background) - 13 dòng<br>
                     • Tiếp theo: Main Layer (static tiles + special items) - 13 dòng<br>
                     • Cuối cùng: Active Layer (moveable/interactive objects) - 13 dòng<br>
@@ -362,7 +362,7 @@
         let mapData = {
             width: 15,
             height: 13,
-            playerSpawn: { x: 8, y: 5 },
+            playerSpawn: { x: 7, y: 4 }, // Changed from 8,5 to 7,4 (0-based)
             isDark: 0,
             weather: 0,
             bottomLayer: [],
@@ -622,8 +622,8 @@
             const x = Math.floor((e.clientX - rect.left) / canvasTileSize);
             const y = Math.floor((e.clientY - rect.top) / canvasTileSize);
             
-            // Display coordinates as 1-based, Y from top to bottom
-            document.getElementById('coordinates').textContent = `X: ${x + 1}, Y: ${y + 1}`;
+            // Display coordinates as 0-based (changed from 1-based)
+            document.getElementById('coordinates').textContent = `X: ${x}, Y: ${y}`;
         }
         
         function handleCanvasPaint(e) {
@@ -841,10 +841,10 @@
                 }
             }
             
-            // Render player spawn (1-based coordinates, Y from top to bottom)
+            // Render player spawn (0-based coordinates, Y from top to bottom)
             if (showPlayerSpawn) {
-                const spawnX = (mapData.playerSpawn.x - 1) * canvasTileSize;
-                const spawnY = (mapData.playerSpawn.y - 1) * canvasTileSize;
+                const spawnX = mapData.playerSpawn.x * canvasTileSize; // Removed -1
+                const spawnY = mapData.playerSpawn.y * canvasTileSize; // Removed -1
                 
                 ctx.strokeStyle = '#1abc9c';
                 ctx.lineWidth = 3;
