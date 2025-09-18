@@ -28,7 +28,7 @@ class VideoPopup(
     // Tab buttons
     private val tabButtons = mutableListOf<RectF>()
     private val tabNames = listOf("mechanic1", "mechanic2", "mechanic3", "mechanic4", "mechanic5", "mechanic6")
-    private val tabTitles = listOf("Basic Controls", "Push Mechanics", "Shadow Mechanics", "Advanced Puzzles", "More Advanced", "Final Mechanics")
+    private val tabTitles = listOf("Basic Controls", "Push Mechanics", "Win conditions", "Advanced Puzzles", "More Advanced", "Final Mechanics")
     
     // Paints
     private val overlayPaint = Paint().apply {
@@ -159,7 +159,7 @@ class VideoPopup(
             val videoHeight = (videoAreaHeight * 0.96f).toInt()
             
             // Dịch video qua bên phải thêm 2cm (80px)
-            val videoX = videoAreaX + videoAreaWidth - videoWidth + 280f // Thêm 80px (2cm)
+            val videoX = videoAreaX + videoAreaWidth - videoWidth + 40f // Thêm 80px (2cm)
             val videoY = videoAreaY + (videoAreaHeight - videoHeight) / 2f // Căn giữa theo chiều dọc
             
             videoView?.layoutParams = FrameLayout.LayoutParams(videoWidth, videoHeight)
