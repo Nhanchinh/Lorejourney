@@ -116,4 +116,19 @@ class GameStateManager(private val context: Context) {
         currentState = nextState
         nextState = -1
     }
+
+    // THÊM: Method để restart level hiện tại
+    fun restartCurrentLevel(levelId: Int) {
+        println("🔄 Restarting level $levelId...")
+        
+        // Tạo GameScreen mới cho level này
+        currentGameScreen = GameScreen(this, levelId, context)
+        currentScreen = currentGameScreen
+        
+        // Chuyển về trạng thái playing
+        currentState = GameConstants.STATE_PLAYING
+        nextState = GameConstants.STATE_PLAYING
+        
+        println("✅ Level $levelId restarted successfully!")
+    }
 }

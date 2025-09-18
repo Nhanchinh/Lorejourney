@@ -12,9 +12,6 @@ class PushLogic(private val gameMap: GameMap) {
     // Track vị trí các target gốc (để restore khi đá rời khỏi target)
     private val originalTargets = mutableSetOf<Pair<Int, Int>>()
     
-    // Track ID gốc của stones khi đẩy vào target (để restore sau)
-    private val stoneOnTargetOriginalIds = mutableMapOf<Pair<Int, Int>, Int>()
-    
     // Animator cho push animations
     val animator = PushableObjectAnimator()
 
@@ -69,13 +66,6 @@ class PushLogic(private val gameMap: GameMap) {
         // Check xem có đá để đẩy không (trên active layer)
         val stoneTile = gameMap.getTile(stoneTileX, stoneTileY, 2)
         
-        // Nếu đây là TILE_STONE_ON_TARGET, lấy ID gốc từ tracking map
-        val actualStoneTile = if (stoneTile == TileConstants.TILE_STONE_ON_TARGET) {
-            stoneOnTargetOriginalIds[Pair(stoneTileX, stoneTileY)] ?: TileConstants.TILE_PUSHABLE_CRATE
-        } else {
-            stoneTile
-        }
-        
         if (!TileConstants.isPushable(stoneTile) && stoneTile != TileConstants.TILE_STONE_ON_TARGET) {
             return false // Không có đá để đẩy
         }
@@ -91,17 +81,17 @@ class PushLogic(private val gameMap: GameMap) {
         // Check xem đá có trượt trên băng không
         val finalDestination = calculateIceSlideDestination(pushToX, pushToY, dx, dy)
         
-        // Bắt đầu animation và lưu pending action với actual stone ID
+        // Bắt đầu animation và lưu pending action
         val actionKey = "${stoneTileX}_${stoneTileY}_${finalDestination.first}_${finalDestination.second}"
-        pendingPushActions[actionKey] = PendingPushAction(stoneTileX, stoneTileY, finalDestination.first, finalDestination.second, actualStoneTile)
+        pendingPushActions[actionKey] = PendingPushAction(stoneTileX, stoneTileY, finalDestination.first, finalDestination.second, stoneTile)
         
         if (finalDestination.first != pushToX || finalDestination.second != pushToY) {
             // Có trượt trên băng - animation dài hơn
             println("🧊 Stone will slide on ice from ($pushToX, $pushToY) to (${finalDestination.first}, ${finalDestination.second})")
-            animator.startIceSlideAnimation(actualStoneTile, stoneTileX, stoneTileY, finalDestination.first, finalDestination.second)
+            animator.startIceSlideAnimation(stoneTile, stoneTileX, stoneTileY, finalDestination.first, finalDestination.second)
         } else {
             // Push bình thường
-            animator.startPushAnimation(actualStoneTile, stoneTileX, stoneTileY, pushToX, pushToY)
+            animator.startPushAnimation(stoneTile, stoneTileX, stoneTileY, pushToX, pushToY)
         }
         
         // XÓA nguồn ngay lập tức để tránh duplicate
@@ -163,82 +153,45 @@ class PushLogic(private val gameMap: GameMap) {
         return Pair(currentX, currentY)
     }
 
+    /**
+     * Logic canPushTo đơn giản
+     */
     private fun canPushTo(mainTileId: Int, activeTileId: Int): Boolean {
-        // Main layer phải walkable (sử dụng TileConstants.isWalkable)
+        // Main layer phải walkable
         val mainWalkable = TileConstants.isWalkable(mainTileId)
         
         // Active layer phải empty hoặc target
         val activeValid = when (activeTileId) {
             TileConstants.TILE_EMPTY -> true
-            else -> TileConstants.isTarget(activeTileId) // Sử dụng function để check tất cả target types
+            else -> TileConstants.isTarget(activeTileId)
         }
         
-        println("🔍 canPushTo check - main: $mainTileId (walkable: $mainWalkable), active: $activeTileId (valid: $activeValid)")
-        return mainWalkable && activeValid
-    }
-
-    private fun performPush(fromX: Int, fromY: Int, toX: Int, toY: Int) {
-        val destinationActiveTile = gameMap.getTile(toX, toY, 2) // Active layer
-        val destinationMainTile = gameMap.getTile(toX, toY, 1) // Main layer
-        val originalStoneTile = gameMap.getTile(fromX, fromY, 2) // Lấy loại đá gốc
-
-        // Update destination tile on active layer
-        val newDestinationTile = when {
-            TileConstants.isTarget(destinationActiveTile) || TileConstants.isTarget(destinationMainTile) -> {
-                println("✅ Stone pushed onto target at ($toX, $toY)")
-                TileConstants.TILE_STONE_ON_TARGET
-            }
-            else -> originalStoneTile // Giữ nguyên loại đá gốc (42, 55, 152, etc.)
-        }
-        gameMap.setTile(toX, toY, newDestinationTile, 2) // Set on active layer
-
-        // Update source tile on active layer - check what should be restored
-        val sourceMainTile = gameMap.getTile(fromX, fromY, 1) // Check main layer at source
-        val newSourceTile = when {
-            originalTargets.contains(Pair(fromX, fromY)) -> {
-                // Có original target ở vị trí này
-                if (TileConstants.isTarget(sourceMainTile)) {
-                    // Nếu main layer có target, thì active layer để empty
-                    println("🎯 Target on main layer at ($fromX, $fromY), setting active layer to empty")
-                    TileConstants.TILE_EMPTY
-                } else {
-                    // Target chỉ có trên active layer, restore lại với ID mới
-                    println("🎯 Restored target at ($fromX, $fromY) on active layer")
-                    TileConstants.TILE_TARGET // ID 96 (theo yêu cầu mới)
-                }
-            }
-            else -> {
-                // Không có original target, set empty
-                TileConstants.TILE_EMPTY
-            }
-        }
-        gameMap.setTile(fromX, fromY, newSourceTile, 2) // Set on active layer
+        val result = mainWalkable && activeValid
+        println("🔍 canPushTo check - main: $mainTileId (walkable: $mainWalkable), active: $activeTileId (valid: $activeValid), result: $result")
+        return result
     }
 
     /**
-     * Xóa tile tại vị trí nguồn (chỉ clear active layer)
+     * Clear source tile - đơn giản hóa
      */
     private fun clearSourceTile(x: Int, y: Int) {
         val sourceMainTile = gameMap.getTile(x, y, 1) // Check main layer at source
-        val newSourceTile = when {
-            originalTargets.contains(Pair(x, y)) -> {
-                // Có original target ở vị trí này
-                if (TileConstants.isTarget(sourceMainTile)) {
-                    // Nếu main layer có target, thì active layer để empty
-                    println("🎯 Target on main layer at ($x, $y), setting active layer to empty")
-                    TileConstants.TILE_EMPTY
-                } else {
-                    // Target chỉ có trên active layer, restore lại
-                    println("🎯 Restored target at ($x, $y) on active layer")
-                    TileConstants.TILE_TARGET
-                }
+        
+        if (originalTargets.contains(Pair(x, y))) {
+            // Có original target ở vị trí này
+            if (TileConstants.isTarget(sourceMainTile)) {
+                // Nếu main layer có target, thì active layer để empty
+                println("🎯 Target on main layer at ($x, $y), setting active layer to empty")
+                gameMap.setTile(x, y, TileConstants.TILE_EMPTY, 2)
+            } else {
+                // Target chỉ có trên active layer, restore lại
+                println("🎯 Restored target at ($x, $y) on active layer")
+                gameMap.setTile(x, y, TileConstants.TILE_TARGET, 2)
             }
-            else -> {
-                // Không có original target, set empty
-                TileConstants.TILE_EMPTY
-            }
+        } else {
+            // Không có original target, set empty
+            gameMap.setTile(x, y, TileConstants.TILE_EMPTY, 2)
         }
-        gameMap.setTile(x, y, newSourceTile, 2) // Set on active layer
     }
 
     /**
@@ -270,41 +223,34 @@ class PushLogic(private val gameMap: GameMap) {
     }
     
     /**
-     * Hoàn thành push action sau khi animation xong
+     * Logic mới: Đơn giản hóa completePushAction
      */
     private fun completePushAction(action: PendingPushAction) {
         val destinationActiveTile = gameMap.getTile(action.toX, action.toY, 2) // Active layer
         val destinationMainTile = gameMap.getTile(action.toX, action.toY, 1) // Main layer
         
-        // Xử lý khi đẩy stone ra khỏi target
-        val sourcePos = Pair(action.fromX, action.fromY)
-        if (stoneOnTargetOriginalIds.containsKey(sourcePos)) {
-            // Stone được đẩy ra khỏi target, restore target và stone ID gốc
-            val originalStoneId = stoneOnTargetOriginalIds.remove(sourcePos)!!
-            
-            // Restore target tại vị trí cũ
-            if (originalTargets.contains(sourcePos)) {
-                gameMap.setTile(action.fromX, action.fromY, TileConstants.TILE_TARGET, 2)
-                println("🎯 Restored target at (${action.fromX}, ${action.fromY})")
-            }
-            
-            // Set stone với ID gốc tại vị trí mới
-            gameMap.setTile(action.toX, action.toY, originalStoneId, 2)
-            println("🔄 Restored stone ID $originalStoneId at (${action.toX}, ${action.toY})")
-            return
-        }
-
-        // Logic bình thường: đẩy stone vào target
+        // LOGIC MỚI: Kiểm tra vị trí đích có phải target không
+        val isDestinationTarget = TileConstants.isTarget(destinationActiveTile) || TileConstants.isTarget(destinationMainTile)
+        
         val newDestinationTile = when {
-            TileConstants.isTarget(destinationActiveTile) || TileConstants.isTarget(destinationMainTile) -> {
-                println("✅ Stone completed push onto target at (${action.toX}, ${action.toY})")
-                // Lưu ID gốc của stone
-                stoneOnTargetOriginalIds[Pair(action.toX, action.toY)] = action.stoneTile
+            isDestinationTarget -> {
+                // Nếu đích là target → đá chuyển thành ID 240 (stone on target)
+                println("✅ Stone pushed onto target at (${action.toX}, ${action.toY}) - converting to ID 240")
                 TileConstants.TILE_STONE_ON_TARGET
             }
-            else -> action.stoneTile // Giữ nguyên loại đá gốc (42, 55, 152, etc.)
+            else -> {
+                // Nếu đích KHÔNG phải target → đá chuyển về đá thường
+                println("🎯 Stone pushed to non-target at (${action.toX}, ${action.toY}) - converting to normal stone")
+                // Chuyển đổi từ ID 240 về đá thường
+                when (action.stoneTile) {
+                    TileConstants.TILE_STONE_ON_TARGET -> TileConstants.TILE_PUSHABLE_CRATE // ID 42
+                    else -> action.stoneTile // Giữ nguyên nếu đã là đá thường
+                }
+            }
         }
+        
         gameMap.setTile(action.toX, action.toY, newDestinationTile, 2) // Set on active layer
+        println("🎯 Final tile at (${action.toX}, ${action.toY}): $newDestinationTile")
     }
 
     /**
