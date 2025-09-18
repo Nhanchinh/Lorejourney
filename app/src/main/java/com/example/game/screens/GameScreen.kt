@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.view.MotionEvent
+import android.widget.FrameLayout
 import com.example.game.Camera
 import com.example.game.GameConstants
 import com.example.game.GameMap
@@ -19,7 +20,8 @@ import com.example.game.gameMechanic.ShadowMechanic
 class GameScreen(
     private val gameStateManager: GameStateManager,
     private val levelId: Int,
-    private val context: Context
+    private val context: Context,
+    private val containerLayout: FrameLayout
 ) : Screen() {
     
     private lateinit var gameMap: GameMap
@@ -30,8 +32,10 @@ class GameScreen(
     // CHỈ CÓ shadowMechanic
     private var shadowMechanic: ShadowMechanic? = null
     
-    // UI Elements (giữ nguyên tất cả)
+    // UI Elements
     private val pauseButton = RectF()
+    private val helpButton = RectF() // THÊM help button
+    
     private val pauseButtonPaint = Paint().apply {
         isAntiAlias = true
         color = Color.parseColor("#88000000")
@@ -45,6 +49,18 @@ class GameScreen(
         textSize = 24f
         isFakeBoldText = true
     }
+    
+    // Help button paint
+    private val helpTextPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.WHITE
+        textAlign = Paint.Align.CENTER
+        textSize = 28f
+        isFakeBoldText = true
+    }
+    
+    // Video popup system
+    private val videoPopup = VideoPopup(context)
     
     // HUGE touchpad
     private val touchpadBase = RectF()
@@ -99,6 +115,7 @@ class GameScreen(
     
     init {
         initLevel()
+        updateUIElements()
     }
     
     private fun initLevel() {
@@ -243,6 +260,29 @@ class GameScreen(
             centerY + buttonSize/2
         )
     }
+
+    private fun updateUIElements() {
+        val screenWidth = GameConstants.SCREEN_WIDTH
+        val screenHeight = GameConstants.SCREEN_HEIGHT
+        
+        // Pause button (góc phải trên)
+        val pauseButtonSize = 60f
+        pauseButton.set(
+            screenWidth - pauseButtonSize - 20f,
+            20f,
+            screenWidth - 20f,
+            20f + pauseButtonSize
+        )
+        
+        // Help button (góc trái trên, cách edge 2cm = 80px)
+        val helpButtonSize = 60f
+        helpButton.set(
+            80f, // 2cm từ trái
+            20f,
+            80f + helpButtonSize,
+            20f + helpButtonSize
+        )
+    }
     
     override fun draw(canvas: Canvas) {
         canvas.save()
@@ -256,6 +296,11 @@ class GameScreen(
         
         canvas.restore()
         drawUI(canvas)
+        
+        // Draw video popup if active
+        if (videoPopup.isActive) {
+            videoPopup.draw(canvas)
+        }
         
         // THÊM: Vẽ completion message nếu level completed
         if (levelCompleted) {
@@ -307,6 +352,9 @@ class GameScreen(
             centerX + barSpacing + barWidth, centerY + barHeight/2,
             4f, 4f, pauseIconPaint
         )
+        
+        // Draw help button
+        drawHelpButton(canvas)
         
         // Draw touchpad background
         canvas.drawOval(touchpadBase, touchpadBasePaint)
@@ -365,6 +413,27 @@ class GameScreen(
         }
     }
 
+    private fun drawHelpButton(canvas: Canvas) {
+        val helpBackgroundPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.parseColor("#44000000")
+        }
+        
+        val helpBorderPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.parseColor("#FFFFFF")
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        
+        // Draw help button background
+        canvas.drawOval(helpButton, helpBackgroundPaint)
+        canvas.drawOval(helpButton, helpBorderPaint)
+        
+        // Draw "?" symbol
+        canvas.drawText("?", helpButton.centerX(), helpButton.centerY() + 10f, helpTextPaint)
+    }
+
     private fun drawCompletionMessage(canvas: Canvas) {
         // Vẽ overlay
         val overlayPaint = Paint().apply {
@@ -406,11 +475,38 @@ class GameScreen(
     }
     
     override fun handleTouch(event: MotionEvent): Boolean {
+        // Handle video popup touches first
+        if (videoPopup.isActive) {
+            if (videoPopup.handleTouch(event)) {
+                return true
+            }
+            return true // Block other touches when popup is open
+        }
+        
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                val x = event.x
+                val y = event.y
+                
+                // Check help button
+                if (helpButton.contains(x, y)) {
+                    // Show different videos based on level
+                    val videoName = when (levelId) {
+                        1 -> "mechanic1" // Basic controls
+                        2 -> "mechanic2" // Push mechanics
+                        3 -> "mechanic3" // Shadow mechanics
+                        4 -> "mechanic4" // Advanced puzzles
+                        5 -> "mechanic5" // More advanced
+                        6 -> "mechanic6" // Final mechanics
+                        else -> "mechanic1" // Default
+                    }
+                    videoPopup.show(videoName, containerLayout)
+                    return true
+                }
+                
                 when {
                     pauseButton.contains(event.x, event.y) -> {
-                        gameStateManager.pauseGame() // Thay vì changeState(STATE_MENU)
+                        gameStateManager.pauseGame()
                         return true
                     }
                     upButton.contains(event.x, event.y) -> {
