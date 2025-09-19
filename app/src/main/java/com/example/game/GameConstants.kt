@@ -1,13 +1,6 @@
 package com.example.game
 
 object GameConstants {
-    // Map tile IDs
-    const val TILE_EMPTY = 0
-    const val TILE_WALL = 1
-    const val TILE_FLOOR = 2
-    const val TILE_KEY = 4
-    const val TILE_BUTTON = 5
-    
     // Game settings
     const val TILE_SIZE = 96
     const val PLAYER_SPEED = 64

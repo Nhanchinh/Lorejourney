@@ -34,7 +34,7 @@ class SimpleGameMap(
     }
     
     fun getTile(x: Int, y: Int, layer: Int = 1): Int {
-        if (x < 0 || x >= width || y < 0 || y >= height) return TileConstants.TILE_WALL
+        if (x < 0 || x >= width || y < 0 || y >= height) return 10 // Treat out-of-bounds as WALL
         return when (layer) {
             0 -> mapData.bottomLayer[y][x]
             1 -> mapData.mainLayer[y][x]
@@ -60,15 +60,11 @@ class SimpleGameMap(
         val activeWalkable = when (activeTileId) {
             TileConstants.TILE_EMPTY,
             TileConstants.TILE_TARGET,
-            TileConstants.TILE_KEY,
-            TileConstants.TILE_BUTTON,
             TileConstants.TILE_END,
             TileConstants.TILE_SHADOW_SPAWN,
             TileConstants.TILE_SHADOW_TRIGGER -> true
             
-            TileConstants.TILE_PUSHABLE_STONE,
-            TileConstants.TILE_STONE_ON_TARGET,
-            TileConstants.TILE_SHADOW_DOOR -> false
+            TileConstants.TILE_STONE_ON_TARGET -> false
             
             else -> true // Default to walkable for unknown tiles
         }
@@ -222,9 +218,9 @@ class SimpleGameMap(
                     
                     // Main layer: walls and floors
                     mainLayer[y][x] = if (x == 0 || x == width-1 || y == 0 || y == height-1) {
-                        TileConstants.TILE_WALL
+                        10
                     } else {
-                        TileConstants.TILE_FLOOR
+                        18
                     }
                     
                     // Active layer: empty

@@ -154,6 +154,10 @@ class GameScreen(
         shadowMechanic!!.initialize()
         println(" Shadow mechanic initialized for level $levelId")
         
+        // Set shadow mechanic reference for push logic
+        pushLogic?.setShadowMechanic(shadowMechanic)
+        println("🔗 Shadow mechanic linked to PushLogic for level $levelId")
+        
         camera = Camera()
     }
     
@@ -173,14 +177,7 @@ class GameScreen(
         // CHỈ CÓ 1 dòng này
         shadowMechanic?.update(deltaTime)
         
-        val isComplete = if (levelId == 1) {
-            player.checkLevelComplete(gameMap)
-        } else if (levelId == 3) {
-            // CHỈ CÓ dòng này
-            player.checkLevelComplete(gameMap) && (shadowMechanic?.isPuzzleComplete() ?: true)
-        } else {
-            player.checkLevelComplete(gameMap)
-        }
+        val isComplete = player.checkLevelComplete(gameMap) && player.checkPuzzleComplete()
 
         if (isComplete) {
             completeLevel()

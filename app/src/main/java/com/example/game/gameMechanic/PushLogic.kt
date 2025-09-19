@@ -18,6 +18,9 @@ class PushLogic(private val gameMap: GameMap) {
     // Map để lưu trữ các push actions pending completion
     private val pendingPushActions = mutableMapOf<String, PendingPushAction>()
     
+    // Reference to shadow mechanic (optional)
+    private var shadowMechanic: ShadowMechanic? = null
+    
     data class PendingPushAction(
         val fromX: Int,
         val fromY: Int,
@@ -44,6 +47,13 @@ class PushLogic(private val gameMap: GameMap) {
                 }
             }
         }
+    }
+
+    /**
+     * Set reference to shadow mechanic for checking shadow position on targets
+     */
+    fun setShadowMechanic(shadowMechanic: ShadowMechanic?) {
+        this.shadowMechanic = shadowMechanic
     }
 
     /**
@@ -257,27 +267,41 @@ class PushLogic(private val gameMap: GameMap) {
      * Check xem đã hoàn thành puzzle chưa
      */
     fun isPuzzleComplete(): Boolean {
-        // Kiểm tra tất cả original targets đều có đá
+        // Kiểm tra tất cả original targets đều có đá HOẶC bóng
         val completed = originalTargets.all { (x, y) ->
             val activeTile = gameMap.getTile(x, y, 2)
-            activeTile == TileConstants.TILE_STONE_ON_TARGET
+            val hasStone = activeTile == TileConstants.TILE_STONE_ON_TARGET
+            
+            // Check if shadow is on this target
+            val hasShadow = shadowMechanic?.getShadowTilePosition()?.let { (shadowX, shadowY) ->
+                shadowX == x && shadowY == y
+            } ?: false
+            
+            hasStone || hasShadow
         }
 
         if (completed) {
-            println("🎉 PUZZLE COMPLETED! All stones on targets!")
+            println("🎉 PUZZLE COMPLETED! All targets have stones or shadows!")
         }
 
         return completed
     }
 
     /**
-     * Get số lượng targets và stones completed
+     * Get số lượng targets và số targets đã hoàn thành (có đá hoặc bóng)
      */
     fun getProgress(): Pair<Int, Int> {
         val totalTargets = originalTargets.size
         val completedTargets = originalTargets.count { (x, y) ->
             val activeTile = gameMap.getTile(x, y, 2)
-            activeTile == TileConstants.TILE_STONE_ON_TARGET
+            val hasStone = activeTile == TileConstants.TILE_STONE_ON_TARGET
+            
+            // Check if shadow is on this target
+            val hasShadow = shadowMechanic?.getShadowTilePosition()?.let { (shadowX, shadowY) ->
+                shadowX == x && shadowY == y
+            } ?: false
+            
+            hasStone || hasShadow
         }
         return Pair(completedTargets, totalTargets)
     }
