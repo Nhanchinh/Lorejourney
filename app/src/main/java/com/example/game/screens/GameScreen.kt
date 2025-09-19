@@ -285,7 +285,7 @@ class GameScreen(
         canvas.save()
         camera.apply(canvas)
         
-        gameMap.draw(canvas, camera, pushLogic)
+        gameMap.draw(canvas, camera, pushLogic, player)
         player.draw(canvas)
         
         // CHỈ CÓ 1 dòng này

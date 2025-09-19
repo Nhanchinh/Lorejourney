@@ -51,15 +51,22 @@ class TileRenderer {
     }
     
     /**
+     * Vẽ một tile với alpha (độ mờ) tùy chỉnh
+     */
+    fun drawTileWithAlpha(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float, alpha: Float) {
+        // Nếu đang ở sprite mode và có sprite manager
+        if (useSpriteMode && tileSpriteManager != null) {
+            tileSpriteManager?.drawSpriteWithAlpha(canvas, tileId, x, y, size, alpha)
+            return
+        }
+    }
+    
+    /**
      * Vẽ tile từ sprite sheet (default mode)
      */
     private fun drawTileSprite(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float) {
         tileSpriteManager?.drawSprite(canvas, tileId, x, y, size)
     }
-    
-    /**
-     * Vẽ tile bằng code (legacy mode - fallback)
-     */
     
     /**
      * Cleanup resources

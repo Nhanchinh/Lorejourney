@@ -267,7 +267,7 @@ class PushLogic(private val gameMap: GameMap) {
      * Check xem đã hoàn thành puzzle chưa
      */
     fun isPuzzleComplete(): Boolean {
-        // Kiểm tra tất cả original targets đều có đá HOẶC bóng
+        // Kiểm tra tất cả original targets đều có đá HOẶC bóng HOẶC player
         val completed = originalTargets.all { (x, y) ->
             val activeTile = gameMap.getTile(x, y, 2)
             val hasStone = activeTile == TileConstants.TILE_STONE_ON_TARGET
@@ -277,7 +277,12 @@ class PushLogic(private val gameMap: GameMap) {
                 shadowX == x && shadowY == y
             } ?: false
             
-            hasStone || hasShadow
+            // Check if player is on this target
+            val hasPlayer = shadowMechanic?.getPlayerTilePosition()?.let { (playerX, playerY) ->
+                playerX == x && playerY == y
+            } ?: false
+            
+            hasStone || hasShadow || hasPlayer
         }
 
         if (completed) {
@@ -288,7 +293,7 @@ class PushLogic(private val gameMap: GameMap) {
     }
 
     /**
-     * Get số lượng targets và số targets đã hoàn thành (có đá hoặc bóng)
+     * Get số lượng targets và số targets đã hoàn thành (có đá hoặc bóng hoặc player)
      */
     fun getProgress(): Pair<Int, Int> {
         val totalTargets = originalTargets.size
@@ -301,7 +306,12 @@ class PushLogic(private val gameMap: GameMap) {
                 shadowX == x && shadowY == y
             } ?: false
             
-            hasStone || hasShadow
+            // Check if player is on this target
+            val hasPlayer = shadowMechanic?.getPlayerTilePosition()?.let { (playerX, playerY) ->
+                playerX == x && playerY == y
+            } ?: false
+            
+            hasStone || hasShadow || hasPlayer
         }
         return Pair(completedTargets, totalTargets)
     }

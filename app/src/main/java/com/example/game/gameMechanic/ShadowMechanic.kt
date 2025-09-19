@@ -69,7 +69,7 @@ class ShadowMechanic(
         
         if (TileConstants.isShadowSpawn(currentTile)) {
             playerEntity?.let { pe ->
-                shadowEntity = ShadowEntity(player.x, player.y, context, pe)
+                shadowEntity = ShadowEntity(player.x, player.y, context, pe, gameMap)
                 println("🌟 Shadow spawned at tile ($playerTileX, $playerTileY) on active layer")
             }
         }
@@ -92,6 +92,13 @@ class ShadowMechanic(
         return shadowEntity?.let { shadow ->
             Pair(shadow.getCurrentTileX(), shadow.getCurrentTileY())
         }
+    }
+    
+    /**
+     * Get player position in tile coordinates
+     */
+    fun getPlayerTilePosition(): Pair<Int, Int> {
+        return Pair(player.getCurrentTileX(), player.getCurrentTileY())
     }
     
     /**

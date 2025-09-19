@@ -87,7 +87,7 @@ class SimpleGameMap(
         setTile(x, y, tileId, 1) // Default to main layer
     }
     
-    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null) {
+    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null, player: com.example.game.SpritePlayer? = null) {
         val tileSize = GameConstants.TILE_SIZE.toFloat()
         
         val padding = 2
@@ -119,7 +119,15 @@ class SimpleGameMap(
                 if (tileId != TileConstants.TILE_EMPTY) {
                     val drawX = x * tileSize
                     val drawY = y * tileSize
-                    tileRenderer.drawTile(canvas, tileId, drawX, drawY, tileSize)
+                    
+                    // Check if this is tile 95 (TILE_END) and render with opacity based on puzzle state
+                    if (tileId == TileConstants.TILE_END) {
+                        val isPuzzleComplete = player?.checkPuzzleComplete() ?: false
+                        val alpha = if (isPuzzleComplete) 1.0f else 0.6f // Mờ hơn khi chưa complete
+                        tileRenderer.drawTileWithAlpha(canvas, tileId, drawX, drawY, tileSize, alpha)
+                    } else {
+                        tileRenderer.drawTile(canvas, tileId, drawX, drawY, tileSize)
+                    }
                 }
             }
         }

@@ -16,12 +16,13 @@ class ShadowEntity(
     startX: Float,
     startY: Float,
     context: Context,
-    private val player: PlayerEntity
+    private val player: PlayerEntity,
+    private val gameMap: GameMap
 ) : Entity(startX, startY, context) {
     
     // Shadow properties
     private var isFollowing = true
-    private val followDistance = 3 // 3 tiles distance
+    private var followDistance = 3 // 3 tiles distance
     
     // Path tracking để follow player
     private val pathHistory = mutableListOf<Pair<Float, Float>>()
@@ -43,6 +44,15 @@ class ShadowEntity(
         
         // Check if player moved to new tile
         if (currentPlayerTileX != lastPlayerTileX || currentPlayerTileY != lastPlayerTileY) {
+            // Check if player is on ice
+            val playerTileId = gameMap.getTile(currentPlayerTileX, currentPlayerTileY, 1)
+            val isPlayerOnIce = com.example.game.map.TileConstants.isIce(playerTileId)
+            
+            if (isPlayerOnIce) {
+                followDistance++
+                println("🧊 Player on ice - Shadow follow distance increased to: $followDistance")
+            }
+            
             // Add player's current position to path history
             pathHistory.add(Pair(
                 lastPlayerTileX * GameConstants.TILE_SIZE.toFloat(), 
@@ -78,7 +88,7 @@ class ShadowEntity(
     }
     
     // Shadow specific methods
-    fun isOnShadowTrigger(gameMap: GameMap): Boolean {
+    fun isOnShadowTrigger(): Boolean {
         val tileX = getCurrentTileX()
         val tileY = getCurrentTileY()
         val tileId = gameMap.getTile(tileX, tileY, 2) // Check active layer
