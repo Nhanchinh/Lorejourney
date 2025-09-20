@@ -28,7 +28,7 @@ class PauseScreen(
     )
     
     private val continueButton = RectF()
-    private val saveExitButton = RectF()
+    private val resetMapButton = RectF() // Đổi tên từ saveExitButton
     private val selectMapButton = RectF()
     
     private val buttonPaint = Paint().apply {
@@ -71,7 +71,7 @@ class PauseScreen(
     }
     
     override fun update(deltaTime: Long) {
-        // Pause screen không cần update logic
+        
     }
     
     override fun draw(canvas: Canvas) {
@@ -92,7 +92,7 @@ class PauseScreen(
         
         // Draw buttons
         drawButton(canvas, continueButton, "CONTINUE", pressedButton == "CONTINUE")
-        drawButton(canvas, saveExitButton, "SAVE & EXIT", pressedButton == "SAVE_EXIT") 
+        drawButton(canvas, resetMapButton, "RESET MAP", pressedButton == "RESET_MAP") // Đổi text
         drawButton(canvas, selectMapButton, "SELECT MAP", pressedButton == "SELECT_MAP")
         
         // Draw level info
@@ -125,7 +125,7 @@ class PauseScreen(
             centerX + buttonWidth/2, centerY + buttonHeight/2
         )
         
-        saveExitButton.set(
+        resetMapButton.set( // Đổi tên từ saveExitButton
             centerX - buttonWidth/2, centerY + buttonSpacing - buttonHeight/2,
             centerX + buttonWidth/2, centerY + buttonSpacing + buttonHeight/2
         )
@@ -141,7 +141,7 @@ class PauseScreen(
             MotionEvent.ACTION_DOWN -> {
                 pressedButton = when {
                     continueButton.contains(event.x, event.y) -> "CONTINUE"
-                    saveExitButton.contains(event.x, event.y) -> "SAVE_EXIT"
+                    resetMapButton.contains(event.x, event.y) -> "RESET_MAP" // Đổi tên
                     selectMapButton.contains(event.x, event.y) -> "SELECT_MAP"
                     else -> ""
                 }
@@ -153,9 +153,8 @@ class PauseScreen(
                     "CONTINUE" -> {
                         gameStateManager.resumeGame() // Dùng resumeGame()
                     }
-                    "SAVE_EXIT" -> {
-                        saveGameProgress()
-                        gameStateManager.changeState(GameConstants.STATE_MENU)
+                    "RESET_MAP" -> { // Đổi logic
+                        resetCurrentMap()
                     }
                     "SELECT_MAP" -> {
                         gameStateManager.changeState(GameConstants.STATE_LEVEL_SELECT)
@@ -168,21 +167,23 @@ class PauseScreen(
         return false
     }
     
+    /**
+     * Reset map hiện tại về trạng thái ban đầu (KHÔNG reset progress)
+     */
+    private fun resetCurrentMap() {
+        println("🔄 Resetting map $levelId to initial state...")
+        
+        // KHÔNG gọi SaveManager.resetProgress() - chỉ restart level
+        // SaveManager.resetProgress() // ← XÓA dòng này
+        
+        // Chỉ restart level hiện tại
+        gameStateManager.restartCurrentLevel(levelId)
+        
+        println("✅ Map $levelId reset completed! (Progress preserved)")
+    }
+    
     private fun saveGameProgress() {
-        // Save current progress to SharedPreferences
-        val prefs = context.getSharedPreferences("GameProgress", Context.MODE_PRIVATE)
-        prefs.edit().apply {
-            putFloat("level_${levelId}_playerX", gameProgress.playerX)
-            putFloat("level_${levelId}_playerY", gameProgress.playerY)
-            putBoolean("level_${levelId}_shadowSpawned", gameProgress.shadowSpawned)
-            putFloat("level_${levelId}_shadowX", gameProgress.shadowX)
-            putFloat("level_${levelId}_shadowY", gameProgress.shadowY)
-            putInt("level_${levelId}_shadowChanges", gameProgress.shadowDirectionChanges)
-            // Save opened doors as comma-separated string
-            val doorsString = gameProgress.doorsOpened.joinToString(",") { "${it.first}:${it.second}" }
-            putString("level_${levelId}_doors", doorsString)
-            apply()
-        }
-        println("💾 Game progress saved for level $levelId")
+        // Function này không còn cần thiết vì đã thay bằng reset
+        // Giữ lại để tránh lỗi compile nếu có code khác gọi
     }
 }

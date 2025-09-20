@@ -3,6 +3,7 @@ package com.example.game.core
 import android.content.Context
 import android.graphics.Canvas
 import android.view.MotionEvent
+import android.widget.FrameLayout
 import com.example.game.GameConstants
 import com.example.game.animation.AnimationManager
 import com.example.game.screens.GameScreen
@@ -15,7 +16,10 @@ import com.example.game.screens.PauseScreen
 /**
  * Quản lý các màn hình game
  */
-class GameStateManager(private val context: Context) {
+class GameStateManager(
+    private val context: Context,
+    private val containerLayout: FrameLayout
+) {
     
     private var currentScreen: Screen? = null
     private var currentState = GameConstants.STATE_MENU
@@ -95,7 +99,7 @@ class GameStateManager(private val context: Context) {
                     currentScreen = currentGameScreen
                 } else {
                     // Start level mới
-                    currentGameScreen = GameScreen(this, nextLevelId, context)
+                    currentGameScreen = GameScreen(this, nextLevelId, context, containerLayout)
                     currentScreen = currentGameScreen
                 }
             }
@@ -115,5 +119,20 @@ class GameStateManager(private val context: Context) {
         
         currentState = nextState
         nextState = -1
+    }
+
+    // THÊM: Method để restart level hiện tại
+    fun restartCurrentLevel(levelId: Int) {
+        println("🔄 Restarting level $levelId...")
+        
+        // Tạo GameScreen mới cho level này
+        currentGameScreen = GameScreen(this, levelId, context, containerLayout)
+        currentScreen = currentGameScreen
+        
+        // Chuyển về trạng thái playing
+        currentState = GameConstants.STATE_PLAYING
+        nextState = GameConstants.STATE_PLAYING
+        
+        println("✅ Level $levelId restarted successfully!")
     }
 }

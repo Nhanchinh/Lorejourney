@@ -7,38 +7,11 @@ object TileConstants {
     // Sprite sheet tiles: 0-271 (reserved for sprite-based rendering)
     // Code-based tiles: 272+ (hand-drawn/procedural tiles)
     
-    // Basic tiles - offset by 272
+    // Basic tiles
     const val TILE_EMPTY = 0  // Keep 0 as empty
-    const val TILE_WALL = 273  // 1 + 272
-    const val TILE_FLOOR = 274  // 2 + 272
-    const val TILE_GRASS = 275  // 3 + 272
-    const val TILE_WATER = 276  // 4 + 272
-    const val TILE_STONE = 277  // 5 + 272
-    const val TILE_DIRT = 278  // 6 + 272
     
     // Interactive tiles - special IDs remain low for compatibility
-    const val TILE_KEY = 10
-    const val TILE_BUTTON = 11
-    const val TILE_DOOR = 12
-    const val TILE_CHEST = 285  // 13 + 272
     const val TILE_END = 95  // Keep for compatibility
-    
-    // Decorative tiles - offset by 272
-    const val TILE_TREE = 292  // 20 + 272
-    const val TILE_ROCK = 293  // 21 + 272
-    const val TILE_FLOWER = 294  // 22 + 272
-    const val TILE_BUSH = 295  // 23 + 272
-    
-    // Building tiles - offset by 272
-    const val TILE_HOUSE_WALL = 302  // 30 + 272
-    const val TILE_HOUSE_FLOOR = 303  // 31 + 272
-    const val TILE_ROOF = 304  // 32 + 272
-    const val TILE_WINDOW = 305  // 33 + 272
-    
-    // Special tiles - offset by 272
-    const val TILE_LAVA = 312  // 40 + 272
-    const val TILE_ICE = 313  // 41 + 272
-    const val TILE_SAND = 314  // 42 + 272
     
     // Push puzzle tiles - sprite-based IDs (theo yêu cầu mới)
     const val TILE_PUSHABLE_CRATE = 42    // Thùng có thể đẩy
@@ -46,17 +19,13 @@ object TileConstants {
     const val TILE_TARGET = 96            // Vị trí đích (theo yêu cầu mới)
     
     // Legacy push puzzle tiles - offset by 272 (giữ lại cho compatibility)
-    const val TILE_PUSHABLE_STONE = 322   // 50 + 272 - Đá có thể đẩy
-    const val TILE_TARGET_OLD = 323       // 51 + 272 - Vị trí đích cũ
     const val TILE_STONE_ON_TARGET = 240  // phiến đá màu xanh 
     
     // Additional pushable tiles (legacy)
     const val TILE_PUSHABLE_BARREL = 55   // Thùng gỗ có thể đẩy(đá nền băng)
     
-    // Shadow system tiles - offset by 272
     const val TILE_SHADOW_SPAWN = 80     // 60 + 272 - Ô spawn bóng
     const val TILE_SHADOW_TRIGGER = 176   // 61 + 272 - Ô cần bóng để mở cửa
-    const val TILE_SHADOW_DOOR = 334      // 62 + 272 - Cửa được mở bởi bóng
     
     // Ice tiles for sliding mechanic (sprite-based IDs)
     const val TILE_ICE_1 = 172  // Ice tile type 1
@@ -90,15 +59,13 @@ object TileConstants {
      */
     fun isWalkable(tileId: Int): Boolean {
         return when (tileId) {
-            TILE_EMPTY, TILE_FLOOR, TILE_GRASS, TILE_DIRT, TILE_SAND,
-            TILE_KEY, TILE_BUTTON, TILE_DOOR, TILE_HOUSE_FLOOR, TILE_END,
-            TILE_TARGET, TILE_TARGET_OLD -> true  // Target có thể đi qua
+            // Basic walkable tiles
+            0,  // EMPTY, FLOOR, GRASS, DIRT, SAND
+            10, 11, 12, 95,    // KEY, BUTTON, DOOR, HOUSE_FLOOR, END
+            96 -> true         // TARGET, TARGET_OLD
             
-            TILE_WALL, TILE_WATER, TILE_STONE, TILE_TREE, TILE_ROCK,
-            TILE_BUSH, TILE_HOUSE_WALL, TILE_ROOF, TILE_WINDOW,
-            TILE_LAVA, TILE_ICE,
-            TILE_PUSHABLE_STONE, TILE_STONE_ON_TARGET,
-            TILE_PUSHABLE_CRATE, TILE_PUSHABLE_BARREL, TILE_PUSHABLE_BLOCK -> false  // Các khối có thể đẩy không thể đi qua
+            // Non-walkable tiles  
+            240, 42, 55, 152 -> false  // PUSHABLE_STONE, STONE_ON_TARGET, PUSHABLE_CRATE, PUSHABLE_BARREL, PUSHABLE_BLOCK
             
             // Sprite-based tiles (1-271) - check against non-walkable list
             in 1..271 -> !NON_WALKABLE_SPRITE_TILES.contains(tileId)
@@ -113,7 +80,6 @@ object TileConstants {
     fun isPushable(tileId: Int): Boolean {
         return tileId == TILE_PUSHABLE_CRATE ||   // ID 42 (theo yêu cầu mới)
                tileId == TILE_PUSHABLE_BLOCK ||   // ID 152 (theo yêu cầu mới)
-               tileId == TILE_PUSHABLE_STONE ||   // Legacy
                tileId == TILE_STONE_ON_TARGET ||  // Legacy
                tileId == TILE_PUSHABLE_BARREL     // ID 55 (legacy)
     }
@@ -122,9 +88,7 @@ object TileConstants {
      * Check if tile là target position
      */
     fun isTarget(tileId: Int): Boolean {
-        return tileId == TILE_TARGET ||           // ID 96 (theo yêu cầu mới)
-               tileId == TILE_TARGET_OLD ||       // ID 323 (legacy)
-               tileId == TILE_STONE_ON_TARGET     // ID 324 (đá đã vào đích)
+        return tileId == TILE_TARGET           // ID 96 (theo yêu cầu mới)
     }
 
     /**

@@ -50,7 +50,6 @@ class ShadowMechanic(
         
         // Check mechanics
         checkShadowSpawn()
-        checkShadowTriggers()
     }
     
     fun draw(canvas: Canvas) {
@@ -70,45 +69,10 @@ class ShadowMechanic(
         
         if (TileConstants.isShadowSpawn(currentTile)) {
             playerEntity?.let { pe ->
-                shadowEntity = ShadowEntity(player.x, player.y, context, pe)
+                shadowEntity = ShadowEntity(player.x, player.y, context, pe, gameMap)
                 println("🌟 Shadow spawned at tile ($playerTileX, $playerTileY) on active layer")
             }
         }
-    }
-    
-    private fun checkShadowTriggers() {
-        shadowEntity?.let { shadow ->
-            if (shadow.isOnShadowTrigger(gameMap)) {
-                openShadowDoors()
-            }
-        }
-    }
-    
-    private fun openShadowDoors() {
-        var doorsOpened = 0
-        for (y in 0 until gameMap.height) {
-            for (x in 0 until gameMap.width) {
-                if (gameMap.getTile(x, y, 2) == TileConstants.TILE_SHADOW_DOOR) { // Check active layer
-                    gameMap.setTile(x, y, TileConstants.TILE_EMPTY, 2) // Set empty on active layer
-                    doorsOpened++
-                }
-            }
-        }
-        if (doorsOpened > 0) {
-            println("🚪 Opened $doorsOpened shadow door(s) on active layer")
-        }
-    }
-    
-    fun isPuzzleComplete(): Boolean {
-        // Puzzle complete khi không còn shadow door nào (trên active layer)
-        for (y in 0 until gameMap.height) {
-            for (x in 0 until gameMap.width) {
-                if (gameMap.getTile(x, y, 2) == TileConstants.TILE_SHADOW_DOOR) {
-                    return false
-                }
-            }
-        }
-        return true
     }
     
     fun getShadowInfo(): ShadowInfo? {
@@ -119,6 +83,29 @@ class ShadowMechanic(
                 pathSize = shadow.getPathHistorySize()
             )
         }
+    }
+    
+    /**
+     * Get shadow position in tile coordinates
+     */
+    fun getShadowTilePosition(): Pair<Int, Int>? {
+        return shadowEntity?.let { shadow ->
+            Pair(shadow.getCurrentTileX(), shadow.getCurrentTileY())
+        }
+    }
+    
+    /**
+     * Get player position in tile coordinates
+     */
+    fun getPlayerTilePosition(): Pair<Int, Int> {
+        return Pair(player.getCurrentTileX(), player.getCurrentTileY())
+    }
+    
+    /**
+     * Check if shadow exists and is active
+     */
+    fun hasShadow(): Boolean {
+        return shadowEntity != null && shadowEntity?.isActive == true
     }
     
     data class ShadowInfo(

@@ -43,4 +43,13 @@ object SaveManager {
         saveProgress()
         println("🔄 Progress reset!")
     }
+    
+    /**
+     * Unlock tất cả levels
+     */
+    fun unlockAllLevels() {
+        GameConstants.MAX_UNLOCKED_LEVEL = GameConstants.TOTAL_LEVELS
+        saveProgress()
+        println("🔓 All levels unlocked! (${GameConstants.TOTAL_LEVELS} levels)")
+    }
 }

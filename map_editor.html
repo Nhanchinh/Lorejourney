@@ -335,8 +335,8 @@
                     <strong>📝 FORMAT GAME:</strong><br>
                     • Dòng 1: Chiều rộng map (width)<br>
                     • Dòng 2: Chiều cao map (height)<br>
-                    • Dòng 3: Vị trí X của player spawn (1-based, từ trái sang phải)<br>
-                    • Dòng 4: Vị trí Y của player spawn (1-based, từ trên xuống dưới)<br>
+                    • Dòng 3: Vị trí X của player spawn (0-based, từ trái sang phải)<br>
+                    • Dòng 4: Vị trí Y của player spawn (0-based, từ trên xuống dưới)<br>
                     • Tiếp theo: Bottom Layer (background) - 13 dòng<br>
                     • Tiếp theo: Main Layer (static tiles + special items) - 13 dòng<br>
                     • Cuối cùng: Active Layer (moveable/interactive objects) - 13 dòng<br>
@@ -363,7 +363,7 @@
         let mapData = {
             width: 15,
             height: 13,
-            playerSpawn: { x: 8, y: 5 },
+            playerSpawn: { x: 7, y: 4 }, // Changed from 8,5 to 7,4 (0-based)
             isDark: 0,
             weather: 0,
             bottomLayer: [],
@@ -623,8 +623,8 @@
             const x = Math.floor((e.clientX - rect.left) / canvasTileSize);
             const y = Math.floor((e.clientY - rect.top) / canvasTileSize);
             
-            // Display coordinates as 1-based, Y from top to bottom
-            document.getElementById('coordinates').textContent = `X: ${x + 1}, Y: ${y + 1}`;
+            // Display coordinates as 0-based (changed from 1-based)
+            document.getElementById('coordinates').textContent = `X: ${x}, Y: ${y}`;
         }
         
         function handleCanvasPaint(e) {
@@ -816,36 +816,59 @@
                         renderTile(ctx, mapData.bottomLayer[y][x], canvasX, canvasY, 0.3);
                     }
                     
-                    // Current layer
-                    let currentValue;
-                    switch (currentLayer) {
-                        case 'bottom':
-                            currentValue = mapData.bottomLayer[y][x];
-                            break;
-                        case 'main':
-                            currentValue = mapData.mainLayer[y][x];
-                            break;
-                        case 'active':
-                            currentValue = mapData.activeLayer[y][x];
-                            break;
-                    }
-                    
-                    if (currentLayer === 'main' && currentValue.type) {
-                        if (currentValue.type === 'tile' && currentValue.id > 0) {
-                            renderTile(ctx, currentValue.id, canvasX, canvasY, 1.0);
-                        } else if (currentValue.type === 'animated') {
-                            renderSpecialTile(ctx, currentValue.value, canvasX, canvasY);
+                    // Render other layers with appropriate opacity based on current layer
+                    if (currentLayer === 'bottom') {
+                        // Show main layer dimmed when on bottom layer
+                        const mainValue = mapData.mainLayer[y][x];
+                        if (mainValue.type === 'tile' && mainValue.id > 0) {
+                            renderTile(ctx, mainValue.id, canvasX, canvasY, 0.4);
+                        } else if (mainValue.type === 'animated') {
+                            renderSpecialTile(ctx, mainValue.value, canvasX, canvasY, 0.4);
                         }
-                    } else if (currentLayer !== 'main' && currentValue > 0) {
-                        renderTile(ctx, currentValue, canvasX, canvasY, 1.0);
+                        
+                        // Show active layer dimmed when on bottom layer
+                        if (mapData.activeLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.activeLayer[y][x], canvasX, canvasY, 0.3);
+                        }
+                        
+                        // Current layer - bottom (full opacity)
+                        if (mapData.bottomLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.bottomLayer[y][x], canvasX, canvasY, 1.0);
+                        }
+                    } else if (currentLayer === 'main') {
+                        // Show active layer dimmed when on main layer
+                        if (mapData.activeLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.activeLayer[y][x], canvasX, canvasY, 0.4);
+                        }
+                        
+                        // Current layer - main (full opacity)
+                        const mainValue = mapData.mainLayer[y][x];
+                        if (mainValue.type === 'tile' && mainValue.id > 0) {
+                            renderTile(ctx, mainValue.id, canvasX, canvasY, 1.0);
+                        } else if (mainValue.type === 'animated') {
+                            renderSpecialTile(ctx, mainValue.value, canvasX, canvasY, 1.0);
+                        }
+                    } else if (currentLayer === 'active') {
+                        // Show main layer dimmed when on active layer
+                        const mainValue = mapData.mainLayer[y][x];
+                        if (mainValue.type === 'tile' && mainValue.id > 0) {
+                            renderTile(ctx, mainValue.id, canvasX, canvasY, 0.4);
+                        } else if (mainValue.type === 'animated') {
+                            renderSpecialTile(ctx, mainValue.value, canvasX, canvasY, 0.4);
+                        }
+                        
+                        // Current layer - active (full opacity)
+                        if (mapData.activeLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.activeLayer[y][x], canvasX, canvasY, 1.0);
+                        }
                     }
                 }
             }
             
-            // Render player spawn (1-based coordinates, Y from top to bottom)
+            // Render player spawn (0-based coordinates, Y from top to bottom)
             if (showPlayerSpawn) {
-                const spawnX = (mapData.playerSpawn.x - 1) * canvasTileSize;
-                const spawnY = (mapData.playerSpawn.y - 1) * canvasTileSize;
+                const spawnX = mapData.playerSpawn.x * canvasTileSize; // Removed -1
+                const spawnY = mapData.playerSpawn.y * canvasTileSize; // Removed -1
                 
                 ctx.strokeStyle = '#1abc9c';
                 ctx.lineWidth = 3;
@@ -906,7 +929,7 @@
             ctx.globalAlpha = 1.0;
         }
         
-        function renderSpecialTile(ctx, value, x, y) {
+        function renderSpecialTile(ctx, value, x, y, alpha = 1.0) {
             const colors = {
                 'a10|4|8': '#f39c12',  // KEY
                 'a11|4|8': '#9b59b6',  // BUTTON
@@ -921,6 +944,7 @@
                 'a14|4|8': '🏁'
             };
             
+            ctx.globalAlpha = alpha;
             ctx.fillStyle = colors[value] || '#95a5a6';
             ctx.fillRect(x, y, canvasTileSize, canvasTileSize);
             
@@ -928,6 +952,7 @@
             ctx.font = '20px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(symbols[value] || '?', x + canvasTileSize / 2, y + canvasTileSize / 2 + 6);
+            ctx.globalAlpha = 1.0;
         }
         
         function clearLayer() {

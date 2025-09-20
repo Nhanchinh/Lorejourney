@@ -4,11 +4,13 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
+import android.widget.FrameLayout
 import com.example.game.engine.GameView
 
 class MainActivity : Activity() {
     
     private lateinit var gameView: GameView
+    private lateinit var containerLayout: FrameLayout
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +31,14 @@ class MainActivity : Activity() {
             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         )
         
-        // Tạo game view với state management
-        gameView = GameView(this)
-        setContentView(gameView)
+        // Tạo container layout
+        containerLayout = FrameLayout(this)
+        
+        // Tạo game view
+        gameView = GameView(this, containerLayout)
+        containerLayout.addView(gameView)
+        
+        setContentView(containerLayout)
     }
     
     override fun onWindowFocusChanged(hasFocus: Boolean) {

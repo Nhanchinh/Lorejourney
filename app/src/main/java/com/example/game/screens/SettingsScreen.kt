@@ -17,7 +17,7 @@ import com.example.game.SaveManager
 class SettingsScreen(
     private val gameStateManager: GameStateManager,
     private val context: Context,
-    private val animationManager: AnimationManager // THÊM PARAMETER NÀY
+    private val animationManager: AnimationManager
 ) : Screen() {
     
     private var backgroundBitmap: Bitmap? = null
@@ -27,7 +27,12 @@ class SettingsScreen(
     private var musicEnabled = true
     private var vibrationEnabled = true
     
-    // UI Paints - TO HƠN
+    // Popup confirmation
+    private var showConfirmationPopup = false
+    private var confirmationType = "" // "UNLOCK_ALL" hoặc "RESET_PROGRESS"
+    private var confirmationMessage = ""
+    
+    // UI Paints
     private val titlePaint = Paint().apply {
         isAntiAlias = true
         color = Color.parseColor("#E1F5FE")
@@ -78,14 +83,21 @@ class SettingsScreen(
         style = Paint.Style.FILL
     }
     
-    // Thêm các Paint objects cho reset button
+    // Paint cho unlock all levels button
+    private val unlockButtonPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#4CAF50") // Màu xanh lá
+        style = Paint.Style.FILL
+    }
+    
+    // Paint cho reset progress button
     private val resetButtonPaint = Paint().apply {
         isAntiAlias = true
         color = Color.parseColor("#F44336") // Màu đỏ cảnh báo
         style = Paint.Style.FILL
     }
 
-    private val resetTextPaint = Paint().apply {
+    private val buttonTextPaint = Paint().apply {
         isAntiAlias = true
         color = Color.WHITE
         textAlign = Paint.Align.CENTER
@@ -100,11 +112,59 @@ class SettingsScreen(
         strokeWidth = 3f
     }
     
+    // Popup paints
+    private val popupBackgroundPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#E0000000") // Semi-transparent black
+        style = Paint.Style.FILL
+    }
+    
+    private val popupBoxPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#2C3E50") // Dark blue-gray
+        style = Paint.Style.FILL
+    }
+    
+    private val popupTextPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.WHITE
+        textAlign = Paint.Align.CENTER
+        textSize = 36f
+        isFakeBoldText = true
+    }
+    
+    private val popupTitlePaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#E74C3C") // Red for warning
+        textAlign = Paint.Align.CENTER
+        textSize = 42f
+        isFakeBoldText = true
+    }
+    
+    private val confirmButtonPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#E74C3C") // Red
+        style = Paint.Style.FILL
+    }
+    
+    private val cancelButtonPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#95A5A6") // Gray
+        style = Paint.Style.FILL
+    }
+    
     // UI Elements
     private val soundToggle = RectF()
     private val musicToggle = RectF()
     private val vibrationToggle = RectF()
+    private val unlockAllButton = RectF()
+    private val resetProgressButton = RectF()
     private val backButton = RectF()
+    
+    // Popup elements
+    private val popupBox = RectF()
+    private val confirmButton = RectF()
+    private val cancelButton = RectF()
     
     init {
         loadBackground()
@@ -123,7 +183,7 @@ class SettingsScreen(
         animationManager.update(deltaTime)
     }
     
-    override fun draw(canvas: Canvas) {  // THAY ĐỔI TỪ render THÀNH draw
+    override fun draw(canvas: Canvas) {
         // Draw background
         backgroundBitmap?.let { bg ->
             val scaleX = canvas.width.toFloat() / bg.width
@@ -140,11 +200,11 @@ class SettingsScreen(
         animationManager.applyMenuAnimation(canvas)
         
         val centerX = GameConstants.SCREEN_WIDTH / 2f
-        val startY = GameConstants.SCREEN_HEIGHT * 0.35f
-        val optionSpacing = 120f
+        val startY = GameConstants.SCREEN_HEIGHT * 0.3f
+        val optionSpacing = 100f
         
         // Title
-        canvas.drawText("SETTINGS", centerX, 180f, titlePaint)
+        canvas.drawText("SETTINGS", centerX, 150f, titlePaint)
         
         // Sound option
         canvas.drawText("Sound Effects", centerX - 250f, startY + 15f, optionPaint)
@@ -167,10 +227,65 @@ class SettingsScreen(
         canvas.drawRoundRect(vibrationToggle, 15f, 15f, toggleBorderPaint)
         canvas.drawText(if (vibrationEnabled) "ON" else "OFF", vibrationToggle.centerX(), vibrationToggle.centerY() + 8f, toggleTextPaint)
         
+        // Unlock All Levels button
+        canvas.drawRoundRect(unlockAllButton, 15f, 15f, unlockButtonPaint)
+        canvas.drawRoundRect(unlockAllButton, 15f, 15f, borderPaint)
+        canvas.drawText("UNLOCK ALL LEVELS", unlockAllButton.centerX(), unlockAllButton.centerY() + 10f, buttonTextPaint)
+        
+        // Reset Progress button
+        canvas.drawRoundRect(resetProgressButton, 15f, 15f, resetButtonPaint)
+        canvas.drawRoundRect(resetProgressButton, 15f, 15f, borderPaint)
+        canvas.drawText("RESET PROGRESS", resetProgressButton.centerX(), resetProgressButton.centerY() + 10f, buttonTextPaint)
+        
         // Back button
         canvas.drawRoundRect(backButton, 15f, 15f, backButtonPaint)
         canvas.drawRoundRect(backButton, 15f, 15f, toggleBorderPaint)
         canvas.drawText("← BACK", backButton.centerX(), backButton.centerY() + 10f, toggleTextPaint)
+        
+        // Draw confirmation popup if active
+        if (showConfirmationPopup) {
+            drawConfirmationPopup(canvas)
+        }
+    }
+    
+    private fun drawConfirmationPopup(canvas: Canvas) {
+        val centerX = GameConstants.SCREEN_WIDTH / 2f
+        val centerY = GameConstants.SCREEN_HEIGHT / 2f
+        
+        // Draw overlay background
+        canvas.drawRect(0f, 0f, GameConstants.SCREEN_WIDTH.toFloat(), GameConstants.SCREEN_HEIGHT.toFloat(), popupBackgroundPaint)
+        
+        // Draw popup box
+        canvas.drawRoundRect(popupBox, 20f, 20f, popupBoxPaint)
+        canvas.drawRoundRect(popupBox, 20f, 20f, borderPaint)
+        
+        // Draw title
+        canvas.drawText("CONFIRMATION", centerX, popupBox.top + 60f, popupTitlePaint)
+        
+        // Draw message with proper line breaks
+        drawMultilineText(canvas, confirmationMessage, centerX, popupBox.top + 120f, popupTextPaint)
+        
+        // Draw buttons
+        canvas.drawRoundRect(confirmButton, 15f, 15f, confirmButtonPaint)
+        canvas.drawRoundRect(confirmButton, 15f, 15f, borderPaint)
+        canvas.drawText("YES", confirmButton.centerX(), confirmButton.centerY() + 10f, buttonTextPaint)
+        
+        canvas.drawRoundRect(cancelButton, 15f, 15f, cancelButtonPaint)
+        canvas.drawRoundRect(cancelButton, 15f, 15f, borderPaint)
+        canvas.drawText("NO", cancelButton.centerX(), cancelButton.centerY() + 10f, buttonTextPaint)
+    }
+
+    /**
+     * Draw multiline text with proper line breaks
+     */
+    private fun drawMultilineText(canvas: Canvas, text: String, centerX: Float, startY: Float, paint: Paint) {
+        val lines = text.split("\n")
+        val lineHeight = paint.textSize * 1.2f // Spacing between lines
+        
+        lines.forEachIndexed { index, line ->
+            val y = startY + (index * lineHeight)
+            canvas.drawText(line, centerX, y, paint)
+        }
     }
     
     override fun handleTouch(event: MotionEvent): Boolean {
@@ -178,6 +293,29 @@ class SettingsScreen(
             MotionEvent.ACTION_DOWN -> {
                 val x = event.x
                 val y = event.y
+                
+                // Handle popup touches first
+                if (showConfirmationPopup) {
+                    if (confirmButton.contains(x, y)) {
+                        // User confirmed
+                        when (confirmationType) {
+                            "UNLOCK_ALL" -> {
+                                unlockAllLevels()
+                            }
+                            "RESET_PROGRESS" -> {
+                                resetAllProgress()
+                            }
+                        }
+                        showConfirmationPopup = false
+                        return true
+                    } else if (cancelButton.contains(x, y)) {
+                        // User cancelled
+                        showConfirmationPopup = false
+                        return true
+                    }
+                    // If touch is outside popup, ignore it
+                    return true
+                }
                 
                 // Check back button
                 if (backButton.contains(x, y)) {
@@ -203,19 +341,61 @@ class SettingsScreen(
                     vibrationEnabled = !vibrationEnabled
                     return true
                 }
+                
+                // Check unlock all levels button
+                if (unlockAllButton.contains(x, y)) {
+                    showConfirmation("UNLOCK_ALL", "Unlock all levels?\nThis will make all\nlevels playable.")
+                    return true
+                }
+                
+                // Check reset progress button
+                if (resetProgressButton.contains(x, y)) {
+                    showConfirmation("RESET_PROGRESS", "Reset all progress?\nThis will lock all\nlevels except Level 1.")
+                    return true
+                }
             }
         }
         return false
+    }
+    
+    /**
+     * Show confirmation popup
+     */
+    private fun showConfirmation(type: String, message: String) {
+        confirmationType = type
+        confirmationMessage = message
+        showConfirmationPopup = true
+        updatePopupPositions()
+    }
+    
+    /**
+     * Unlock tất cả levels
+     */
+    private fun unlockAllLevels() {
+        println(" Unlocking all levels...")
+        SaveManager.unlockAllLevels()
+        println("✅ All levels unlocked!")
+    }
+    
+    /**
+     * Reset toàn bộ progress
+     */
+    private fun resetAllProgress() {
+        println("🔄 Resetting all progress...")
+        SaveManager.resetProgress()
+        println("✅ All progress reset!")
     }
     
     private fun updateUIPositions() {
         if (GameConstants.SCREEN_WIDTH <= 0 || GameConstants.SCREEN_HEIGHT <= 0) return
         
         val centerX = GameConstants.SCREEN_WIDTH / 2f
-        val startY = GameConstants.SCREEN_HEIGHT * 0.35f
-        val optionSpacing = 120f
+        val startY = GameConstants.SCREEN_HEIGHT * 0.3f
+        val optionSpacing = 100f
         val toggleWidth = 120f
         val toggleHeight = 60f
+        val buttonWidth = 400f
+        val buttonHeight = 80f
         
         // Sound toggle
         soundToggle.set(
@@ -241,8 +421,60 @@ class SettingsScreen(
             startY + optionSpacing * 2 + toggleHeight/2
         )
         
+        // Unlock All Levels button
+        unlockAllButton.set(
+            centerX - buttonWidth/2,
+            startY + optionSpacing * 3 + 20f,
+            centerX + buttonWidth/2,
+            startY + optionSpacing * 3 + 20f + buttonHeight
+        )
+        
+        // Reset Progress button
+        resetProgressButton.set(
+            centerX - buttonWidth/2,
+            startY + optionSpacing * 4 + 40f,
+            centerX + buttonWidth/2,
+            startY + optionSpacing * 4 + 40f + buttonHeight
+        )
+        
         // Back button
         backButton.set(50f, 50f, 250f, 130f)
+        
+        // Update popup positions
+        updatePopupPositions()
+    }
+    
+    private fun updatePopupPositions() {
+        val centerX = GameConstants.SCREEN_WIDTH / 2f
+        val centerY = GameConstants.SCREEN_HEIGHT / 2f
+        val popupWidth = 500f
+        val popupHeight = 300f
+        val buttonWidth = 120f
+        val buttonHeight = 60f
+        
+        // Popup box
+        popupBox.set(
+            centerX - popupWidth/2,
+            centerY - popupHeight/2,
+            centerX + popupWidth/2,
+            centerY + popupHeight/2
+        )
+        
+        // Confirm button (YES)
+        confirmButton.set(
+            centerX - 80f - buttonWidth/2,
+            popupBox.bottom - 80f,
+            centerX - 80f + buttonWidth/2,
+            popupBox.bottom - 80f + buttonHeight
+        )
+        
+        // Cancel button (NO)
+        cancelButton.set(
+            centerX + 80f - buttonWidth/2,
+            popupBox.bottom - 80f,
+            centerX + 80f + buttonWidth/2,
+            popupBox.bottom - 80f + buttonHeight
+        )
     }
     
     override fun onScreenSizeChanged(width: Int, height: Int) {

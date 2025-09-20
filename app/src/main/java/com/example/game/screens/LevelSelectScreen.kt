@@ -255,41 +255,41 @@ class LevelSelectScreen(
             // Kiểm tra xem level có unlock không
             val isUnlocked = level <= GameConstants.MAX_UNLOCKED_LEVEL
             
-            // Gradient cho button background
+            // Gradient cho button background - SỬ DỤNG #00CAFF LÀM CHỦ ĐẠO
             val buttonGradient = if (isUnlocked) {
                 if (isSelected) {
-                    // Gradient sáng hơn cho selected button
+                    // Gradient cyan sáng cho selected button
                     LinearGradient(
                         button.left, button.top, button.left, button.bottom,
                         intArrayOf(
-                            Color.parseColor("#FFD54F"), // Sáng hơn
-                            Color.parseColor("#FFCA28"),
-                            Color.parseColor("#FFC107")
+                            Color.parseColor("#00FFDE"), // Cyan sáng nhất
+                            Color.parseColor("#00CAFF"), // Cyan chủ đạo
+                            Color.parseColor("#00A8E8")  // Cyan đậm hơn
                         ),
                         floatArrayOf(0f, 0.5f, 1f),
                         Shader.TileMode.CLAMP
                     )
                 } else {
-                    // Gradient bình thường cho unlocked button
+                    // Gradient cyan chủ đạo cho unlocked button
                     LinearGradient(
                         button.left, button.top, button.left, button.bottom,
                         intArrayOf(
-                            Color.parseColor("#FFC107"),
-                            Color.parseColor("#FF8F00"),
-                            Color.parseColor("#E65100")
+                            Color.parseColor("#00CAFF"), // Cyan chủ đạo
+                            Color.parseColor("#0099CC"), // Cyan đậm hơn
+                            Color.parseColor("#0065F8")  // Xanh dương đậm
                         ),
                         floatArrayOf(0f, 0.5f, 1f),
                         Shader.TileMode.CLAMP
                     )
                 }
             } else {
-                // Gradient cho locked button
+                // Gradient cho locked button - xám vừa
                 LinearGradient(
                     button.left, button.top, button.left, button.bottom,
                     intArrayOf(
-                        Color.parseColor("#757575"),
-                        Color.parseColor("#616161"),
-                        Color.parseColor("#424242")
+                        Color.parseColor("#BDBDBD"),
+                        Color.parseColor("#9E9E9E"),
+                        Color.parseColor("#757575")
                     ),
                     floatArrayOf(0f, 0.5f, 1f),
                     Shader.TileMode.CLAMP
@@ -300,6 +300,7 @@ class LevelSelectScreen(
             val buttonPaint = Paint().apply {
                 isAntiAlias = true
                 shader = buttonGradient
+                alpha = if (isSelected && isUnlocked) 200 else 220 // Vừa phải
             }
             
             // Chọn text paint
@@ -309,25 +310,34 @@ class LevelSelectScreen(
                 lockedTextPaint
             }
             
-            // Vẽ button
-            canvas.drawRoundRect(button, 20f, 20f, buttonPaint)
+            // Vẽ button với bo góc mềm mại hơn
+            canvas.drawRoundRect(button, 25f, 25f, buttonPaint)
             
-            // Vẽ border - sáng hơn cho selected
+            // Vẽ border - VIỀN TRẮNG NHẠT TRONG SUỐT CHO SELECTED
             if (isSelected && isUnlocked) {
-                // Border sáng cho selected button
+                // Border trắng nhạt trong suốt cho selected button
                 val selectedBorderPaint = Paint().apply {
                     isAntiAlias = true
                     style = Paint.Style.STROKE
                     strokeWidth = 4f
-                    color = Color.parseColor("#00E676") // Xanh lá sáng
+                    color = Color.parseColor("#FFFFFF") // Trắng
+                    alpha = 140 // Nhạt hơn (từ 180 xuống 140)
+                    setShadowLayer(6f, 0f, 0f, Color.parseColor("#FFFFFF")) // Shadow cũng nhạt hơn
                 }
-                canvas.drawRoundRect(button, 20f, 20f, selectedBorderPaint)
+                canvas.drawRoundRect(button, 25f, 25f, selectedBorderPaint)
             } else {
-                // Border bình thường
-                canvas.drawRoundRect(button, 20f, 20f, buttonBorderPaint)
+                // Border bình thường cho các nút khác
+                val normalBorderPaint = Paint().apply {
+                    isAntiAlias = true
+                    style = Paint.Style.STROKE
+                    strokeWidth = 2f
+                    color = Color.parseColor("#00CAFF") // Cyan chủ đạo
+                    alpha = 180
+                }
+                canvas.drawRoundRect(button, 25f, 25f, normalBorderPaint)
             }
             
-            // Vẽ text
+            // Vẽ text với shadow đẹp hơn
             val text = if (isUnlocked) level.toString() else "🔒"
             canvas.drawText(
                 text,

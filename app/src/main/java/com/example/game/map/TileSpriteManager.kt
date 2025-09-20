@@ -98,6 +98,47 @@ class TileSpriteManager(context: Context) {
     }
     
     /**
+     * Vẽ sprite với alpha (độ mờ)
+     */
+    fun drawSpriteWithAlpha(canvas: Canvas, spriteId: Int, destX: Float, destY: Float, destSize: Float, alpha: Float) {
+        if (!isInitialized || spriteSheet == null) {
+            drawFallbackTile(canvas, destX, destY, destSize, spriteId)
+            return
+        }
+        
+        // Validate spriteId và alpha
+        if (spriteId < 1 || spriteId > TOTAL_SPRITES) {
+            drawFallbackTile(canvas, destX, destY, destSize, spriteId)
+            return
+        }
+        
+        // Convert 1-based spriteId to 0-based index
+        val index = spriteId - 1
+        val col = index % SPRITE_COLS
+        val row = index / SPRITE_COLS
+        
+        // Source rectangle trong sprite sheet
+        val srcLeft = col * tileWidth
+        val srcTop = row * tileHeight
+        val srcRight = srcLeft + tileWidth
+        val srcBottom = srcTop + tileHeight
+        val srcRect = Rect(srcLeft, srcTop, srcRight, srcBottom)
+        
+        // Destination rectangle trên canvas
+        val destRect = RectF(destX, destY, destX + destSize, destY + destSize)
+        
+        // Tạo paint với alpha
+        val alphaPaint = android.graphics.Paint().apply {
+            this.alpha = (alpha * 255).toInt().coerceIn(0, 255)
+        }
+        
+        // Vẽ sprite với alpha
+        spriteSheet?.let { sheet ->
+            canvas.drawBitmap(sheet, srcRect, destRect, alphaPaint)
+        }
+    }
+    
+    /**
      * Vẽ tile fallback khi không có sprite
      */
     private fun drawFallbackTile(canvas: Canvas, destX: Float, destY: Float, destSize: Float, spriteId: Int) {

@@ -34,8 +34,8 @@ class GameMap(private val simpleMap: SimpleGameMap) {
         simpleMap.setTile(x, y, tileId, layer)
     }
     
-    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null) {
-        simpleMap.draw(canvas, camera, pushLogic)
+    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null, player: com.example.game.SpritePlayer? = null) {
+        simpleMap.draw(canvas, camera, pushLogic, player)
     }
     
     companion object {
