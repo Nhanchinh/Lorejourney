@@ -42,8 +42,8 @@ class WorldSelectScreen(
             difficulty = "Beginner",
             levelRange = 1..4,
             isUnlocked = true,
-            primaryColor = Color.parseColor("#66BB6A"),
-            secondaryColor = Color.parseColor("#4CAF50")
+            primaryColor = Color.parseColor("#00E676"), // Xanh lá neon tươi
+            secondaryColor = Color.parseColor("#00C853")  // Xanh lá sáng
         ),
         World(
             id = 2,
@@ -53,8 +53,8 @@ class WorldSelectScreen(
             difficulty = "Intermediate", 
             levelRange = 5..7,
             isUnlocked = false,
-            primaryColor = Color.parseColor("#42A5F5"),
-            secondaryColor = Color.parseColor("#2196F3")
+            primaryColor = Color.parseColor("#00B8FF"), // Xanh dương sky tươi
+            secondaryColor = Color.parseColor("#0091EA")  // Xanh dương điện tử
         ),
         World(
             id = 3,
@@ -62,10 +62,10 @@ class WorldSelectScreen(
             title = "Cosmic Realm",
             description = "Journey through the infinite cosmos where reality bends and time flows differently. Only the most skilled adventurers can unlock the ultimate secrets of creation.",
             difficulty = "Expert",
-            levelRange = 8..10,
+            levelRange = 8..15, // Cập nhật từ 8..10 thành 8..15 (8 maps)
             isUnlocked = false,
-            primaryColor = Color.parseColor("#AB47BC"),
-            secondaryColor = Color.parseColor("#9C27B0")
+            primaryColor = Color.parseColor("#E040FB"), // Tím hồng neon
+            secondaryColor = Color.parseColor("#D500F9")  // Tím magenta sáng
         )
     )
     
@@ -266,25 +266,26 @@ class WorldSelectScreen(
             val isSelected = i == selectedWorld
             val isUnlocked = world.isUnlocked
             
-            // Gradient for button background
+            // Gradient for button background với màu sắc tươi sáng hơn
             val buttonGradient = if (isUnlocked) {
                 if (isSelected) {
                     LinearGradient(
                         button.left, button.top, button.left, button.bottom,
                         intArrayOf(
+                            adjustBrightness(world.primaryColor, 1.3f), // Sáng hơn 30%
                             world.primaryColor,
                             world.secondaryColor,
                             adjustBrightness(world.secondaryColor, 0.8f)
                         ),
-                        floatArrayOf(0f, 0.5f, 1f),
+                        floatArrayOf(0f, 0.3f, 0.7f, 1f),
                         Shader.TileMode.CLAMP
                     )
                 } else {
                     LinearGradient(
                         button.left, button.top, button.left, button.bottom,
                         intArrayOf(
-                            adjustBrightness(world.primaryColor, 0.7f),
-                            adjustBrightness(world.secondaryColor, 0.7f)
+                            adjustBrightness(world.primaryColor, 0.9f), // Chỉ giảm 10%
+                            adjustBrightness(world.secondaryColor, 0.8f)
                         ),
                         floatArrayOf(0f, 1f),
                         Shader.TileMode.CLAMP
@@ -294,8 +295,8 @@ class WorldSelectScreen(
                 LinearGradient(
                     button.left, button.top, button.left, button.bottom,
                     intArrayOf(
-                        Color.parseColor("#616161"),
-                        Color.parseColor("#424242")
+                        Color.parseColor("#757575"), // Sáng hơn cho locked
+                        Color.parseColor("#616161")
                     ),
                     floatArrayOf(0f, 1f),
                     Shader.TileMode.CLAMP
@@ -304,32 +305,66 @@ class WorldSelectScreen(
             
             worldButtonPaint.shader = buttonGradient
             
-            // Draw button
+            // Thêm glow effect cho unlocked buttons
+            if (isUnlocked) {
+                val glowPaint = Paint().apply {
+                    isAntiAlias = true
+                    color = world.primaryColor
+                    alpha = if (isSelected) 60 else 30 // Selected có glow mạnh hơn
+                    setShadowLayer(15f, 0f, 0f, world.primaryColor)
+                }
+                canvas.drawRoundRect(button, 25f, 25f, glowPaint)
+            }
+            
+            // Draw main button
             canvas.drawRoundRect(button, 25f, 25f, worldButtonPaint)
             
-            // Draw border
+            // Draw border với hiệu ứng đẹp hơn
             if (isSelected && isUnlocked) {
                 val selectedBorderPaint = Paint().apply {
                     isAntiAlias = true
                     style = Paint.Style.STROKE
-                    strokeWidth = 4f
+                    strokeWidth = 5f // Dày hơn
                     color = Color.WHITE
-                    alpha = 140
-                    setShadowLayer(6f, 0f, 0f, Color.WHITE)
+                    alpha = 200 // Sáng hơn
+                    setShadowLayer(8f, 0f, 0f, world.primaryColor) // Shadow màu theo world
                 }
                 canvas.drawRoundRect(button, 25f, 25f, selectedBorderPaint)
+                
+                // Thêm inner border để tạo hiệu ứng depth
+                val innerBorderPaint = Paint().apply {
+                    isAntiAlias = true
+                    style = Paint.Style.STROKE
+                    strokeWidth = 2f
+                    color = adjustBrightness(world.primaryColor, 1.5f)
+                    alpha = 150
+                }
+                canvas.drawRoundRect(button, 22f, 22f, innerBorderPaint)
             } else {
-                canvas.drawRoundRect(button, 25f, 25f, buttonBorderPaint)
+                val normalBorderPaint = Paint().apply {
+                    isAntiAlias = true
+                    style = Paint.Style.STROKE
+                    strokeWidth = 3f
+                    color = if (isUnlocked) adjustBrightness(world.primaryColor, 1.2f) else Color.parseColor("#9E9E9E")
+                    alpha = if (isUnlocked) 180 else 120
+                }
+                canvas.drawRoundRect(button, 25f, 25f, normalBorderPaint)
             }
             
-            // Draw text
+            // Draw text với shadow tốt hơn
             val text = if (isUnlocked) {
                 world.name
             } else {
                 "🔒 ${world.name}"
             }
             
-            val textPaint = if (isUnlocked) worldTextPaint else lockedTextPaint
+            val textPaint = if (isUnlocked) {
+                worldTextPaint.apply {
+                    setShadowLayer(4f, 1f, 1f, Color.BLACK) // Shadow đậm hơn
+                }
+            } else {
+                lockedTextPaint
+            }
             
             canvas.drawText(
                 text,
@@ -469,12 +504,31 @@ class WorldSelectScreen(
     
     private fun adjustBrightness(color: Int, factor: Float): Int {
         val r = ((color shr 16) and 0xFF)
-        val g = ((color shr 8) and 0xFF)
+        val g = ((color shr 8) and 0xFF)  
         val b = (color and 0xFF)
         
-        val newR = (r * factor).toInt().coerceIn(0, 255)
-        val newG = (g * factor).toInt().coerceIn(0, 255)
-        val newB = (b * factor).toInt().coerceIn(0, 255)
+        // Hỗ trợ tăng độ sáng vượt quá 100%
+        val newR = if (factor > 1.0f) {
+            // Tăng độ sáng bằng cách blend với trắng
+            val blend = factor - 1.0f
+            (r + (255 - r) * blend).toInt().coerceIn(0, 255)
+        } else {
+            (r * factor).toInt().coerceIn(0, 255)
+        }
+        
+        val newG = if (factor > 1.0f) {
+            val blend = factor - 1.0f
+            (g + (255 - g) * blend).toInt().coerceIn(0, 255)
+        } else {
+            (g * factor).toInt().coerceIn(0, 255)
+        }
+        
+        val newB = if (factor > 1.0f) {
+            val blend = factor - 1.0f
+            (b + (255 - b) * blend).toInt().coerceIn(0, 255)
+        } else {
+            (b * factor).toInt().coerceIn(0, 255)
+        }
         
         return Color.rgb(newR, newG, newB)
     }

@@ -54,6 +54,11 @@ class GameMap(private val simpleMap: SimpleGameMap) {
                 8 -> "worlds/world3/level3-1.txt"
                 9 -> "worlds/world3/level3-2.txt"
                 10 -> "worlds/world3/level3-3.txt"
+                11 -> "worlds/world3/level3-4.txt"
+                12 -> "worlds/world3/level3-5.txt"
+                13 -> "worlds/world3/level3-6.txt"
+                14 -> "worlds/world3/level3-7.txt"
+                15 -> "worlds/world3/level3-8.txt"
                 else -> "level$levelId.txt" // Fallback to legacy naming
             }
         }

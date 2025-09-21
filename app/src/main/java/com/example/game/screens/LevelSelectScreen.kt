@@ -64,16 +64,31 @@ class LevelSelectScreen(
             "Face the ultimate sky trial where lightning and thunder test your mastery of the heavens.", 
             false, Color.parseColor("#90CAF9"), Color.parseColor("#64B5F6")),
             
-        // World 3 - Cosmic Realm (Levels 8-10)
+        // World 3 - Cosmic Realm (Levels 8-15) - 8 maps
         Chapter(8, 3, 1, "3-1", "Void Sanctuary", "Legendary", 
             "Enter the mysterious Void Sanctuary, where space and time bend to your will. This legendary realm challenges even the most skilled players with reality-warping puzzles.", 
             false, Color.parseColor("#AB47BC"), Color.parseColor("#9C27B0")),
         Chapter(9, 3, 2, "3-2", "Cosmic Forge", "Legendary", 
             "Step into the Cosmic Forge, where stars are born and worlds are shaped. Master the forces of creation itself in this ultimate test of skill and determination.", 
             false, Color.parseColor("#BA68C8"), Color.parseColor("#AB47BC")),
-        Chapter(10, 3, 3, "3-3", "Eternal Nexus", "Mythic", 
+        Chapter(10, 3, 3, "3-3", "Starlight Nexus", "Legendary", 
+            "Navigate through the Starlight Nexus where constellations come alive and guide your path through celestial challenges.", 
+            false, Color.parseColor("#CE93D8"), Color.parseColor("#BA68C8")),
+        Chapter(11, 3, 4, "3-4", "Quantum Gardens", "Mythic", 
+            "Explore the Quantum Gardens where reality shifts with every step and possibilities branch into infinite paths.", 
+            false, Color.parseColor("#E1BEE7"), Color.parseColor("#CE93D8")),
+        Chapter(12, 3, 5, "3-5", "Time Weaver's Hall", "Mythic", 
+            "Master the Time Weaver's Hall where past, present and future converge in mind-bending temporal puzzles.", 
+            false, Color.parseColor("#F3E5F5"), Color.parseColor("#E1BEE7")),
+        Chapter(13, 3, 6, "3-6", "Dimension Rift", "Mythic", 
+            "Traverse the Dimension Rift where multiple realities overlap and challenge your perception of space itself.", 
+            false, Color.parseColor("#E040FB"), Color.parseColor("#D500F9")),
+        Chapter(14, 3, 7, "3-7", "Infinity Chamber", "Divine", 
+            "Enter the Infinity Chamber where mathematical concepts become physical reality and logic bends to cosmic will.", 
+            false, Color.parseColor("#C51162"), Color.parseColor("#E040FB")),
+        Chapter(15, 3, 8, "3-8", "Eternal Nexus", "Divine", 
             "Reach the Eternal Nexus, the culmination of all journeys. Only true legends can conquer this final realm where all dimensions converge.", 
-            false, Color.parseColor("#CE93D8"), Color.parseColor("#BA68C8"))
+            false, Color.parseColor("#FF1744"), Color.parseColor("#C51162"))
     )
     
     // Get chapters for currently selected world
