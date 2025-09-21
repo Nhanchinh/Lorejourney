@@ -198,7 +198,6 @@ class SpritePlayer(
         // Calculate new position
         val newX = x + velocityX * deltaSeconds
         val newY = y + velocityY * deltaSeconds
-        println("🔄 Checking position validity for new coordinates: "+!isPositionValid(newX, newY))
         // Check for push mechanics TRƯỚC KHI check collision
         if (!isPositionValid(newX, newY)) {
             // Position invalid - check if it's because of pushable stone

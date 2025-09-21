@@ -34,7 +34,7 @@ class SimpleGameMap(
     }
     
     fun getTile(x: Int, y: Int, layer: Int = 1): Int {
-        if (x < 0 || x >= width || y < 0 || y >= height) return TileConstants.TILE_WALL
+        if (x < 0 || x >= width || y < 0 || y >= height) return 10 // Treat out-of-bounds as WALL
         return when (layer) {
             0 -> mapData.bottomLayer[y][x]
             1 -> mapData.mainLayer[y][x]
@@ -60,15 +60,11 @@ class SimpleGameMap(
         val activeWalkable = when (activeTileId) {
             TileConstants.TILE_EMPTY,
             TileConstants.TILE_TARGET,
-            TileConstants.TILE_KEY,
-            TileConstants.TILE_BUTTON,
             TileConstants.TILE_END,
             TileConstants.TILE_SHADOW_SPAWN,
             TileConstants.TILE_SHADOW_TRIGGER -> true
             
-            TileConstants.TILE_PUSHABLE_STONE,
-            TileConstants.TILE_STONE_ON_TARGET,
-            TileConstants.TILE_SHADOW_DOOR -> false
+            TileConstants.TILE_STONE_ON_TARGET -> false
             
             else -> true // Default to walkable for unknown tiles
         }
@@ -91,7 +87,7 @@ class SimpleGameMap(
         setTile(x, y, tileId, 1) // Default to main layer
     }
     
-    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null) {
+    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null, player: com.example.game.SpritePlayer? = null) {
         val tileSize = GameConstants.TILE_SIZE.toFloat()
         
         val padding = 2
@@ -123,7 +119,15 @@ class SimpleGameMap(
                 if (tileId != TileConstants.TILE_EMPTY) {
                     val drawX = x * tileSize
                     val drawY = y * tileSize
-                    tileRenderer.drawTile(canvas, tileId, drawX, drawY, tileSize)
+                    
+                    // Check if this is tile 95 (TILE_END) and render with opacity based on puzzle state
+                    if (tileId == TileConstants.TILE_END) {
+                        val isPuzzleComplete = player?.checkPuzzleComplete() ?: false
+                        val alpha = if (isPuzzleComplete) 1.0f else 0.6f // Mờ hơn khi chưa complete
+                        tileRenderer.drawTileWithAlpha(canvas, tileId, drawX, drawY, tileSize, alpha)
+                    } else {
+                        tileRenderer.drawTile(canvas, tileId, drawX, drawY, tileSize)
+                    }
                 }
             }
         }
@@ -222,9 +226,9 @@ class SimpleGameMap(
                     
                     // Main layer: walls and floors
                     mainLayer[y][x] = if (x == 0 || x == width-1 || y == 0 || y == height-1) {
-                        TileConstants.TILE_WALL
+                        10
                     } else {
-                        TileConstants.TILE_FLOOR
+                        18
                     }
                     
                     // Active layer: empty

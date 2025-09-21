@@ -816,28 +816,51 @@
                         renderTile(ctx, mapData.bottomLayer[y][x], canvasX, canvasY, 0.3);
                     }
                     
-                    // Current layer
-                    let currentValue;
-                    switch (currentLayer) {
-                        case 'bottom':
-                            currentValue = mapData.bottomLayer[y][x];
-                            break;
-                        case 'main':
-                            currentValue = mapData.mainLayer[y][x];
-                            break;
-                        case 'active':
-                            currentValue = mapData.activeLayer[y][x];
-                            break;
-                    }
-                    
-                    if (currentLayer === 'main' && currentValue.type) {
-                        if (currentValue.type === 'tile' && currentValue.id > 0) {
-                            renderTile(ctx, currentValue.id, canvasX, canvasY, 1.0);
-                        } else if (currentValue.type === 'animated') {
-                            renderSpecialTile(ctx, currentValue.value, canvasX, canvasY);
+                    // Render other layers with appropriate opacity based on current layer
+                    if (currentLayer === 'bottom') {
+                        // Show main layer dimmed when on bottom layer
+                        const mainValue = mapData.mainLayer[y][x];
+                        if (mainValue.type === 'tile' && mainValue.id > 0) {
+                            renderTile(ctx, mainValue.id, canvasX, canvasY, 0.4);
+                        } else if (mainValue.type === 'animated') {
+                            renderSpecialTile(ctx, mainValue.value, canvasX, canvasY, 0.4);
                         }
-                    } else if (currentLayer !== 'main' && currentValue > 0) {
-                        renderTile(ctx, currentValue, canvasX, canvasY, 1.0);
+                        
+                        // Show active layer dimmed when on bottom layer
+                        if (mapData.activeLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.activeLayer[y][x], canvasX, canvasY, 0.3);
+                        }
+                        
+                        // Current layer - bottom (full opacity)
+                        if (mapData.bottomLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.bottomLayer[y][x], canvasX, canvasY, 1.0);
+                        }
+                    } else if (currentLayer === 'main') {
+                        // Show active layer dimmed when on main layer
+                        if (mapData.activeLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.activeLayer[y][x], canvasX, canvasY, 0.4);
+                        }
+                        
+                        // Current layer - main (full opacity)
+                        const mainValue = mapData.mainLayer[y][x];
+                        if (mainValue.type === 'tile' && mainValue.id > 0) {
+                            renderTile(ctx, mainValue.id, canvasX, canvasY, 1.0);
+                        } else if (mainValue.type === 'animated') {
+                            renderSpecialTile(ctx, mainValue.value, canvasX, canvasY, 1.0);
+                        }
+                    } else if (currentLayer === 'active') {
+                        // Show main layer dimmed when on active layer
+                        const mainValue = mapData.mainLayer[y][x];
+                        if (mainValue.type === 'tile' && mainValue.id > 0) {
+                            renderTile(ctx, mainValue.id, canvasX, canvasY, 0.4);
+                        } else if (mainValue.type === 'animated') {
+                            renderSpecialTile(ctx, mainValue.value, canvasX, canvasY, 0.4);
+                        }
+                        
+                        // Current layer - active (full opacity)
+                        if (mapData.activeLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.activeLayer[y][x], canvasX, canvasY, 1.0);
+                        }
                     }
                 }
             }
@@ -906,7 +929,7 @@
             ctx.globalAlpha = 1.0;
         }
         
-        function renderSpecialTile(ctx, value, x, y) {
+        function renderSpecialTile(ctx, value, x, y, alpha = 1.0) {
             const colors = {
                 'a10|4|8': '#f39c12',  // KEY
                 'a11|4|8': '#9b59b6',  // BUTTON
@@ -921,6 +944,7 @@
                 'a14|4|8': '🏁'
             };
             
+            ctx.globalAlpha = alpha;
             ctx.fillStyle = colors[value] || '#95a5a6';
             ctx.fillRect(x, y, canvasTileSize, canvasTileSize);
             
@@ -928,6 +952,7 @@
             ctx.font = '20px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(symbols[value] || '?', x + canvasTileSize / 2, y + canvasTileSize / 2 + 6);
+            ctx.globalAlpha = 1.0;
         }
         
         function clearLayer() {

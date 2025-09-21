@@ -20,9 +20,14 @@ class LevelSelectScreen(
     
     private var backgroundBitmap: Bitmap? = null
     
-    // Chapter data - ĐÚNG THEO DESIGN GỐC
+    // Get selected world from gameStateManager
+    private val selectedWorld: Int get() = gameStateManager.selectedWorld
+    
+    // Chapter data - UPDATED WITH WORLD-BASED STRUCTURE
     private data class Chapter(
         val id: Int,
+        val worldId: Int,
+        val levelInWorld: Int,
         val name: String,
         val title: String,
         val difficulty: String,
@@ -32,28 +37,71 @@ class LevelSelectScreen(
         val secondaryColor: Int
     )
     
-    private val chapters = listOf(
-        Chapter(1, "Chapter 1", "The Beginning", "Easy", 
+    // All chapters data - organized by worlds
+    private val allChapters = listOf(
+        // World 1 - Mystical Forest (Levels 1-4)
+        Chapter(1, 1, 1, "1-1", "The Beginning", "Easy", 
             "Your journey starts in a mysterious forest. Learn the basic controls and discover ancient secrets hidden in the shadows.", 
-            true, Color.parseColor("#66BB6A"), Color.parseColor("#4CAF50")), // Xanh lá sáng
-        Chapter(2, "Chapter 2", "Underground Maze", "Normal", 
+            true, Color.parseColor("#66BB6A"), Color.parseColor("#4CAF50")),
+        Chapter(2, 1, 2, "1-2", "Forest Depths", "Easy", 
+            "Venture deeper into the forest. Master the basic mechanics and uncover hidden pathways.", 
+            true, Color.parseColor("#81C784"), Color.parseColor("#66BB6A")),
+        Chapter(3, 1, 3, "1-3", "Underground Maze", "Normal", 
             "Venture into the dark underground tunnels. Navigate through complex puzzles and avoid dangerous traps.", 
-            true, Color.parseColor("#FF9800"), Color.parseColor("#F57C00")), // Cam sáng
-        Chapter(3, "Chapter 3", "Crystal Caverns", "Hard", 
+            true, Color.parseColor("#FF9800"), Color.parseColor("#F57C00")),
+        Chapter(4, 1, 4, "1-4", "Crystal Caverns", "Normal", 
             "Explore the magical crystal caves. Use the power of crystals to solve mind-bending puzzles.", 
-            true, Color.parseColor("#EF5350"), Color.parseColor("#E53935")), // Đỏ sáng
-        Chapter(4, "Chapter 4", "Sky Temple", "Expert", 
+            true, Color.parseColor("#FFA726"), Color.parseColor("#FF9800")),
+            
+        // World 2 - Sky Temple (Levels 5-7)
+        Chapter(5, 2, 1, "2-1", "Sky Temple", "Hard", 
             "Ascend to the floating temple in the clouds. Master advanced puzzle mechanics to reach the summit.", 
-            false, Color.parseColor("#BDBDBD"), Color.parseColor("#9E9E9E")), // Xám locked
-        Chapter(5, "Chapter 5", "Final Trial", "Expert", 
-            "Face the ultimate challenge in the Final Trial, where all your skills will be tested to their limits. This legendary realm combines the mysteries of all previous chapters into one epic conclusion. Only true masters can claim victory in this final confrontation.", 
-            false, Color.parseColor("#9575CD"), Color.parseColor("#7E57C2")), // Tím locked
-        Chapter(6, "Chapter 6", "Sprite Realm", "Master", 
-            "Enter the mystical Sprite Realm, where reality bends and ancient art comes to life. This special chapter uses advanced sprite-based graphics to create a unique visual experience. Master the art of visual puzzles in this stunning new dimension.", 
-            true, Color.parseColor("#00BCD4"), Color.parseColor("#0097A7")) // Cyan cho map6
+            false, Color.parseColor("#42A5F5"), Color.parseColor("#2196F3")),
+        Chapter(6, 2, 2, "2-2", "Cloud Palace", "Hard", 
+            "Navigate through the majestic cloud palace where wind currents guide your path through aerial challenges.", 
+            false, Color.parseColor("#64B5F6"), Color.parseColor("#42A5F5")),
+        Chapter(7, 2, 3, "2-3", "Storm's End", "Expert", 
+            "Face the ultimate sky trial where lightning and thunder test your mastery of the heavens.", 
+            false, Color.parseColor("#90CAF9"), Color.parseColor("#64B5F6")),
+            
+        // World 3 - Cosmic Realm (Levels 8-15) - 8 maps
+        Chapter(8, 3, 1, "3-1", "Void Sanctuary", "Legendary", 
+            "Enter the mysterious Void Sanctuary, where space and time bend to your will. This legendary realm challenges even the most skilled players with reality-warping puzzles.", 
+            false, Color.parseColor("#AB47BC"), Color.parseColor("#9C27B0")),
+        Chapter(9, 3, 2, "3-2", "Cosmic Forge", "Legendary", 
+            "Step into the Cosmic Forge, where stars are born and worlds are shaped. Master the forces of creation itself in this ultimate test of skill and determination.", 
+            false, Color.parseColor("#BA68C8"), Color.parseColor("#AB47BC")),
+        Chapter(10, 3, 3, "3-3", "Starlight Nexus", "Legendary", 
+            "Navigate through the Starlight Nexus where constellations come alive and guide your path through celestial challenges.", 
+            false, Color.parseColor("#CE93D8"), Color.parseColor("#BA68C8")),
+        Chapter(11, 3, 4, "3-4", "Quantum Gardens", "Mythic", 
+            "Explore the Quantum Gardens where reality shifts with every step and possibilities branch into infinite paths.", 
+            false, Color.parseColor("#E1BEE7"), Color.parseColor("#CE93D8")),
+        Chapter(12, 3, 5, "3-5", "Time Weaver's Hall", "Mythic", 
+            "Master the Time Weaver's Hall where past, present and future converge in mind-bending temporal puzzles.", 
+            false, Color.parseColor("#F3E5F5"), Color.parseColor("#E1BEE7")),
+        Chapter(13, 3, 6, "3-6", "Dimension Rift", "Mythic", 
+            "Traverse the Dimension Rift where multiple realities overlap and challenge your perception of space itself.", 
+            false, Color.parseColor("#E040FB"), Color.parseColor("#D500F9")),
+        Chapter(14, 3, 7, "3-7", "Infinity Chamber", "Divine", 
+            "Enter the Infinity Chamber where mathematical concepts become physical reality and logic bends to cosmic will.", 
+            false, Color.parseColor("#C51162"), Color.parseColor("#E040FB")),
+        Chapter(15, 3, 8, "3-8", "Eternal Nexus", "Divine", 
+            "Reach the Eternal Nexus, the culmination of all journeys. Only true legends can conquer this final realm where all dimensions converge.", 
+            false, Color.parseColor("#FF1744"), Color.parseColor("#C51162"))
     )
     
-    private var selectedChapter = 5 // Default Chapter 6 (Sprite Realm) để showcase map6
+    // Get chapters for currently selected world
+    private val chapters: List<Chapter> get() = allChapters.filter { it.worldId == selectedWorld }
+    
+    // World titles for display
+    private val worldTitles = mapOf(
+        1 to "Mystical Forest",
+        2 to "Sky Temple", 
+        3 to "Cosmic Realm"
+    )
+    
+    private var selectedChapter = 0 // Always start with first chapter in selected world
     private val chapterButtons = mutableListOf<RectF>()
     private val backButton = RectF()
     private val playButton = RectF()
@@ -209,8 +257,9 @@ class LevelSelectScreen(
         val centerX = GameConstants.SCREEN_WIDTH / 2f
         val titleY = 68f  // Dịch từ 60f xuống 68f (8px ≈ 0.2cm)
         
-        // VẼ TITLE
-        canvas.drawText("SELECT CHAPTER", centerX, titleY, titlePaint)
+        // VẼ TITLE WITH WORLD INFO
+        val worldTitle = worldTitles[selectedWorld] ?: "Unknown World"
+        canvas.drawText("$worldTitle - SELECT LEVEL", centerX, titleY, titlePaint)
         
         // Back button
         drawBackButton(canvas)
@@ -248,48 +297,51 @@ class LevelSelectScreen(
     
     private fun drawChapterButtons(canvas: Canvas) {
         for (i in chapterButtons.indices) {
-            val level = i + 1
+            if (i >= chapters.size) break // Safety check
+            
+            val chapter = chapters[i]
+            val level = chapter.id // Use actual level ID from chapter
             val button = chapterButtons[i]
             val isSelected = i == selectedChapter
             
             // Kiểm tra xem level có unlock không
             val isUnlocked = level <= GameConstants.MAX_UNLOCKED_LEVEL
             
-            // Gradient cho button background
+            // Gradient cho button background - SỬ DỤNG #00CAFF LÀM CHỦ ĐẠO
             val buttonGradient = if (isUnlocked) {
                 if (isSelected) {
-                    // Gradient sáng hơn cho selected button
+                    // Gradient cyan sáng cho selected button
                     LinearGradient(
                         button.left, button.top, button.left, button.bottom,
                         intArrayOf(
-                            Color.parseColor("#FFD54F"), // Sáng hơn
-                            Color.parseColor("#FFCA28"),
-                            Color.parseColor("#FFC107")
+                            Color.parseColor("#00FFDE"), // Cyan sáng nhất
+                            Color.parseColor("#00CAFF"), // Cyan chủ đạo
+                            Color.parseColor("#00A8E8")  // Cyan đậm hơn
                         ),
                         floatArrayOf(0f, 0.5f, 1f),
                         Shader.TileMode.CLAMP
                     )
                 } else {
-                    // Gradient bình thường cho unlocked button
+                    // Gradient cyan chủ đạo cho unlocked button
                     LinearGradient(
                         button.left, button.top, button.left, button.bottom,
                         intArrayOf(
-                            Color.parseColor("#FFC107"),
-                            Color.parseColor("#FF8F00"),
-                            Color.parseColor("#E65100")
+                            Color.parseColor("#00CAFF"), // Cyan chủ đạo
+                            Color.parseColor("#0099CC"), // Cyan đậm hơn
+                            Color.parseColor("#0065F8")  // Xanh dương đậm
                         ),
                         floatArrayOf(0f, 0.5f, 1f),
                         Shader.TileMode.CLAMP
                     )
                 }
             } else {
-                // Gradient cho locked button
+                // Gradient cho locked button - xám vừa
                 LinearGradient(
                     button.left, button.top, button.left, button.bottom,
                     intArrayOf(
-                        Color.parseColor("#757575"),
-                        Color.parseColor("#616161"),
-                        Color.parseColor("#424242")
+                        Color.parseColor("#BDBDBD"),
+                        Color.parseColor("#9E9E9E"),
+                        Color.parseColor("#757575")
                     ),
                     floatArrayOf(0f, 0.5f, 1f),
                     Shader.TileMode.CLAMP
@@ -300,6 +352,7 @@ class LevelSelectScreen(
             val buttonPaint = Paint().apply {
                 isAntiAlias = true
                 shader = buttonGradient
+                alpha = if (isSelected && isUnlocked) 200 else 220 // Vừa phải
             }
             
             // Chọn text paint
@@ -309,26 +362,35 @@ class LevelSelectScreen(
                 lockedTextPaint
             }
             
-            // Vẽ button
-            canvas.drawRoundRect(button, 20f, 20f, buttonPaint)
+            // Vẽ button với bo góc mềm mại hơn
+            canvas.drawRoundRect(button, 25f, 25f, buttonPaint)
             
-            // Vẽ border - sáng hơn cho selected
+            // Vẽ border - VIỀN TRẮNG NHẠT TRONG SUỐT CHO SELECTED
             if (isSelected && isUnlocked) {
-                // Border sáng cho selected button
+                // Border trắng nhạt trong suốt cho selected button
                 val selectedBorderPaint = Paint().apply {
                     isAntiAlias = true
                     style = Paint.Style.STROKE
                     strokeWidth = 4f
-                    color = Color.parseColor("#00E676") // Xanh lá sáng
+                    color = Color.parseColor("#FFFFFF") // Trắng
+                    alpha = 140 // Nhạt hơn (từ 180 xuống 140)
+                    setShadowLayer(6f, 0f, 0f, Color.parseColor("#FFFFFF")) // Shadow cũng nhạt hơn
                 }
-                canvas.drawRoundRect(button, 20f, 20f, selectedBorderPaint)
+                canvas.drawRoundRect(button, 25f, 25f, selectedBorderPaint)
             } else {
-                // Border bình thường
-                canvas.drawRoundRect(button, 20f, 20f, buttonBorderPaint)
+                // Border bình thường cho các nút khác
+                val normalBorderPaint = Paint().apply {
+                    isAntiAlias = true
+                    style = Paint.Style.STROKE
+                    strokeWidth = 2f
+                    color = Color.parseColor("#00CAFF") // Cyan chủ đạo
+                    alpha = 180
+                }
+                canvas.drawRoundRect(button, 25f, 25f, normalBorderPaint)
             }
             
-            // Vẽ text
-            val text = if (isUnlocked) level.toString() else "🔒"
+            // Vẽ text với shadow đẹp hơn - DISPLAY LEVEL NAME (1-1, 1-2, etc.)
+            val text = if (isUnlocked) chapter.name else "🔒"
             canvas.drawText(
                 text,
                 button.centerX(),
@@ -339,9 +401,11 @@ class LevelSelectScreen(
     }
     
     private fun drawDescriptionPanel(canvas: Canvas) {
-        val selectedLevel = selectedChapter + 1
+        if (selectedChapter >= chapters.size) return // Safety check
+        
         val selectedChapterData = chapters[selectedChapter]
-        val isUnlocked = selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL // SỬA DÒNG NÀY
+        val selectedLevel = selectedChapterData.id
+        val isUnlocked = selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL
         
         // Background trong suốt với gradient subtle
         val bgGradient = LinearGradient(
@@ -359,11 +423,11 @@ class LevelSelectScreen(
         canvas.drawRoundRect(descriptionRect, 15f, 15f, descriptionBgPaint)
         canvas.drawRoundRect(descriptionRect, 15f, 15f, buttonBorderPaint)
         
-        // Level title
+        // Level title with world-level format
         val levelTitle = if (isUnlocked) {
-            "LEVEL ${selectedLevel}: ${selectedChapterData.title}"
+            "LEVEL ${selectedChapterData.name}: ${selectedChapterData.title}"
         } else {
-            "LEVEL ${selectedLevel}: LOCKED"
+            "LEVEL ${selectedChapterData.name}: LOCKED"
         }
         
         canvas.drawText(
@@ -399,8 +463,11 @@ class LevelSelectScreen(
     }
     
     private fun drawPlayButton(canvas: Canvas) {
-        val selectedLevel = selectedChapter + 1
-        val isPlayable = selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL // SỬA DÒNG NÀY
+        if (selectedChapter >= chapters.size) return // Safety check
+        
+        val selectedChapterData = chapters[selectedChapter]
+        val selectedLevel = selectedChapterData.id
+        val isPlayable = selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL
 
         // Gradient cho play button
         val gradient = if (isPlayable) {
@@ -468,30 +535,36 @@ class LevelSelectScreen(
             println("Touch detected - Current max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL}")
             
             if (backButton.contains(x, y)) {
-                gameStateManager.changeState(GameConstants.STATE_MENU)
+                gameStateManager.changeState(GameConstants.STATE_WORLD_SELECT)
                 return true
             }
             
             // Check chapter button clicks
             for (i in chapterButtons.indices) {
-                val level = i + 1
+                if (i >= chapters.size) break // Safety check
+                
+                val chapter = chapters[i]
+                val level = chapter.id
                 val button = chapterButtons[i]
                 
                 if (button.contains(x, y)) {
                     selectedChapter = i
-                    println("Selected chapter $i (Level $level) - Unlocked: ${level <= GameConstants.MAX_UNLOCKED_LEVEL}")
+                    println("Selected chapter $i (Level ${chapter.name} - ID: $level) - Unlocked: ${level <= GameConstants.MAX_UNLOCKED_LEVEL}")
                     return true
                 }
             }
             
             // Play button
             if (playButton.contains(x, y)) {
-                val selectedLevel = selectedChapter + 1
-                if (selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL) {
-                    println("Starting level $selectedLevel")
-                    gameStateManager.startLevel(selectedLevel)
-                } else {
-                    println("Cannot start locked level $selectedLevel (max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL})")
+                if (selectedChapter < chapters.size) {
+                    val selectedChapterData = chapters[selectedChapter]
+                    val selectedLevel = selectedChapterData.id
+                    if (selectedLevel <= GameConstants.MAX_UNLOCKED_LEVEL) {
+                        println("Starting level $selectedLevel")
+                        gameStateManager.startLevel(selectedLevel)
+                    } else {
+                        println("Cannot start locked level $selectedLevel (max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL})")
+                    }
                 }
                 return true
             }

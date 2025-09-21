@@ -34,25 +34,58 @@ class GameMap(private val simpleMap: SimpleGameMap) {
         simpleMap.setTile(x, y, tileId, layer)
     }
     
-    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null) {
-        simpleMap.draw(canvas, camera, pushLogic)
+    fun draw(canvas: Canvas, camera: Camera, pushLogic: PushLogic? = null, player: com.example.game.SpritePlayer? = null) {
+        simpleMap.draw(canvas, camera, pushLogic, player)
     }
     
     companion object {
         /**
-         * Centralized method để load level theo ID
+         * Map level ID to world-based file structure
+         */
+        private fun getLevelFileName(levelId: Int): String {
+            return when (levelId) {
+                1 -> "worlds/world1/level1-1.txt"
+                2 -> "worlds/world1/level1-2.txt"
+                3 -> "worlds/world1/level1-3.txt"
+                4 -> "worlds/world1/level1-4.txt"
+                5 -> "worlds/world2/level2-1.txt"
+                6 -> "worlds/world2/level2-2.txt"
+                7 -> "worlds/world2/level2-3.txt"
+                8 -> "worlds/world3/level3-1.txt"
+                9 -> "worlds/world3/level3-2.txt"
+                10 -> "worlds/world3/level3-3.txt"
+                11 -> "worlds/world3/level3-4.txt"
+                12 -> "worlds/world3/level3-5.txt"
+                13 -> "worlds/world3/level3-6.txt"
+                14 -> "worlds/world3/level3-7.txt"
+                15 -> "worlds/world3/level3-8.txt"
+                else -> "level$levelId.txt" // Fallback to legacy naming
+            }
+        }
+        
+        /**
+         * Centralized method để load level theo ID với world-based structure
          * Tất cả các level đều sử dụng sprite-based rendering
          */
         fun loadLevel(context: Context, levelId: Int): GameMap {
             // Sử dụng sprite mode cho tất cả các level
             return try {
-                val mapData = MapLoader.loadFromAssets(context, "level$levelId.txt")
+                // Map level ID to world-based file structure
+                val levelFileName = getLevelFileName(levelId)
+                val mapData = MapLoader.loadFromAssets(context, levelFileName)
                 val simpleMap = if (mapData != null) {
-                    println("Successfully loaded level$levelId data: ${mapData.width}x${mapData.height}")
+                    println("Successfully loaded $levelFileName data: ${mapData.width}x${mapData.height}")
                     SimpleGameMap.createSpriteMap(context, mapData)
                 } else {
-                    println("Failed to load level$levelId data, using default")
-                    SimpleGameMap.createDefaultSpriteMap(context)
+                    println("Failed to load $levelFileName data, trying fallback to legacy level$levelId.txt")
+                    // Fallback to legacy naming for backward compatibility
+                    val fallbackData = MapLoader.loadFromAssets(context, "level$levelId.txt")
+                    if (fallbackData != null) {
+                        SimpleGameMap.createSpriteMap(context, fallbackData)
+                    } else {
+                        println("Both new and legacy formats failed, using default")
+                        SimpleGameMap.createDefaultSpriteMap(context)
+                    }
                 }
                 GameMap(simpleMap)
             } catch (e: Exception) {

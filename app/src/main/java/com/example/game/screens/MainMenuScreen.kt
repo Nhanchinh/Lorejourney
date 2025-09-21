@@ -362,7 +362,7 @@ class MainMenuScreen(
                 if (startButton.contains(x, y)) {
                     // SLIDE ANIMATION
                     animationManager.startTransition(com.example.game.animation.AnimationManager.TransitionType.SLIDE_LEFT)
-                    gameStateManager.changeState(GameConstants.STATE_LEVEL_SELECT)
+                    gameStateManager.changeState(GameConstants.STATE_WORLD_SELECT)
                     return true
                 }
                 

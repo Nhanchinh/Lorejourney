@@ -16,46 +16,23 @@ class ShadowEntity(
     startX: Float,
     startY: Float,
     context: Context,
-    private val player: PlayerEntity
+    private val player: PlayerEntity,
+    private val gameMap: GameMap,
+    private val spawnTileX: Int = -1, // Tile X nơi shadow được spawn
+    private val spawnTileY: Int = -1  // Tile Y nơi shadow được spawn
 ) : Entity(startX, startY, context) {
     
     // Shadow properties
     private var isFollowing = true
-    private val followDistance = 2 // 2 tiles distance
-    private var directionChangeCount = 0
-    private val maxDirectionChanges = 4
+    private var followDistance = 3 // 3 tiles distance
     
     // Path tracking để follow player
     private val pathHistory = mutableListOf<Pair<Float, Float>>()
-    private var lastPlayerDirection = ""
     private var lastPlayerTileX = player.getCurrentTileX()
     private var lastPlayerTileY = player.getCurrentTileY()
     
-    // Visual properties
-    private val shadowPaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.parseColor("#88000000") // Semi-transparent black
-    }
-    
-    private val shadowBorderPaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.parseColor("#AA000000")
-        style = Paint.Style.STROKE
-        strokeWidth = 2f
-    }
-    
-    private val textPaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.RED
-        textAlign = Paint.Align.CENTER
-        textSize = 20f
-        isFakeBoldText = true
-    }
-    
-    private val size = GameConstants.TILE_SIZE.toFloat() * 0.8f
-    
     override fun update(deltaTime: Long) {
-        if (!isFollowing || directionChangeCount >= maxDirectionChanges) {
+        if (!isFollowing) {
             return
         }
         
@@ -69,29 +46,21 @@ class ShadowEntity(
         
         // Check if player moved to new tile
         if (currentPlayerTileX != lastPlayerTileX || currentPlayerTileY != lastPlayerTileY) {
+            // Check if player is on ice
+            val playerTileId = gameMap.getTile(currentPlayerTileX, currentPlayerTileY, 1)
+            val isPlayerOnIce = com.example.game.map.TileConstants.isIce(playerTileId)
+            
+            if (isPlayerOnIce) {
+                followDistance++
+                println("🧊 Player on ice - Shadow follow distance increased to: $followDistance")
+            }
+            
             // Add player's current position to path history
             pathHistory.add(Pair(
                 lastPlayerTileX * GameConstants.TILE_SIZE.toFloat(), 
                 lastPlayerTileY * GameConstants.TILE_SIZE.toFloat()
             ))
             
-            // Track direction changes
-            val currentDirection = getMovementDirection(
-                lastPlayerTileX, lastPlayerTileY,
-                currentPlayerTileX, currentPlayerTileY
-            )
-            
-            if (currentDirection != lastPlayerDirection && lastPlayerDirection.isNotEmpty()) {
-                directionChangeCount++
-                println("🌟 Shadow: Direction change #$directionChangeCount ($lastPlayerDirection -> $currentDirection)")
-                
-                if (directionChangeCount >= maxDirectionChanges) {
-                    isFollowing = false
-                    println("🌟 Shadow: Stopped following after $maxDirectionChanges direction changes")
-                }
-            }
-            
-            lastPlayerDirection = currentDirection
             lastPlayerTileX = currentPlayerTileX
             lastPlayerTileY = currentPlayerTileY
             
@@ -111,16 +80,6 @@ class ShadowEntity(
         }
     }
     
-    private fun getMovementDirection(fromX: Int, fromY: Int, toX: Int, toY: Int): String {
-        return when {
-            toX > fromX -> "RIGHT"
-            toX < fromX -> "LEFT"
-            toY > fromY -> "DOWN"
-            toY < fromY -> "UP"
-            else -> ""
-        }
-    }
-    
     override fun draw(canvas: Canvas) {
         if (!isVisible) return
         
@@ -128,28 +87,10 @@ class ShadowEntity(
         val tileRenderer = com.example.game.map.TileRenderer()
         tileRenderer.initSpriteMode(context)
         tileRenderer.drawTile(canvas, 47, x, y, GameConstants.TILE_SIZE.toFloat())
-        
-        // Draw status indicator ở GIỮA tile thay vì phía trên
-        val centerX = x + GameConstants.TILE_SIZE / 2f
-        val centerY = y + GameConstants.TILE_SIZE *2f / 3f  // Đặt ở giữa tile
-        
-        if (!isFollowing || directionChangeCount >= maxDirectionChanges) {
-            canvas.drawText("STOP", centerX, centerY, textPaint)
-        } else {
-            // Draw following indicator với text TO HƠN
-            val followPaint = Paint().apply {
-                color = Color.BLACK
-                textAlign = Paint.Align.CENTER
-                textSize = 20f  // Tăng từ 16f lên 24f (to hơn)
-                isFakeBoldText = true  // Làm chữ đậm hơn
-            }
-            canvas.drawText("${directionChangeCount}/$maxDirectionChanges", 
-                          centerX, centerY, followPaint)
-        }
     }
     
     // Shadow specific methods
-    fun isOnShadowTrigger(gameMap: GameMap): Boolean {
+    fun isOnShadowTrigger(): Boolean {
         val tileX = getCurrentTileX()
         val tileY = getCurrentTileY()
         val tileId = gameMap.getTile(tileX, tileY, 2) // Check active layer
@@ -163,14 +104,13 @@ class ShadowEntity(
     
     fun resetShadow() {
         isFollowing = true
-        directionChangeCount = 0
         pathHistory.clear()
-        lastPlayerDirection = ""
         println("🌟 Shadow: Reset to initial state")
     }
     
     // Getters
-    fun getDirectionChangeCount(): Int = directionChangeCount
-    fun isStillFollowing(): Boolean = isFollowing && directionChangeCount < maxDirectionChanges
+    fun getDirectionChangeCount(): Int = 0 // Always return 0 since we removed direction counting
+    fun isStillFollowing(): Boolean = isFollowing // Simply return isFollowing status
     fun getPathHistorySize(): Int = pathHistory.size
+    fun getSpawnTilePosition(): Pair<Int, Int> = Pair(spawnTileX, spawnTileY)
 }

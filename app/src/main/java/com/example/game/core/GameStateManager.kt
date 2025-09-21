@@ -3,6 +3,7 @@ package com.example.game.core
 import android.content.Context
 import android.graphics.Canvas
 import android.view.MotionEvent
+import android.widget.FrameLayout
 import com.example.game.GameConstants
 import com.example.game.animation.AnimationManager
 import com.example.game.screens.GameScreen
@@ -11,17 +12,24 @@ import com.example.game.screens.MainMenuScreen
 import com.example.game.screens.Screen
 import com.example.game.screens.SettingsScreen
 import com.example.game.screens.PauseScreen
+import com.example.game.screens.WorldSelectScreen
 
 /**
  * Quản lý các màn hình game
  */
-class GameStateManager(private val context: Context) {
+class GameStateManager(
+    private val context: Context,
+    private val containerLayout: FrameLayout
+) {
     
     private var currentScreen: Screen? = null
     private var currentState = GameConstants.STATE_MENU
     private var nextState = -1
     private var nextLevelId = 1
     private val animationManager = AnimationManager()
+    
+    // THÊM: Để track world selection
+    var selectedWorld = 1 // Default to world 1
     
     // THÊM: Để track game screen cho pause/resume
     private var currentGameScreen: GameScreen? = null
@@ -84,6 +92,11 @@ class GameStateManager(private val context: Context) {
                 currentGameScreen = null // Clear game screen
             }
             
+            GameConstants.STATE_WORLD_SELECT -> {
+                currentScreen = WorldSelectScreen(this, context, animationManager)
+                currentGameScreen = null // Clear game screen
+            }
+            
             GameConstants.STATE_LEVEL_SELECT -> {
                 currentScreen = LevelSelectScreen(this, context, animationManager)
                 currentGameScreen = null // Clear game screen
@@ -95,7 +108,7 @@ class GameStateManager(private val context: Context) {
                     currentScreen = currentGameScreen
                 } else {
                     // Start level mới
-                    currentGameScreen = GameScreen(this, nextLevelId, context)
+                    currentGameScreen = GameScreen(this, nextLevelId, context, containerLayout)
                     currentScreen = currentGameScreen
                 }
             }
@@ -122,7 +135,7 @@ class GameStateManager(private val context: Context) {
         println("🔄 Restarting level $levelId...")
         
         // Tạo GameScreen mới cho level này
-        currentGameScreen = GameScreen(this, levelId, context)
+        currentGameScreen = GameScreen(this, levelId, context, containerLayout)
         currentScreen = currentGameScreen
         
         // Chuyển về trạng thái playing
