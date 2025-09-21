@@ -12,6 +12,7 @@ import com.example.game.screens.MainMenuScreen
 import com.example.game.screens.Screen
 import com.example.game.screens.SettingsScreen
 import com.example.game.screens.PauseScreen
+import com.example.game.screens.WorldSelectScreen
 
 /**
  * Quản lý các màn hình game
@@ -26,6 +27,9 @@ class GameStateManager(
     private var nextState = -1
     private var nextLevelId = 1
     private val animationManager = AnimationManager()
+    
+    // THÊM: Để track world selection
+    var selectedWorld = 1 // Default to world 1
     
     // THÊM: Để track game screen cho pause/resume
     private var currentGameScreen: GameScreen? = null
@@ -85,6 +89,11 @@ class GameStateManager(
         when (nextState) {
             GameConstants.STATE_MENU -> {
                 currentScreen = MainMenuScreen(this, context, animationManager)
+                currentGameScreen = null // Clear game screen
+            }
+            
+            GameConstants.STATE_WORLD_SELECT -> {
+                currentScreen = WorldSelectScreen(this, context, animationManager)
                 currentGameScreen = null // Clear game screen
             }
             

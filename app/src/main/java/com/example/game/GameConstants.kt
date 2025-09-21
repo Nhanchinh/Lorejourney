@@ -12,12 +12,13 @@ object GameConstants {
     
     // Game states
     const val STATE_MENU = 0
-    const val STATE_LEVEL_SELECT = 1
-    const val STATE_PLAYING = 2
-    const val STATE_SETTINGS = 3
-    const val STATE_PAUSED = 4
+    const val STATE_WORLD_SELECT = 1
+    const val STATE_LEVEL_SELECT = 2
+    const val STATE_PLAYING = 3
+    const val STATE_SETTINGS = 4
+    const val STATE_PAUSED = 5
     
     // Level progress
-    var MAX_UNLOCKED_LEVEL = 6 // Mở tất cả level để test
-    const val TOTAL_LEVELS = 6 // Tổng số level trong game
+    var MAX_UNLOCKED_LEVEL = 10 // Mở tất cả level để test
+    const val TOTAL_LEVELS = 10 // Tổng số level trong game (10 maps: 1-1,1-2,1-3,1-4,2-1,2-2,2-3,3-1,3-2,3-3)
 }

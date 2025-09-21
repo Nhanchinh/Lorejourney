@@ -11,7 +11,7 @@ import com.example.game.map.TileConstants
 
 /**
  * Shadow mechanic cho level 3
- * Quản lý toàn bộ logic shadow system
+ * Quản lý toàn bộ logic shadow system - hỗ trợ nhiều shadows
  */
 class ShadowMechanic(
     private val context: Context,
@@ -21,7 +21,8 @@ class ShadowMechanic(
     
     private val entityManager = EntityManager()
     private var playerEntity: PlayerEntity? = null
-    private var shadowEntity: ShadowEntity? = null
+    private val shadowEntities = mutableListOf<ShadowEntity>()
+    private val spawnedTiles = mutableSetOf<Pair<Int, Int>>() // Track tiles đã spawn shadow
     private var isInitialized = false
     
     fun initialize() {
@@ -41,19 +42,22 @@ class ShadowMechanic(
             pe.y = player.y
         }
         
-        // Update shadow
-        shadowEntity?.let { shadow ->
+        // Update all shadows
+        shadowEntities.forEach { shadow ->
             if (shadow.isActive) {
                 shadow.update(deltaTime)
             }
         }
+        
+        // Remove inactive shadows
+        shadowEntities.removeAll { !it.isActive }
         
         // Check mechanics
         checkShadowSpawn()
     }
     
     fun draw(canvas: Canvas) {
-        shadowEntity?.let { shadow ->
+        shadowEntities.forEach { shadow ->
             if (shadow.isVisible) {
                 shadow.draw(canvas)
             }
@@ -61,22 +65,36 @@ class ShadowMechanic(
     }
     
     private fun checkShadowSpawn() {
-        if (shadowEntity != null) return
-        
         val playerTileX = player.getCurrentTileX()
         val playerTileY = player.getCurrentTileY()
         val currentTile = gameMap.getTile(playerTileX, playerTileY, 2) // Check active layer
         
         if (TileConstants.isShadowSpawn(currentTile)) {
-            playerEntity?.let { pe ->
-                shadowEntity = ShadowEntity(player.x, player.y, context, pe, gameMap)
-                println("🌟 Shadow spawned at tile ($playerTileX, $playerTileY) on active layer")
+            val tilePosition = Pair(playerTileX, playerTileY)
+            
+            // Chỉ tạo shadow mới nếu tile này chưa spawn shadow
+            if (!spawnedTiles.contains(tilePosition)) {
+                playerEntity?.let { pe ->
+                    val newShadow = ShadowEntity(
+                        player.x, 
+                        player.y, 
+                        context, 
+                        pe, 
+                        gameMap,
+                        playerTileX, // spawn tile X
+                        playerTileY  // spawn tile Y
+                    )
+                    shadowEntities.add(newShadow)
+                    spawnedTiles.add(tilePosition)
+                    println("🌟 Shadow spawned at tile ($playerTileX, $playerTileY) - Total shadows: ${shadowEntities.size}")
+                }
             }
         }
     }
     
     fun getShadowInfo(): ShadowInfo? {
-        return shadowEntity?.let { shadow ->
+        // Trả về thông tin của shadow đầu tiên (hoặc có thể mở rộng để trả về list)
+        return shadowEntities.firstOrNull()?.let { shadow ->
             ShadowInfo(
                 directionChangeCount = shadow.getDirectionChangeCount(),
                 isFollowing = shadow.isStillFollowing(),
@@ -86,15 +104,36 @@ class ShadowMechanic(
     }
     
     /**
+     * Get all shadows info
+     */
+    fun getAllShadowsInfo(): List<ShadowInfo> {
+        return shadowEntities.map { shadow ->
+            ShadowInfo(
+                directionChangeCount = shadow.getDirectionChangeCount(),
+                isFollowing = shadow.isStillFollowing(),
+                pathSize = shadow.getPathHistorySize()
+            )
+        }
+    }
+
+    /**
      * Get shadow position in tile coordinates
      */
     fun getShadowTilePosition(): Pair<Int, Int>? {
-        return shadowEntity?.let { shadow ->
+        // Trả về vị trí của shadow đầu tiên (backward compatibility)
+        return shadowEntities.firstOrNull()?.let { shadow ->
             Pair(shadow.getCurrentTileX(), shadow.getCurrentTileY())
         }
     }
     
     /**
+     * Get all shadows positions
+     */
+    fun getAllShadowTilePositions(): List<Pair<Int, Int>> {
+        return shadowEntities.map { shadow ->
+            Pair(shadow.getCurrentTileX(), shadow.getCurrentTileY())
+        }
+    }    /**
      * Get player position in tile coordinates
      */
     fun getPlayerTilePosition(): Pair<Int, Int> {
@@ -105,7 +144,14 @@ class ShadowMechanic(
      * Check if shadow exists and is active
      */
     fun hasShadow(): Boolean {
-        return shadowEntity != null && shadowEntity?.isActive == true
+        return shadowEntities.any { it.isActive }
+    }
+    
+    /**
+     * Get number of active shadows
+     */
+    fun getShadowCount(): Int {
+        return shadowEntities.count { it.isActive }
     }
     
     data class ShadowInfo(

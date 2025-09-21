@@ -17,7 +17,9 @@ class ShadowEntity(
     startY: Float,
     context: Context,
     private val player: PlayerEntity,
-    private val gameMap: GameMap
+    private val gameMap: GameMap,
+    private val spawnTileX: Int = -1, // Tile X nơi shadow được spawn
+    private val spawnTileY: Int = -1  // Tile Y nơi shadow được spawn
 ) : Entity(startX, startY, context) {
     
     // Shadow properties
@@ -110,4 +112,5 @@ class ShadowEntity(
     fun getDirectionChangeCount(): Int = 0 // Always return 0 since we removed direction counting
     fun isStillFollowing(): Boolean = isFollowing // Simply return isFollowing status
     fun getPathHistorySize(): Int = pathHistory.size
+    fun getSpawnTilePosition(): Pair<Int, Int> = Pair(spawnTileX, spawnTileY)
 }

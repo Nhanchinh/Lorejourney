@@ -395,17 +395,25 @@ class GameScreen(
         
         // Shadow info display cho level 3
         if (levelId == 3) {
-            shadowMechanic?.getShadowInfo()?.let { info ->
-                val infoPaint = Paint().apply {
-                    color = Color.WHITE
-                    textSize = 30f
-                    isAntiAlias = true
-                    setShadowLayer(2f, 1f, 1f, Color.BLACK)
-                }
-                canvas.drawText("Shadow: ${info.directionChangeCount}/4 turns", 
-                               50f, 150f, infoPaint)
+            val infoPaint = Paint().apply {
+                color = Color.WHITE
+                textSize = 30f
+                isAntiAlias = true
+                setShadowLayer(2f, 1f, 1f, Color.BLACK)
+            }
+            
+            // Hiển thị số lượng shadows
+            val shadowCount = shadowMechanic?.getShadowCount() ?: 0
+            canvas.drawText("Shadows: $shadowCount", 50f, 150f, infoPaint)
+            
+            // Hiển thị thông tin từng shadow
+            shadowMechanic?.getAllShadowsInfo()?.forEachIndexed { index, info ->
+                canvas.drawText("Shadow ${index + 1}: ${info.directionChangeCount}/4 turns", 
+                               50f, 190f + (index * 80f), infoPaint)
                 canvas.drawText("Following: ${info.isFollowing}", 
-                               50f, 190f, infoPaint)
+                               50f, 220f + (index * 80f), infoPaint)
+                canvas.drawText("Path size: ${info.pathSize}", 
+                               50f, 250f + (index * 80f), infoPaint)
             }
         }
     }

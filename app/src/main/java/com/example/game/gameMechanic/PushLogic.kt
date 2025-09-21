@@ -272,8 +272,8 @@ class PushLogic(private val gameMap: GameMap) {
             val activeTile = gameMap.getTile(x, y, 2)
             val hasStone = activeTile == TileConstants.TILE_STONE_ON_TARGET
             
-            // Check if shadow is on this target
-            val hasShadow = shadowMechanic?.getShadowTilePosition()?.let { (shadowX, shadowY) ->
+            // Check if ANY shadow is on this target
+            val hasShadow = shadowMechanic?.getAllShadowTilePositions()?.any { (shadowX, shadowY) ->
                 shadowX == x && shadowY == y
             } ?: false
             
@@ -301,8 +301,8 @@ class PushLogic(private val gameMap: GameMap) {
             val activeTile = gameMap.getTile(x, y, 2)
             val hasStone = activeTile == TileConstants.TILE_STONE_ON_TARGET
             
-            // Check if shadow is on this target
-            val hasShadow = shadowMechanic?.getShadowTilePosition()?.let { (shadowX, shadowY) ->
+            // Check if ANY shadow is on this target
+            val hasShadow = shadowMechanic?.getAllShadowTilePositions()?.any { (shadowX, shadowY) ->
                 shadowX == x && shadowY == y
             } ?: false
             
