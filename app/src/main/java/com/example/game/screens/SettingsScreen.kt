@@ -204,43 +204,43 @@ class SettingsScreen(
         val optionSpacing = 100f
         
         // Title
-        canvas.drawText("SETTINGS", centerX, 150f, titlePaint)
+        canvas.drawText("CÀI ĐẶT", centerX, 150f, titlePaint)
         
         // Sound option
-        canvas.drawText("Sound Effects", centerX - 250f, startY + 15f, optionPaint)
+        canvas.drawText("Hiệu ứng âm thanh", centerX - 250f, startY + 15f, optionPaint)
         val soundPaint = if (soundEnabled) toggleOnPaint else toggleOffPaint
         canvas.drawRoundRect(soundToggle, 15f, 15f, soundPaint)
         canvas.drawRoundRect(soundToggle, 15f, 15f, toggleBorderPaint)
-        canvas.drawText(if (soundEnabled) "ON" else "OFF", soundToggle.centerX(), soundToggle.centerY() + 8f, toggleTextPaint)
+        canvas.drawText(if (soundEnabled) "BẬT" else "TẮT", soundToggle.centerX(), soundToggle.centerY() + 8f, toggleTextPaint)
         
         // Music option
-        canvas.drawText("Background Music", centerX - 250f, startY + optionSpacing + 15f, optionPaint)
+        canvas.drawText("Nhạc nền", centerX - 250f, startY + optionSpacing + 15f, optionPaint)
         val musicPaint = if (musicEnabled) toggleOnPaint else toggleOffPaint
         canvas.drawRoundRect(musicToggle, 15f, 15f, musicPaint)
         canvas.drawRoundRect(musicToggle, 15f, 15f, toggleBorderPaint)
-        canvas.drawText(if (musicEnabled) "ON" else "OFF", musicToggle.centerX(), musicToggle.centerY() + 8f, toggleTextPaint)
+        canvas.drawText(if (musicEnabled) "BẬT" else "TẮT", musicToggle.centerX(), musicToggle.centerY() + 8f, toggleTextPaint)
         
         // Vibration option
-        canvas.drawText("Vibration", centerX - 250f, startY + optionSpacing * 2 + 15f, optionPaint)
+        canvas.drawText("Rung", centerX - 250f, startY + optionSpacing * 2 + 15f, optionPaint)
         val vibrationPaint = if (vibrationEnabled) toggleOnPaint else toggleOffPaint
         canvas.drawRoundRect(vibrationToggle, 15f, 15f, vibrationPaint)
         canvas.drawRoundRect(vibrationToggle, 15f, 15f, toggleBorderPaint)
-        canvas.drawText(if (vibrationEnabled) "ON" else "OFF", vibrationToggle.centerX(), vibrationToggle.centerY() + 8f, toggleTextPaint)
+        canvas.drawText(if (vibrationEnabled) "BẬT" else "TẮT", vibrationToggle.centerX(), vibrationToggle.centerY() + 8f, toggleTextPaint)
         
         // Unlock All Levels button
         canvas.drawRoundRect(unlockAllButton, 15f, 15f, unlockButtonPaint)
         canvas.drawRoundRect(unlockAllButton, 15f, 15f, borderPaint)
-        canvas.drawText("UNLOCK ALL LEVELS", unlockAllButton.centerX(), unlockAllButton.centerY() + 10f, buttonTextPaint)
+        canvas.drawText("MỞ KHÓA TẤT CẢ", unlockAllButton.centerX(), unlockAllButton.centerY() + 10f, buttonTextPaint)
         
         // Reset Progress button
         canvas.drawRoundRect(resetProgressButton, 15f, 15f, resetButtonPaint)
         canvas.drawRoundRect(resetProgressButton, 15f, 15f, borderPaint)
-        canvas.drawText("RESET PROGRESS", resetProgressButton.centerX(), resetProgressButton.centerY() + 10f, buttonTextPaint)
+        canvas.drawText("ĐẶT LẠI TIẾN TRÌNH", resetProgressButton.centerX(), resetProgressButton.centerY() + 10f, buttonTextPaint)
         
         // Back button
         canvas.drawRoundRect(backButton, 15f, 15f, backButtonPaint)
         canvas.drawRoundRect(backButton, 15f, 15f, toggleBorderPaint)
-        canvas.drawText("← BACK", backButton.centerX(), backButton.centerY() + 10f, toggleTextPaint)
+        canvas.drawText("← QUAY LẠI", backButton.centerX(), backButton.centerY() + 10f, toggleTextPaint)
         
         // Draw confirmation popup if active
         if (showConfirmationPopup) {
@@ -260,7 +260,7 @@ class SettingsScreen(
         canvas.drawRoundRect(popupBox, 20f, 20f, borderPaint)
         
         // Draw title
-        canvas.drawText("CONFIRMATION", centerX, popupBox.top + 60f, popupTitlePaint)
+        canvas.drawText("XÁC NHẬN", centerX, popupBox.top + 60f, popupTitlePaint)
         
         // Draw message with proper line breaks
         drawMultilineText(canvas, confirmationMessage, centerX, popupBox.top + 120f, popupTextPaint)
@@ -268,11 +268,11 @@ class SettingsScreen(
         // Draw buttons
         canvas.drawRoundRect(confirmButton, 15f, 15f, confirmButtonPaint)
         canvas.drawRoundRect(confirmButton, 15f, 15f, borderPaint)
-        canvas.drawText("YES", confirmButton.centerX(), confirmButton.centerY() + 10f, buttonTextPaint)
+        canvas.drawText("CÓ", confirmButton.centerX(), confirmButton.centerY() + 10f, buttonTextPaint)
         
         canvas.drawRoundRect(cancelButton, 15f, 15f, cancelButtonPaint)
         canvas.drawRoundRect(cancelButton, 15f, 15f, borderPaint)
-        canvas.drawText("NO", cancelButton.centerX(), cancelButton.centerY() + 10f, buttonTextPaint)
+        canvas.drawText("KHÔNG", cancelButton.centerX(), cancelButton.centerY() + 10f, buttonTextPaint)
     }
 
     /**
@@ -344,13 +344,13 @@ class SettingsScreen(
                 
                 // Check unlock all levels button
                 if (unlockAllButton.contains(x, y)) {
-                    showConfirmation("UNLOCK_ALL", "Unlock all levels?\nThis will make all\nlevels playable.")
+                    showConfirmation("UNLOCK_ALL", "Mở khóa tất cả màn chơi?\nĐiều này sẽ làm cho tất cả\nmàn chơi có thể chơi được.")
                     return true
                 }
                 
                 // Check reset progress button
                 if (resetProgressButton.contains(x, y)) {
-                    showConfirmation("RESET_PROGRESS", "Reset all progress?\nThis will lock all\nlevels except Level 1.")
+                    showConfirmation("RESET_PROGRESS", "Đặt lại tất cả tiến trình?\nĐiều này sẽ khóa tất cả\nmàn chơi trừ Màn 1.")
                     return true
                 }
             }

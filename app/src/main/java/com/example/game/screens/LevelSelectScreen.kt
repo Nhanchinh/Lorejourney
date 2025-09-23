@@ -39,56 +39,56 @@ class LevelSelectScreen(
     
     // All chapters data - organized by worlds
     private val allChapters = listOf(
-        // World 1 - Mystical Forest (Levels 1-4)
-        Chapter(1, 1, 1, "1-1", "The Beginning", "Easy", 
-            "Your journey starts in a mysterious forest. Learn the basic controls and discover ancient secrets hidden in the shadows.", 
+        // World 1 - Đồng Cỏ Khởi Nguồn (Levels 1-4)
+        Chapter(1, 1, 1, "1-1", "Vào Đồng Cỏ Khởi Nguồn", "Dễ", 
+            "Elara bước vào vùng đất từng trù phú nay bị xáo trộn bởi lời nguyền. Những con đường quen thuộc giờ bị cây cối và đá tảng chắn lối. Hành trình tìm mảnh pha lê đầu tiên bắt đầu.", 
             true, Color.parseColor("#66BB6A"), Color.parseColor("#4CAF50")),
-        Chapter(2, 1, 2, "1-2", "Forest Depths", "Easy", 
-            "Venture deeper into the forest. Master the basic mechanics and uncover hidden pathways.", 
+        Chapter(2, 1, 2, "1-2", "Phế Tích Làng Cổ", "Dễ", 
+            "Khám phá những phế tích của làng cổ, nơi ẩn chứa ký ức của những cư dân đã biến mất. Elara bắt đầu nhớ ra những mảnh ký ức mơ hồ về vùng đất này.", 
             true, Color.parseColor("#81C784"), Color.parseColor("#66BB6A")),
-        Chapter(3, 1, 3, "1-3", "Underground Maze", "Normal", 
-            "Venture into the dark underground tunnels. Navigate through complex puzzles and avoid dangerous traps.", 
+        Chapter(3, 1, 3, "1-3", "Mê Cung Ngầm Bị Lãng Quên", "Bình thường", 
+            "Đi vào những đường hầm ngầm mà lời nguyền đã tạo ra. Những bóng tối dày đặc và cạm bẫy ẩn giấu kiểm tra khả năng của Elara trong hành trình tìm mảnh pha lê.", 
             true, Color.parseColor("#FF9800"), Color.parseColor("#F57C00")),
-        Chapter(4, 1, 4, "1-4", "Crystal Caverns", "Normal", 
-            "Explore the magical crystal caves. Use the power of crystals to solve mind-bending puzzles.", 
+        Chapter(4, 1, 4, "1-4", "Hầm Mộ Pha Lê Đầu Tiên", "Bình thường", 
+            "Tìm thấy mảnh pha lê đầu tiên trong một hầm mộ bị lãng quên. Elara khám phá manh mối về mối liên hệ giữa lời nguyền và tâm trí con người, cùng với ký ức về tổ tiên mình.", 
             true, Color.parseColor("#FFA726"), Color.parseColor("#FF9800")),
             
-        // World 2 - Sky Temple (Levels 5-7)
-        Chapter(5, 2, 1, "2-1", "Sky Temple", "Hard", 
-            "Ascend to the floating temple in the clouds. Master advanced puzzle mechanics to reach the summit.", 
+        // World 2 - Vùng Đất Băng Giá (Levels 5-7)
+        Chapter(5, 2, 1, "2-1", "Bước Vào Vùng Băng Giá", "Khó", 
+            "Elara tiến vào vùng đất băng tuyết lạnh giá, nơi mọi chuyển động bị chi phối bởi quán tính và gió băng. Hồ băng trơn trượt tạo thành những thử thách mới.", 
             false, Color.parseColor("#42A5F5"), Color.parseColor("#2196F3")),
-        Chapter(6, 2, 2, "2-2", "Cloud Palace", "Hard", 
-            "Navigate through the majestic cloud palace where wind currents guide your path through aerial challenges.", 
+        Chapter(6, 2, 2, "2-2", "Ngôi Đền Bị Chôn Vùi", "Khó", 
+            "Khám phá những ngôi đền cổ bị chôn vùi trong băng tuyết. Các tảng băng di động tạo thành mê cung tự nhiên, nơi Elara tìm thấy manh mối về nguồn gốc lời nguyền.", 
             false, Color.parseColor("#64B5F6"), Color.parseColor("#42A5F5")),
-        Chapter(7, 2, 3, "2-3", "Storm's End", "Expert", 
-            "Face the ultimate sky trial where lightning and thunder test your mastery of the heavens.", 
+        Chapter(7, 2, 3, "2-3", "Mảnh Pha Lê Thứ Hai", "Chuyên gia", 
+            "Tìm thấy mảnh pha lê thứ hai trong ngôi đền cổ. Bóng tối bắt đầu 'nói chuyện' với Elara qua ảo ảnh, gieo rắc nghi ngờ về sứ mệnh của cô.", 
             false, Color.parseColor("#90CAF9"), Color.parseColor("#64B5F6")),
             
-        // World 3 - Cosmic Realm (Levels 8-15) - 8 maps
-        Chapter(8, 3, 1, "3-1", "Void Sanctuary", "Legendary", 
-            "Enter the mysterious Void Sanctuary, where space and time bend to your will. This legendary realm challenges even the most skilled players with reality-warping puzzles.", 
+        // World 3 - Thành Pháo Bóng Tối (Levels 8-15) - 8 maps
+        Chapter(8, 3, 1, "3-1", "Cổng Vào Thành Pháo", "Huyền thoại", 
+            "Bước vào pháo đài tăm tối lơ lửng giữa ánh sáng mờ ảo. Nơi bóng tối và ánh sáng đan xen, tạo ra các hành lang ảo ảnh khó phân biệt thực tế.", 
             false, Color.parseColor("#AB47BC"), Color.parseColor("#9C27B0")),
-        Chapter(9, 3, 2, "3-2", "Cosmic Forge", "Legendary", 
-            "Step into the Cosmic Forge, where stars are born and worlds are shaped. Master the forces of creation itself in this ultimate test of skill and determination.", 
+        Chapter(9, 3, 2, "3-2", "Lò Rèn Của Bóng Tối", "Huyền thoại", 
+            "Khám phá nơi lời nguyền được tạo ra. Elara đối mặt với những ký ức về tổ tiên mình - những người từng chiến đấu ở đây nhưng thất bại.", 
             false, Color.parseColor("#BA68C8"), Color.parseColor("#AB47BC")),
-        Chapter(10, 3, 3, "3-3", "Starlight Nexus", "Legendary", 
-            "Navigate through the Starlight Nexus where constellations come alive and guide your path through celestial challenges.", 
+        Chapter(10, 3, 3, "3-3", "Thư Viện Nguội Lạnh", "Huyền thoại", 
+            "Đi qua thư viện chứa đựng những bí mật cổ xưa. Ký ức về quá khứ và sự thật về bản chất của lời nguyền dần được hé lộ.", 
             false, Color.parseColor("#CE93D8"), Color.parseColor("#BA68C8")),
-        Chapter(11, 3, 4, "3-4", "Quantum Gardens", "Mythic", 
-            "Explore the Quantum Gardens where reality shifts with every step and possibilities branch into infinite paths.", 
+        Chapter(11, 3, 4, "3-4", "Hành Lang Ảo Ảnh", "Thần thoại", 
+            "Trong những hành lang đầy ảo ảnh, Elara khám phá rằng lời nguyền không chỉ là thực thể bên ngoài mà còn liên kết với nỗi sợ hãi trong tâm trí cô.", 
             false, Color.parseColor("#E1BEE7"), Color.parseColor("#CE93D8")),
-        Chapter(12, 3, 5, "3-5", "Time Weaver's Hall", "Mythic", 
-            "Master the Time Weaver's Hall where past, present and future converge in mind-bending temporal puzzles.", 
+        Chapter(12, 3, 5, "3-5", "Tầng Thẳm Sâu Nhất", "Thần thoại", 
+            "Đi sâu vào tầng thẳm của thành pháo, nơi những bí mật sâu kín nhất về tổ tiên Elara và nguồn gốc lời nguyền được tiết lộ hoàn toàn.", 
             false, Color.parseColor("#F3E5F5"), Color.parseColor("#E1BEE7")),
-        Chapter(13, 3, 6, "3-6", "Dimension Rift", "Mythic", 
-            "Traverse the Dimension Rift where multiple realities overlap and challenge your perception of space itself.", 
+        Chapter(13, 3, 6, "3-6", "Buồng Ký Ức", "Thần thoại", 
+            "Trong buồng chứa những ký ức bị lãng quên, Elara phải đối mặt với sự thật về mối liên hệ huyết thống giữa cô và những người bảo vệ pha lê.", 
             false, Color.parseColor("#E040FB"), Color.parseColor("#D500F9")),
-        Chapter(14, 3, 7, "3-7", "Infinity Chamber", "Divine", 
-            "Enter the Infinity Chamber where mathematical concepts become physical reality and logic bends to cosmic will.", 
+        Chapter(14, 3, 7, "3-7", "Tháp Trung Tâm", "Thần thánh", 
+            "Tiến đến tháp trung tâm của thành pháo, nơi mảnh pha lê cuối cùng được bảo vệ. Chuẩn bị cho cuộc đối đầu cuối cùng với bản chất của bóng tối.", 
             false, Color.parseColor("#C51162"), Color.parseColor("#E040FB")),
-        Chapter(15, 3, 8, "3-8", "Eternal Nexus", "Divine", 
-            "Reach the Eternal Nexus, the culmination of all journeys. Only true legends can conquer this final realm where all dimensions converge.", 
-            false, Color.parseColor("#FF1744"), Color.parseColor("#C51162"))
+        Chapter(15, 3, 8, "3-8", "Đối Mặt Bóng Tối", "Thần thánh", 
+            "Cuộc chiến cuối cùng! Elara tái hợp Viên Pha Lê Cân Bằng và đối mặt với bóng tối. Liệu cô có thể xua tan lời nguyền và mang ánh sáng trở lại thế giới?", 
+            false, Color.parseColor("#AD1457"), Color.parseColor("#C51162"))
     )
     
     // Get chapters for currently selected world
@@ -96,9 +96,9 @@ class LevelSelectScreen(
     
     // World titles for display
     private val worldTitles = mapOf(
-        1 to "Mystical Forest",
-        2 to "Sky Temple", 
-        3 to "Cosmic Realm"
+        1 to "Rừng Huyền Bí",
+        2 to "Đền Trên Mây", 
+        3 to "Vương Quốc Vũ Trụ"
     )
     
     private var selectedChapter = 0 // Always start with first chapter in selected world
@@ -166,7 +166,7 @@ class LevelSelectScreen(
     private val chapterTitlePaint = Paint().apply {
         isAntiAlias = true
         color = Color.parseColor("#FFD700")
-        textAlign = Paint.Align.LEFT
+        textAlign = Paint.Align.CENTER
         textSize = 50f  // TO HƠN NỮA từ 42f lên 50f
         isFakeBoldText = true
         setShadowLayer(3f, 1f, 1f, Color.BLACK)
@@ -255,11 +255,11 @@ class LevelSelectScreen(
         
         // TITLE dịch xuống 0.2cm (khoảng 8px)
         val centerX = GameConstants.SCREEN_WIDTH / 2f
-        val titleY = 68f  // Dịch từ 60f xuống 68f (8px ≈ 0.2cm)
+        val titleY = 100f  // Dịch từ 60f xuống 68f (8px ≈ 0.2cm)
         
         // VẼ TITLE WITH WORLD INFO
         val worldTitle = worldTitles[selectedWorld] ?: "Unknown World"
-        canvas.drawText("$worldTitle - SELECT LEVEL", centerX, titleY, titlePaint)
+        canvas.drawText("$worldTitle - CHỌN CẤP ĐỘ", centerX, titleY, titlePaint)
         
         // Back button
         drawBackButton(canvas)
@@ -292,7 +292,7 @@ class LevelSelectScreen(
         canvas.drawRoundRect(backButton, 8f, 8f, backButtonPaint)  // Giảm từ 12f xuống 8f
         canvas.drawRoundRect(backButton, 8f, 8f, buttonBorderPaint)
         
-        canvas.drawText("← BACK", backButton.centerX(), backButton.centerY() + 8f, backTextPaint)
+        canvas.drawText("← QUAY LẠI", backButton.centerX(), backButton.centerY() + 8f, backTextPaint)
     }
     
     private fun drawChapterButtons(canvas: Canvas) {
@@ -425,9 +425,9 @@ class LevelSelectScreen(
         
         // Level title with world-level format
         val levelTitle = if (isUnlocked) {
-            "LEVEL ${selectedChapterData.name}: ${selectedChapterData.title}"
+            "CẤP ĐỘ ${selectedChapterData.name}: ${selectedChapterData.title}"
         } else {
-            "LEVEL ${selectedChapterData.name}: LOCKED"
+            "CẤP ĐỘ ${selectedChapterData.name}: LOCKED"
         }
         
         canvas.drawText(
@@ -439,7 +439,7 @@ class LevelSelectScreen(
         
         // Difficulty - với spacing cho text to hơn
         canvas.drawText(
-            "Difficulty: ${selectedChapterData.difficulty}",
+            "Độ khó: ${selectedChapterData.difficulty}",
             descriptionRect.left + 30f,
             descriptionRect.top + 100f,  // Điều chỉnh spacing
             difficultyPaint
@@ -499,7 +499,7 @@ class LevelSelectScreen(
         canvas.drawRoundRect(playButton, 8f, 8f, playButtonPaint)  // Giảm từ 25f xuống 8f
         canvas.drawRoundRect(playButton, 8f, 8f, buttonBorderPaint)
         
-        val playText = if (isPlayable) "PLAY" else "LOCKED"
+        val playText = if (isPlayable) "CHƠI" else "KHÓA"
         playTextPaint.alpha = if (isPlayable) 255 else 150
         canvas.drawText(playText, playButton.centerX(), playButton.centerY() + 15f, playTextPaint)
     }
@@ -586,7 +586,7 @@ class LevelSelectScreen(
         val backButtonHeight = 50f
         val backButtonY = titleCenterY - backButtonHeight / 2f
         
-        backButton.set(15f, backButtonY, 170f, backButtonY + backButtonHeight)
+        backButton.set(15f, backButtonY, 250f, backButtonY + backButtonHeight)
         
         // Chapter buttons - DỊCH SANG PHẢI 0.5cm (khoảng 20px)
         val buttonWidth = screenW * 0.28f

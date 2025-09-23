@@ -36,10 +36,10 @@ class WorldSelectScreen(
     private val allWorldsData = listOf(
         World(
             id = 1,
-            name = "World 1",
-            title = "Mystical Forest",
-            description = "Begin your journey in the enchanted forest where ancient magic still flows through the trees. Learn the basic mechanics and discover the secrets hidden in nature's embrace.",
-            difficulty = "Beginner",
+            name = "Thế Giới 1",
+            title = "Đồng Cỏ Khởi Nguồn",
+            description = "Elara bước vào vùng đất từng trù phú nay bị xáo trộn bởi lời nguyền. Những con đường quen thuộc giờ bị cây cối và đá tảng chắn lối. Hành trình tìm mảnh pha lê đầu tiên bắt đầu tại đây.",
+            difficulty = "Mới bắt đầu",
             levelRange = 1..4,
             isUnlocked = true,
             primaryColor = Color.parseColor("#00E676"), // Xanh lá neon tươi
@@ -47,10 +47,10 @@ class WorldSelectScreen(
         ),
         World(
             id = 2,
-            name = "World 2",
-            title = "Sky Temple",
-            description = "Ascend to the floating temples among the clouds. Master advanced puzzle mechanics and navigate through mystical aerial challenges that will test your wisdom.",
-            difficulty = "Intermediate", 
+            name = "Thế Giới 2",
+            title = "Vùng Đất Băng Giá",
+            description = "Elara tiến vào vùng đất băng tuyết lạnh giá, nơi mọi chuyển động bị chi phối bởi quán tính và gió băng. Những ngôi đền cổ bị chôn vùi giấu mảnh pha lê thứ hai.",
+            difficulty = "Trung cấp", 
             levelRange = 5..7,
             isUnlocked = false,
             primaryColor = Color.parseColor("#00B8FF"), // Xanh dương sky tươi
@@ -58,11 +58,11 @@ class WorldSelectScreen(
         ),
         World(
             id = 3,
-            name = "World 3",
-            title = "Cosmic Realm",
-            description = "Journey through the infinite cosmos where reality bends and time flows differently. Only the most skilled adventurers can unlock the ultimate secrets of creation.",
-            difficulty = "Expert",
-            levelRange = 8..15, // Cập nhật từ 8..10 thành 8..15 (8 maps)
+            name = "Thế Giới 3",
+            title = "Thành Pháo Bóng Tối",
+            description = "Pháo đài cuối cùng lơ lửng giữa ánh sáng mờ ảo, nơi bóng tối và ánh sáng đan xen. Elara phải đối mặt với ký ức sâu kín và bản chất của lời nguyền để tìm mảnh pha lê cuối cùng.",
+            difficulty = "Chuyên gia",
+            levelRange = 8..15, // 8 maps
             isUnlocked = false,
             primaryColor = Color.parseColor("#E040FB"), // Tím hồng neon
             secondaryColor = Color.parseColor("#D500F9")  // Tím magenta sáng
@@ -141,7 +141,7 @@ class WorldSelectScreen(
     private val worldTitlePaint = Paint().apply {
         isAntiAlias = true
         color = Color.parseColor("#FFD700")
-        textAlign = Paint.Align.LEFT
+        textAlign = Paint.Align.CENTER
         textSize = 52f
         isFakeBoldText = true
         setShadowLayer(3f, 1f, 1f, Color.BLACK)
@@ -225,7 +225,7 @@ class WorldSelectScreen(
         
         // Title
         val centerX = GameConstants.SCREEN_WIDTH / 2f
-        canvas.drawText("SELECT WORLD", centerX, 68f, titlePaint)
+        canvas.drawText("CHỌN THẾ GIỚI", centerX, 100f, titlePaint)
         
         // Back button
         drawBackButton(canvas)
@@ -256,7 +256,7 @@ class WorldSelectScreen(
         canvas.drawRoundRect(backButton, 8f, 8f, backButtonPaint)
         canvas.drawRoundRect(backButton, 8f, 8f, buttonBorderPaint)
         
-        canvas.drawText("← BACK", backButton.centerX(), backButton.centerY() + 8f, backTextPaint)
+        canvas.drawText("← QUAY LẠI", backButton.centerX(), backButton.centerY() + 8f, backTextPaint)
     }
     
     private fun drawWorldButtons(canvas: Canvas) {
@@ -404,7 +404,7 @@ class WorldSelectScreen(
         
         // Difficulty
         canvas.drawText(
-            "Difficulty: ${selectedWorldData.difficulty}",
+            "Độ khó: ${selectedWorldData.difficulty}",
             descriptionRect.left + 30f,
             descriptionRect.top + 110f,
             difficultyPaint
@@ -412,7 +412,7 @@ class WorldSelectScreen(
         
         // Level range
         val levelRangeText = if (selectedWorldData.isUnlocked) {
-            "Levels ${selectedWorldData.levelRange.first}-${selectedWorldData.levelRange.last}"
+            "Cấp độ ${selectedWorldData.levelRange.first}-${selectedWorldData.levelRange.last}"
         } else {
             "Locked - Complete previous world to unlock"
         }
@@ -474,7 +474,7 @@ class WorldSelectScreen(
         canvas.drawRoundRect(continueButton, 8f, 8f, continueButtonPaint)
         canvas.drawRoundRect(continueButton, 8f, 8f, buttonBorderPaint)
         
-        val continueText = if (isPlayable) "CONTINUE" else "LOCKED"
+        val continueText = if (isPlayable) "TIẾP TỤC" else "KHÓA"
         continueTextPaint.alpha = if (isPlayable) 255 else 150
         canvas.drawText(continueText, continueButton.centerX(), continueButton.centerY() + 15f, continueTextPaint)
     }
@@ -578,7 +578,7 @@ class WorldSelectScreen(
         // Back button
         val backButtonHeight = 50f
         val backButtonY = 68f - backButtonHeight / 2f
-        backButton.set(15f, backButtonY, 170f, backButtonY + backButtonHeight)
+        backButton.set(15f, backButtonY, 250f, backButtonY + backButtonHeight)
         
         // World buttons - 3 buttons arranged vertically
         val buttonWidth = screenW * 0.35f

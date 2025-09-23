@@ -88,12 +88,12 @@ class PauseScreen(
         val startY = GameConstants.SCREEN_HEIGHT / 2f - 150f
         
         // Draw title
-        canvas.drawText("GAME PAUSED", centerX, startY, titlePaint)
+        canvas.drawText("TẠM DỪNG", centerX, startY, titlePaint)
         
         // Draw buttons
-        drawButton(canvas, continueButton, "CONTINUE", pressedButton == "CONTINUE")
-        drawButton(canvas, resetMapButton, "RESET MAP", pressedButton == "RESET_MAP") // Đổi text
-        drawButton(canvas, selectMapButton, "SELECT MAP", pressedButton == "SELECT_MAP")
+        drawButton(canvas, continueButton, "TIẾP TỤC", pressedButton == "CONTINUE")
+        drawButton(canvas, resetMapButton, "LÀM LẠI", pressedButton == "RESET_MAP") // Đổi text
+        drawButton(canvas, selectMapButton, "CHỌN MÀN", pressedButton == "SELECT_MAP")
         
         // Draw level info
         val infoPaint = Paint().apply {
@@ -102,7 +102,7 @@ class PauseScreen(
             textSize = 24f
             isAntiAlias = true
         }
-        canvas.drawText("Level $levelId", centerX, startY + 50f, infoPaint)
+        canvas.drawText("Màn $levelId", centerX, startY + 50f, infoPaint)
     }
     
     private fun drawButton(canvas: Canvas, button: RectF, text: String, isPressed: Boolean) {

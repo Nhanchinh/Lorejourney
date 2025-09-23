@@ -16,6 +16,8 @@ import com.example.game.SaveManager
 import com.example.game.gameMechanic.PushLogic
 import com.example.game.SpritePlayer
 import com.example.game.gameMechanic.ShadowMechanic
+import com.example.game.ui.StoryDialog
+import com.example.game.story.StoryContent
 
 class GameScreen(
     private val gameStateManager: GameStateManager,
@@ -61,6 +63,10 @@ class GameScreen(
     
     // Video popup system
     private val videoPopup = VideoPopup(context)
+    
+    // Story dialog system
+    private val storyDialog = StoryDialog()
+    private var hasShownStoryForLevel = false
     
     // HUGE touchpad
     private val touchpadBase = RectF()
@@ -116,6 +122,7 @@ class GameScreen(
     init {
         initLevel()
         updateUIElements()
+        checkAndShowStory()
     }
     
     private fun initLevel() {
@@ -162,6 +169,14 @@ class GameScreen(
     }
     
     override fun update(deltaTime: Long) {
+        // Update story dialog first
+        storyDialog.update()
+        
+        // Don't update game logic if story dialog is active
+        if (storyDialog.isActive()) {
+            return
+        }
+        
         if (levelCompleted) {
             completionTimer += deltaTime
             if (completionTimer >= completionDelay) {
@@ -260,7 +275,6 @@ class GameScreen(
 
     private fun updateUIElements() {
         val screenWidth = GameConstants.SCREEN_WIDTH
-        val screenHeight = GameConstants.SCREEN_HEIGHT
         
         // Pause button (góc phải trên)
         val pauseButtonSize = 60f
@@ -303,6 +317,9 @@ class GameScreen(
         if (levelCompleted) {
             drawCompletionMessage(canvas)
         }
+        
+        // Vẽ story dialog cuối cùng (trên tất cả UI khác)
+        storyDialog.draw(canvas)
     }
     
     private fun drawUI(canvas: Canvas) {
@@ -458,7 +475,7 @@ class GameScreen(
         val centerX = GameConstants.SCREEN_WIDTH / 2f
         val centerY = GameConstants.SCREEN_HEIGHT / 2f
         
-        canvas.drawText("LEVEL $levelId COMPLETE!", centerX, centerY - 50, textPaint)
+        canvas.drawText("HOÀN THÀNH MÀN $levelId!", centerX, centerY - 50, textPaint)
         
         if (levelId < GameConstants.TOTAL_LEVELS) {
             val subTextPaint = Paint().apply {
@@ -467,7 +484,7 @@ class GameScreen(
                 textAlign = Paint.Align.CENTER
                 textSize = 40f
             }
-            canvas.drawText("Level ${levelId + 1} Unlocked!", centerX, centerY + 20, subTextPaint)
+            canvas.drawText("Màn ${levelId + 1} đã mở khóa!", centerX, centerY + 20, subTextPaint)
         } else {
             val subTextPaint = Paint().apply {
                 isAntiAlias = true
@@ -480,7 +497,12 @@ class GameScreen(
     }
     
     override fun handleTouch(event: MotionEvent): Boolean {
-        // Handle video popup touches first
+        // Handle story dialog touches first
+        if (storyDialog.isActive() && storyDialog.handleTouch(event)) {
+            return true
+        }
+        
+        // Handle video popup touches second
         if (videoPopup.isActive) {
             if (videoPopup.handleTouch(event)) {
                 return true
@@ -543,6 +565,23 @@ class GameScreen(
             }
         }
         return false
+    }
+    
+    /**
+     * Kiểm tra và hiển thị story nếu chưa xem
+     */
+    private fun checkAndShowStory() {
+        // Chỉ hiển thị story cho những level có story và chưa được xem
+        if (StoryContent.hasStoryForLevel(levelId) && !SaveManager.hasViewedStory(levelId)) {
+            val storyEntry = StoryContent.getStoryForLevel(levelId)
+            storyEntry?.let { story ->
+                storyDialog.show(story.segments) {
+                    // Khi hoàn thành xem story
+                    SaveManager.markStoryAsViewed(levelId)
+                    hasShownStoryForLevel = true
+                }
+            }
+        }
     }
 
     fun getCurrentProgress(): PauseScreen.GameProgress {
