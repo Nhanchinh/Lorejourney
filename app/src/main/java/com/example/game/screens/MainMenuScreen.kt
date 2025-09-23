@@ -282,9 +282,9 @@ class MainMenuScreen(
         
         canvas.drawRoundRect(startButton, 30f, 30f, startButtonPaint)
         canvas.drawRoundRect(startButton, 30f, 30f, startButtonBorderPaint)
-        canvas.drawText("START", startButton.centerX(), startButton.centerY() + 15f, startButtonTextPaint)
+        canvas.drawText("BẮT ĐẦU", startButton.centerX(), startButton.centerY() + 15f, startButtonTextPaint)
         
-        canvas.drawText("press start to start your journey", centerX, GameConstants.SCREEN_HEIGHT * 0.78f, subtitlePaint)
+        canvas.drawText("Nhấn bắt đầu để khám phá hành trình của Elara", centerX, GameConstants.SCREEN_HEIGHT * 0.78f, subtitlePaint)
         
         canvas.drawRoundRect(settingsButton, 15f, 15f, settingsButtonPaint)
         canvas.drawRoundRect(settingsButton, 15f, 15f, settingsButtonBorderPaint)

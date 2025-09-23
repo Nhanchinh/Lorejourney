@@ -28,7 +28,7 @@ class VideoPopup(
     // Tab buttons
     private val tabButtons = mutableListOf<RectF>()
     private val tabNames = listOf("mechanic1", "mechanic2", "mechanic3", "mechanic4", "mechanic5", "mechanic6")
-    private val tabTitles = listOf("Basic Controls", "Push Mechanics", "Win conditions", "Advanced Puzzles", "More Advanced", "Final Mechanics")
+    private val tabTitles = listOf("Điều khiển cơ bản", "Cơ chế đẩy", "Điều kiện thắng", "Câu đố nâng cao", "Nâng cao hơn", "Cơ chế cuối")
     
     // Paints
     private val overlayPaint = Paint().apply {
@@ -206,7 +206,7 @@ class VideoPopup(
         canvas.drawRoundRect(popupBox, 20f, 20f, borderPaint)
         
         // Draw title
-        canvas.drawText("TUTORIAL", popupBox.centerX(), popupBox.top + 60f, titlePaint)
+        canvas.drawText("HƯỚNG DẪN", popupBox.centerX(), popupBox.top + 60f, titlePaint)
         
         // Draw tab buttons
         for (i in tabButtons.indices) {
@@ -234,7 +234,7 @@ class VideoPopup(
         
         // Draw close button
         canvas.drawRoundRect(closeButton, 10f, 10f, buttonPaint)
-        canvas.drawText("CLOSE", closeButton.centerX(), closeButton.centerY() + 10f, buttonTextPaint)
+        canvas.drawText("ĐÓNG", closeButton.centerX(), closeButton.centerY() + 10f, buttonTextPaint)
     }
     
     fun handleTouch(event: MotionEvent): Boolean {
