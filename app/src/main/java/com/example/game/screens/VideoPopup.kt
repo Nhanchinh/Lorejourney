@@ -28,7 +28,7 @@ class VideoPopup(
     // Tab buttons
     private val tabButtons = mutableListOf<RectF>()
     private val tabNames = listOf("mechanic1", "mechanic2", "mechanic3", "mechanic4", "mechanic5", "mechanic6")
-    private val tabTitles = listOf("Điều khiển cơ bản", "Cơ chế đẩy", "Điều kiện thắng", "Câu đố nâng cao", "Nâng cao hơn", "Cơ chế cuối")
+    private val tabTitles = listOf("Điều khiển cơ bản", "Cơ chế đẩy", "Điều kiện thắng", "Cơ chế băng", "Cơ chế bóng ma", "Băng và bóng ma")
     
     // Paints
     private val overlayPaint = Paint().apply {
@@ -61,7 +61,7 @@ class VideoPopup(
     
     private val buttonTextPaint = Paint().apply {
         color = Color.WHITE
-        textSize = 24f
+        textSize = 40f
         textAlign = Paint.Align.CENTER
         isAntiAlias = true
     }
@@ -73,7 +73,7 @@ class VideoPopup(
     
     private val tabTextPaint = Paint().apply {
         color = Color.WHITE
-        textSize = 18f
+        textSize = 40f
         textAlign = Paint.Align.CENTER
         isAntiAlias = true
     }
@@ -151,16 +151,16 @@ class VideoPopup(
             // Set video size and position (right side of popup) - DỊCH PHẢI THÊM 2CM
             val videoAreaWidth = popupBox.width() * 0.65f
             val videoAreaHeight = popupBox.height() - 200f
-            val videoAreaX = popupBox.right - videoAreaWidth - 20f
+            val videoAreaX = popupBox.right - videoAreaWidth - 30f
             val videoAreaY = popupBox.top + 100f
             
             // Video sẽ chiếm 96% diện tích của video area
-            val videoWidth = (videoAreaWidth * 0.96f).toInt()
-            val videoHeight = (videoAreaHeight * 0.96f).toInt()
+            val videoWidth = videoAreaWidth.toInt()
+            val videoHeight = videoAreaHeight.toInt()
             
             // Dịch video qua bên phải thêm 2cm (80px)
-            val videoX = videoAreaX + videoAreaWidth - videoWidth + 40f // Thêm 80px (2cm)
-            val videoY = videoAreaY + (videoAreaHeight - videoHeight) / 2f // Căn giữa theo chiều dọc
+            val videoX = videoAreaX + videoAreaWidth - videoWidth + 2f // Thêm 80px (2cm)
+            val videoY = videoAreaY + (videoAreaHeight - videoHeight) / 2f + 10f // Căn giữa theo chiều dọc
             
             videoView?.layoutParams = FrameLayout.LayoutParams(videoWidth, videoHeight)
             videoView?.x = videoX
@@ -206,7 +206,7 @@ class VideoPopup(
         canvas.drawRoundRect(popupBox, 20f, 20f, borderPaint)
         
         // Draw title
-        canvas.drawText("HƯỚNG DẪN", popupBox.centerX(), popupBox.top + 60f, titlePaint)
+        canvas.drawText("HƯỚNG DẪN", popupBox.centerX(), popupBox.top + 70f, titlePaint)
         
         // Draw tab buttons
         for (i in tabButtons.indices) {
@@ -219,13 +219,13 @@ class VideoPopup(
             
             // Draw tab text
             val tabText = tabTitles[i]
-            canvas.drawText(tabText, tabButton.centerX(), tabButton.centerY() + 8f, tabTextPaint)
+            canvas.drawText(tabText, tabButton.centerX(), tabButton.centerY() + 15f, tabTextPaint)
         }
         
         // Draw video area background (right side) - để thấy được video area
-        val videoAreaWidth = popupBox.width() * 0.65f
+        val videoAreaWidth = popupBox.width() * 0.65f + 13f
         val videoAreaHeight = popupBox.height() - 200f
-        val videoAreaX = popupBox.right - videoAreaWidth - 20f
+        val videoAreaX = popupBox.right - videoAreaWidth - 21f
         val videoAreaY = popupBox.top + 100f
         
         val videoArea = RectF(videoAreaX, videoAreaY, videoAreaX + videoAreaWidth, videoAreaY + videoAreaHeight)
@@ -234,7 +234,7 @@ class VideoPopup(
         
         // Draw close button
         canvas.drawRoundRect(closeButton, 10f, 10f, buttonPaint)
-        canvas.drawText("ĐÓNG", closeButton.centerX(), closeButton.centerY() + 10f, buttonTextPaint)
+        canvas.drawText("ĐÓNG", closeButton.centerX(), closeButton.centerY() + 15f, buttonTextPaint)
     }
     
     fun handleTouch(event: MotionEvent): Boolean {
