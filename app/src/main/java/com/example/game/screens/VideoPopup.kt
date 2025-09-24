@@ -90,6 +90,18 @@ class VideoPopup(
         isActive = false
         stopVideo()
     }
+
+    private fun getRequiredLevel(videoName: String): Int {
+        return when (videoName) {
+            "mechanic1" -> 1
+            "mechanic2" -> 1
+            "mechanic3" -> 1
+            "mechanic4" -> 5
+            "mechanic5" -> 8
+            "mechanic6" -> 9
+            else -> 1
+        }
+    }
     
     private fun setupPopup() {
         val centerX = GameConstants.SCREEN_WIDTH / 2f
@@ -144,6 +156,7 @@ class VideoPopup(
         try {
             // Stop current video if playing
             stopVideo()
+            println("Starting video: $currentVideoName")
             
             // Create VideoView
             videoView = VideoView(context)
@@ -212,14 +225,26 @@ class VideoPopup(
         for (i in tabButtons.indices) {
             val tabButton = tabButtons[i]
             val isSelected = tabNames[i] == currentVideoName
-            
+
+            // Kiểm tra xem tab có được mở khóa không
+            val isUnlocked = GameConstants.MAX_UNLOCKED_LEVEL >= getRequiredLevel(tabNames[i])
+            // Nếu chưa mở khóa thì vẽ màu xám
+            val tabPaint = if (!isUnlocked) Paint().apply { color = Color.GRAY } else if (isSelected) selectedTabPaint else buttonPaint
+    
             // Draw tab background
-            canvas.drawRoundRect(tabButton, 10f, 10f, if (isSelected) selectedTabPaint else buttonPaint)
+            canvas.drawRoundRect(tabButton, 10f, 10f, tabPaint)
             canvas.drawRoundRect(tabButton, 10f, 10f, borderPaint)
             
             // Draw tab text
             val tabText = tabTitles[i]
-            canvas.drawText(tabText, tabButton.centerX(), tabButton.centerY() + 15f, tabTextPaint)
+                // Nếu tab bị khóa, thêm biểu tượng khóa và đổi màu chữ
+                if (!isUnlocked) {
+                    val lockedText = "🔒 $tabText"
+                    val lockedTextPaint = Paint(tabTextPaint).apply { color = Color.LTGRAY }
+                    canvas.drawText(lockedText, tabButton.centerX(), tabButton.centerY() + 15f, lockedTextPaint)
+                } else {
+                    canvas.drawText(tabText, tabButton.centerX(), tabButton.centerY() + 15f, tabTextPaint)
+                }
         }
         
         // Draw video area background (right side) - để thấy được video area
@@ -254,8 +279,9 @@ class VideoPopup(
                 // Check tab buttons
                 for (i in tabButtons.indices) {
                     if (tabButtons[i].contains(x, y)) {
+                        val isUnlocked = GameConstants.MAX_UNLOCKED_LEVEL >= getRequiredLevel(tabNames[i])
                         val newVideoName = tabNames[i]
-                        if (newVideoName != currentVideoName) {
+                        if (newVideoName != currentVideoName && isUnlocked) {
                             currentVideoName = newVideoName
                             startVideo() // Restart video with new selection
                         }
