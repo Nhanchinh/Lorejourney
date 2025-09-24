@@ -17,6 +17,7 @@ import com.example.game.gameMechanic.PushLogic
 import com.example.game.gameMechanic.ShadowMechanic
 import com.example.game.story.StoryContent
 import com.example.game.ui.StoryDialog
+import com.example.game.music.MusicManager
 
 class GameScreen(
         private val gameStateManager: GameStateManager,
@@ -121,6 +122,11 @@ class GameScreen(
     private var moveTimer = 0L
     private val moveInterval = 280L
 
+    // Dừng nhạc khi tạm thoát game
+    fun onPause() {
+        MusicManager.stopMusic()
+    }
+    
     // Thêm biến để tracking level completion
     private var levelCompleted = false
     private var completionTimer = 0L
@@ -129,6 +135,7 @@ class GameScreen(
     init {
         initLevel()
         updateUIElements()
+        MusicManager.playInGameMusic(context)
         checkAndShowStory()
     }
 

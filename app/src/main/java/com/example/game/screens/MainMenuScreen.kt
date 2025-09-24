@@ -15,6 +15,7 @@ import com.example.game.R
 import com.example.game.animation.AnimationManager
 import com.example.game.core.GameStateManager
 import kotlin.random.Random
+import com.example.game.music.MusicManager
 
 class MainMenuScreen(
     private val gameStateManager: GameStateManager,
@@ -120,6 +121,8 @@ class MainMenuScreen(
         loadAssets()
         initParticles()
         updateButtonPositions()
+        MusicManager.playWaitingHallMusic(context)
+
     }
     
     private fun loadAssets() {

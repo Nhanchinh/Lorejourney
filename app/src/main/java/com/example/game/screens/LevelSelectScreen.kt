@@ -11,6 +11,7 @@ import com.example.game.core.GameStateManager
 import com.example.game.SaveManager
 import android.graphics.LinearGradient
 import android.graphics.Shader
+import com.example.game.music.MusicManager
 
 class LevelSelectScreen(
     private val gameStateManager: GameStateManager,
@@ -226,6 +227,7 @@ class LevelSelectScreen(
     init {
         loadBackground()
         updateUIPositions()
+        MusicManager.playWaitingHallMusic(context)
     }
     
     private fun loadBackground() {

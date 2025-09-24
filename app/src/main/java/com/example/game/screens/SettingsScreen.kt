@@ -13,6 +13,7 @@ import com.example.game.R
 import com.example.game.animation.AnimationManager
 import com.example.game.core.GameStateManager
 import com.example.game.SaveManager
+import com.example.game.music.MusicManager
 
 class SettingsScreen(
     private val gameStateManager: GameStateManager,
@@ -24,7 +25,7 @@ class SettingsScreen(
     
     // Settings options
     private var soundEnabled = true
-    private var musicEnabled = true
+    // Sử dụng biến chung từ MusicManager
     private var vibrationEnabled = true
     
     // Popup confirmation
@@ -215,11 +216,11 @@ class SettingsScreen(
         
         // Music option
         canvas.drawText("Nhạc nền", centerX - 250f, startY + optionSpacing + 15f, optionPaint)
-        val musicPaint = if (musicEnabled) toggleOnPaint else toggleOffPaint
+        val musicPaint = if (MusicManager.isMusicEnabled) toggleOnPaint else toggleOffPaint
         canvas.drawRoundRect(musicToggle, 15f, 15f, musicPaint)
         canvas.drawRoundRect(musicToggle, 15f, 15f, toggleBorderPaint)
-        canvas.drawText(if (musicEnabled) "BẬT" else "TẮT", musicToggle.centerX(), musicToggle.centerY() + 8f, toggleTextPaint)
-        
+        canvas.drawText(if (MusicManager.isMusicEnabled) "BẬT" else "TẮT", musicToggle.centerX(), musicToggle.centerY() + 8f, toggleTextPaint)
+
         // Vibration option
         canvas.drawText("Rung", centerX - 250f, startY + optionSpacing * 2 + 15f, optionPaint)
         val vibrationPaint = if (vibrationEnabled) toggleOnPaint else toggleOffPaint
@@ -332,7 +333,13 @@ class SettingsScreen(
                 
                 // Check music toggle
                 if (musicToggle.contains(x, y)) {
-                    musicEnabled = !musicEnabled
+                    val newState = !MusicManager.isMusicEnabled
+                    MusicManager.isMusicEnabled = newState
+                    if (!newState) {
+                        MusicManager.stopMusic()
+                    } else {
+                        MusicManager.playWaitingHallMusic(context)
+                    }
                     return true
                 }
                 
