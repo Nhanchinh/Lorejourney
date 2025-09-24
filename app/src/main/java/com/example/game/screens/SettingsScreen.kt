@@ -383,6 +383,7 @@ class SettingsScreen(
     private fun resetAllProgress() {
         println("🔄 Resetting all progress...")
         SaveManager.resetProgress()
+        SaveManager.resetViewedStories() // Reset trạng thái đã xem story
         println("✅ All progress reset!")
     }
     

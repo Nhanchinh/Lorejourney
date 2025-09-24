@@ -18,7 +18,7 @@ class StoryDialog {
     // Animation
     private var animationProgress = 0f
     private var targetProgress = 0f
-    private val animationSpeed = 0.08f
+    private val animationSpeed = 0.2f
     
     // UI Elements
     private val dialogBox = RectF()
