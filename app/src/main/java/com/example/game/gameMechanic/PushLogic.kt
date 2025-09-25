@@ -3,11 +3,13 @@ package com.example.game.gameMechanic
 import com.example.game.GameMap
 import com.example.game.GameConstants
 import com.example.game.map.TileConstants
+import com.example.game.music.MusicManager
+import android.content.Context
 
 /**
  * Quản lý logic đẩy đá trong game puzzle
  */
-class PushLogic(private val gameMap: GameMap) {
+class PushLogic(private val gameMap: GameMap, private val context: Context) {
 
     // Track vị trí các target gốc (để restore khi đá rời khỏi target)
     private val originalTargets = mutableSetOf<Pair<Int, Int>>()
@@ -94,7 +96,9 @@ class PushLogic(private val gameMap: GameMap) {
         // Bắt đầu animation và lưu pending action
         val actionKey = "${stoneTileX}_${stoneTileY}_${finalDestination.first}_${finalDestination.second}"
         pendingPushActions[actionKey] = PendingPushAction(stoneTileX, stoneTileY, finalDestination.first, finalDestination.second, stoneTile)
-        
+
+        // Phát âm thanh đẩy đá và thực hiện animation
+        MusicManager.playSound(context, "pushstone")
         if (finalDestination.first != pushToX || finalDestination.second != pushToY) {
             // Có trượt trên băng - animation dài hơn
             println("🧊 Stone will slide on ice from ($pushToX, $pushToY) to (${finalDestination.first}, ${finalDestination.second})")
@@ -246,6 +250,7 @@ class PushLogic(private val gameMap: GameMap) {
             isDestinationTarget -> {
                 // Nếu đích là target → đá chuyển thành ID 240 (stone on target)
                 println("✅ Stone pushed onto target at (${action.toX}, ${action.toY}) - converting to ID 240")
+                MusicManager.playSound(context, "ding")
                 TileConstants.TILE_STONE_ON_TARGET
             }
             else -> {

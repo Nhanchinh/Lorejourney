@@ -25,8 +25,6 @@ class SettingsScreen(
     
     // Settings options
     private var soundEnabled = true
-    // Sử dụng biến chung từ MusicManager
-    private var vibrationEnabled = true
     
     // Popup confirmation
     private var showConfirmationPopup = false
@@ -157,7 +155,6 @@ class SettingsScreen(
     // UI Elements
     private val soundToggle = RectF()
     private val musicToggle = RectF()
-    private val vibrationToggle = RectF()
     private val unlockAllButton = RectF()
     private val resetProgressButton = RectF()
     private val backButton = RectF()
@@ -208,26 +205,19 @@ class SettingsScreen(
         canvas.drawText("CÀI ĐẶT", centerX, 150f, titlePaint)
         
         // Sound option
-        canvas.drawText("Hiệu ứng âm thanh", centerX - 250f, startY + 15f, optionPaint)
-        val soundPaint = if (soundEnabled) toggleOnPaint else toggleOffPaint
+        canvas.drawText("Hiệu ứng âm thanh", centerX - 250f, startY + optionSpacing + 15f, optionPaint)
+        val soundPaint = if (MusicManager.isSoundEnabled) toggleOnPaint else toggleOffPaint
         canvas.drawRoundRect(soundToggle, 15f, 15f, soundPaint)
         canvas.drawRoundRect(soundToggle, 15f, 15f, toggleBorderPaint)
-        canvas.drawText(if (soundEnabled) "BẬT" else "TẮT", soundToggle.centerX(), soundToggle.centerY() + 8f, toggleTextPaint)
+        canvas.drawText(if (MusicManager.isSoundEnabled) "BẬT" else "TẮT", soundToggle.centerX(), soundToggle.centerY() + 8f, toggleTextPaint)
         
         // Music option
-        canvas.drawText("Nhạc nền", centerX - 250f, startY + optionSpacing + 15f, optionPaint)
+        canvas.drawText("Nhạc nền", centerX - 250f, startY + optionSpacing * 2 + 15f, optionPaint)
         val musicPaint = if (MusicManager.isMusicEnabled) toggleOnPaint else toggleOffPaint
         canvas.drawRoundRect(musicToggle, 15f, 15f, musicPaint)
         canvas.drawRoundRect(musicToggle, 15f, 15f, toggleBorderPaint)
         canvas.drawText(if (MusicManager.isMusicEnabled) "BẬT" else "TẮT", musicToggle.centerX(), musicToggle.centerY() + 8f, toggleTextPaint)
 
-        // Vibration option
-        canvas.drawText("Rung", centerX - 250f, startY + optionSpacing * 2 + 15f, optionPaint)
-        val vibrationPaint = if (vibrationEnabled) toggleOnPaint else toggleOffPaint
-        canvas.drawRoundRect(vibrationToggle, 15f, 15f, vibrationPaint)
-        canvas.drawRoundRect(vibrationToggle, 15f, 15f, toggleBorderPaint)
-        canvas.drawText(if (vibrationEnabled) "BẬT" else "TẮT", vibrationToggle.centerX(), vibrationToggle.centerY() + 8f, toggleTextPaint)
-        
         // Unlock All Levels button
         canvas.drawRoundRect(unlockAllButton, 15f, 15f, unlockButtonPaint)
         canvas.drawRoundRect(unlockAllButton, 15f, 15f, borderPaint)
@@ -308,13 +298,16 @@ class SettingsScreen(
                             }
                         }
                         showConfirmationPopup = false
+                        MusicManager.playSound(context, "torch")
                         return true
                     } else if (cancelButton.contains(x, y)) {
                         // User cancelled
                         showConfirmationPopup = false
+                        MusicManager.playSound(context, "torch")
                         return true
                     }
                     // If touch is outside popup, ignore it
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
                 
@@ -322,12 +315,15 @@ class SettingsScreen(
                 if (backButton.contains(x, y)) {
                     animationManager.startTransition()
                     gameStateManager.changeState(GameConstants.STATE_MENU)
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
                 
                 // Check sound toggle
                 if (soundToggle.contains(x, y)) {
-                    soundEnabled = !soundEnabled
+                    val newState = !MusicManager.isSoundEnabled
+                    MusicManager.isSoundEnabled = newState
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
                 
@@ -340,24 +336,21 @@ class SettingsScreen(
                     } else {
                         MusicManager.playWaitingHallMusic(context)
                     }
-                    return true
-                }
-                
-                // Check vibration toggle
-                if (vibrationToggle.contains(x, y)) {
-                    vibrationEnabled = !vibrationEnabled
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
                 
                 // Check unlock all levels button
                 if (unlockAllButton.contains(x, y)) {
                     showConfirmation("UNLOCK_ALL", "Mở khóa tất cả màn chơi?\nĐiều này sẽ làm cho tất cả\nmàn chơi có thể chơi được.")
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
                 
                 // Check reset progress button
                 if (resetProgressButton.contains(x, y)) {
                     showConfirmation("RESET_PROGRESS", "Đặt lại tất cả tiến trình?\nĐiều này sẽ khóa tất cả\nmàn chơi trừ Màn 1.")
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
             }
@@ -408,21 +401,13 @@ class SettingsScreen(
         // Sound toggle
         soundToggle.set(
             centerX + 100f,
-            startY - toggleHeight/2,
-            centerX + 100f + toggleWidth,
-            startY + toggleHeight/2
-        )
-        
-        // Music toggle
-        musicToggle.set(
-            centerX + 100f,
             startY + optionSpacing - toggleHeight/2,
             centerX + 100f + toggleWidth,
             startY + optionSpacing + toggleHeight/2
         )
         
-        // Vibration toggle
-        vibrationToggle.set(
+        // Music toggle
+        musicToggle.set(
             centerX + 100f,
             startY + optionSpacing * 2 - toggleHeight/2,
             centerX + 100f + toggleWidth,

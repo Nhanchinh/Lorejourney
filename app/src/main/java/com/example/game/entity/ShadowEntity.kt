@@ -7,6 +7,7 @@ import android.graphics.Paint
 import com.example.game.GameConstants
 import com.example.game.GameMap
 import com.example.game.map.TileConstants
+import com.example.game.music.MusicManager
 import kotlin.math.*
 
 /**
@@ -73,6 +74,7 @@ class ShadowEntity(
     
     private fun updateFollowPosition() {
         if (pathHistory.size >= followDistance) {
+            MusicManager.playSound(context, "ghost")
             val targetPos = pathHistory[0] // Follow 4 tiles behind
             x = targetPos.first
             y = targetPos.second

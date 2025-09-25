@@ -9,6 +9,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import com.example.game.map.TileConstants
 import com.example.game.gameMechanic.PushLogic
+import com.example.game.music.MusicManager
 
 /**
  * Player với sprite animation từ Basic_Charakter_Spritesheet.png
@@ -116,6 +117,10 @@ class SpritePlayer(
         println("🔄 PushLogic has been set for SpritePlayer!")
     }
     
+    // Footstep sound variables
+    private var lastFootstepTime = 0L
+    private val footstepInterval = 450L // Phát âm thanh mỗi 500ms khi di chuyển
+    
     // Update method để handle push cooldown
     fun update(deltaTime: Long) {
         val deltaSeconds = deltaTime / 1000f
@@ -145,6 +150,9 @@ class SpritePlayer(
         if (!isOnIce) {
             handleSnapping(deltaTime)
         }
+        
+        // Handle footstep sounds
+        handleFootstepSounds(deltaTime)
     }
     
     private fun updateSimpleMovement(deltaSeconds: Float) {
@@ -395,6 +403,14 @@ class SpritePlayer(
     
     private fun lerp(a: Float, b: Float, t: Float): Float {
         return a + (b - a) * t.coerceIn(0f, 1f)
+    }
+    
+    private fun handleFootstepSounds(deltaTime: Long) {
+        val currentTime = System.currentTimeMillis()
+        if (isCurrentlyMoving() && currentTime - lastFootstepTime >= footstepInterval) {
+            MusicManager.playSound(context, "footsteps")
+            lastFootstepTime = currentTime
+        }
     }
     
     // Input methods

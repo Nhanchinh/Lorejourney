@@ -8,6 +8,7 @@ import com.example.game.R
 import com.example.game.animation.AnimationManager
 import com.example.game.core.GameStateManager
 import com.example.game.SaveManager
+import com.example.game.music.MusicManager
 import android.graphics.LinearGradient
 import android.graphics.Shader
 
@@ -540,6 +541,7 @@ class WorldSelectScreen(
             
             if (backButton.contains(x, y)) {
                 gameStateManager.changeState(GameConstants.STATE_MENU)
+                MusicManager.playSound(context, "torch")
                 return true
             }
             
@@ -548,6 +550,7 @@ class WorldSelectScreen(
                 val button = worldButtons[i]
                 if (button.contains(x, y)) {
                     selectedWorld = i
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
             }
@@ -560,6 +563,7 @@ class WorldSelectScreen(
                     gameStateManager.selectedWorld = selectedWorldData.id
                     gameStateManager.changeState(GameConstants.STATE_LEVEL_SELECT)
                 }
+                MusicManager.playSound(context, "torch")
                 return true
             }
         }

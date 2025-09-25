@@ -1,5 +1,6 @@
 package com.example.game.ui
 
+import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -8,8 +9,9 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.view.MotionEvent
 import com.example.game.GameConstants
+import com.example.game.music.MusicManager
 
-class StoryDialog {
+class StoryDialog(private val context: Context) {
     private var isVisible = false
     private var currentStoryIndex = 0
     private var storySegments = listOf<String>()
@@ -324,15 +326,18 @@ class StoryDialog {
             if (continueButton.contains(x, y)) {
                 if (currentStoryIndex < storySegments.size - 1) {
                     currentStoryIndex++
+                    MusicManager.playSound(context, "torch")
                     return true
                 } else {
                     hide()
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
             }
             
             if (skipButton.contains(x, y)) {
                 hide()
+                MusicManager.playSound(context, "torch")
                 return true
             }
         }

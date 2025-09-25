@@ -228,6 +228,25 @@ class LevelSelectScreen(
         loadBackground()
         updateUIPositions()
         MusicManager.playWaitingHallMusic(context)
+        
+        // Auto-select next level if coming from completion
+        if (gameStateManager.lastCompletedLevel >= 0) {
+            val nextLevelId = gameStateManager.lastCompletedLevel + 1
+            val nextChapter = allChapters.find { it.id == nextLevelId }
+            if (nextChapter != null) {
+                // Nếu level tiếp theo ở world khác, chuyển world
+                if (nextChapter.worldId != selectedWorld) {
+                    gameStateManager.selectedWorld = nextChapter.worldId
+                }
+                // Tìm index trong chapters của world mới
+                val chaptersInWorld = allChapters.filter { it.worldId == gameStateManager.selectedWorld }
+                val nextChapterIndex = chaptersInWorld.indexOfFirst { it.id == nextLevelId }
+                if (nextChapterIndex >= 0) {
+                    selectedChapter = nextChapterIndex
+                }
+            }
+            gameStateManager.lastCompletedLevel = -1
+        }
     }
     
     private fun loadBackground() {
@@ -538,6 +557,7 @@ class LevelSelectScreen(
             
             if (backButton.contains(x, y)) {
                 gameStateManager.changeState(GameConstants.STATE_WORLD_SELECT)
+                MusicManager.playSound(context, "torch")
                 return true
             }
             
@@ -552,6 +572,7 @@ class LevelSelectScreen(
                 if (button.contains(x, y)) {
                     selectedChapter = i
                     println("Selected chapter $i (Level ${chapter.name} - ID: $level) - Unlocked: ${level <= GameConstants.MAX_UNLOCKED_LEVEL}")
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
             }
@@ -568,6 +589,7 @@ class LevelSelectScreen(
                         println("Cannot start locked level $selectedLevel (max unlocked: ${GameConstants.MAX_UNLOCKED_LEVEL})")
                     }
                 }
+                MusicManager.playSound(context, "torch")
                 return true
             }
         }

@@ -31,6 +31,9 @@ class GameStateManager(
     // THÊM: Để track world selection
     var selectedWorld = 1 // Default to world 1
     
+    // THÊM: Để track last completed level for auto-selection
+    var lastCompletedLevel = -1
+    
     // THÊM: Để track game screen cho pause/resume
     private var currentGameScreen: GameScreen? = null
     
