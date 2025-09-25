@@ -16,7 +16,8 @@ import com.example.game.core.GameStateManager
 import com.example.game.gameMechanic.PushLogic
 import com.example.game.gameMechanic.ShadowMechanic
 import com.example.game.story.StoryContent
-import com.example.game.ui.StoryDialog
+import com.example.game.ui. StoryDialog
+import com.example.game.music.MusicManager
 
 class GameScreen(
         private val gameStateManager: GameStateManager,
@@ -67,7 +68,7 @@ class GameScreen(
     private val videoPopup = VideoPopup(context)
 
     // Story dialog system
-    private val storyDialog = StoryDialog()
+    private val storyDialog = StoryDialog(context)
     private var hasShownStoryForLevel = false
 
     // HUGE touchpad
@@ -121,6 +122,11 @@ class GameScreen(
     private var moveTimer = 0L
     private val moveInterval = 280L
 
+    // Dừng nhạc khi tạm thoát game
+    fun onPause() {
+        MusicManager.stopMusic()
+    }
+    
     // Thêm biến để tracking level completion
     private var levelCompleted = false
     private var completionTimer = 0L
@@ -129,6 +135,7 @@ class GameScreen(
     init {
         initLevel()
         updateUIElements()
+        MusicManager.playInGameMusic(context)
         checkAndShowStory()
     }
 
@@ -137,7 +144,7 @@ class GameScreen(
 
         // Initialize PushLogic for levels that have pushable objects
         // For now, initialize for all levels to be safe
-        pushLogic = PushLogic(gameMap)
+        pushLogic = PushLogic(gameMap, context)
         println("🔄 PushLogic initialized for level $levelId")
 
         // Log thông tin đặc biệt cho map6
@@ -206,6 +213,7 @@ class GameScreen(
         val isComplete = player.checkLevelComplete(gameMap) && player.checkPuzzleComplete()
 
         if (isComplete) {
+            MusicManager.playSound(context, "winner")
             completeLevel()
         }
 
@@ -224,6 +232,7 @@ class GameScreen(
     private fun completeLevel() {
         if (!levelCompleted) {
             levelCompleted = true
+            gameStateManager.lastCompletedLevel = levelId
             SaveManager.unlockLevel(levelId + 1)
         }
     }
@@ -297,7 +306,7 @@ class GameScreen(
         )
 
         // Help button (góc trái trên, cách edge 2cm = 80px)
-        val helpButtonSize = 60f
+        val helpButtonSize = 120f
         helpButton.set(
                 80f, // 2cm từ trái
                 20f,
@@ -572,12 +581,14 @@ class GameScreen(
                                 else -> "mechanic1" // Default
                             }
                     videoPopup.show(videoName, containerLayout)
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
 
                 when {
                     pauseButton.contains(event.x, event.y) -> {
                         gameStateManager.pauseGame()
+                        MusicManager.playSound(context, "torch")
                         return true
                     }
                     upButton.contains(event.x, event.y) -> {

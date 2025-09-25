@@ -2,6 +2,7 @@ package com.example.game
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.game.music.MusicManager
 
 /**
  * Quản lý việc lưu/tải progress game
@@ -10,6 +11,8 @@ object SaveManager {
     private const val PREFS_NAME = "TopDownGamePrefs"
     private const val KEY_MAX_UNLOCKED_LEVEL = "max_unlocked_level"
     private const val KEY_VIEWED_STORIES = "viewed_stories"
+    private const val KEY_MUSIC_ENABLED = "music_enabled"
+    private const val KEY_SOUND_ENABLED = "sound_enabled"
     
     private lateinit var prefs: SharedPreferences
     private val viewedStories = mutableSetOf<Int>()
@@ -24,13 +27,27 @@ object SaveManager {
         prefs.edit()
             .putInt(KEY_MAX_UNLOCKED_LEVEL, GameConstants.MAX_UNLOCKED_LEVEL)
             .putStringSet(KEY_VIEWED_STORIES, viewedStories.map { it.toString() }.toSet())
+            .putBoolean(KEY_MUSIC_ENABLED, MusicManager.isMusicEnabled)
+            .putBoolean(KEY_SOUND_ENABLED, MusicManager.isSoundEnabled)
             .apply()
         
         println("💾 Progress saved: Max unlocked level = ${GameConstants.MAX_UNLOCKED_LEVEL}")
     }
     
+    fun saveMusicSettings() {
+        prefs.edit()
+            .putBoolean(KEY_MUSIC_ENABLED, MusicManager.isMusicEnabled)
+            .putBoolean(KEY_SOUND_ENABLED, MusicManager.isSoundEnabled)
+            .apply()
+        
+        println("🎵 Music settings saved: Music=${MusicManager.isMusicEnabled}, Sound=${MusicManager.isSoundEnabled}")
+    }
+    
     private fun loadProgress() {
         GameConstants.MAX_UNLOCKED_LEVEL = prefs.getInt(KEY_MAX_UNLOCKED_LEVEL, 1)
+        val musicEnabled = prefs.getBoolean(KEY_MUSIC_ENABLED, true)
+        val soundEnabled = prefs.getBoolean(KEY_SOUND_ENABLED, true)
+        MusicManager.setMusicSettings(musicEnabled, soundEnabled)
         println("📁 Progress loaded: Max unlocked level = ${GameConstants.MAX_UNLOCKED_LEVEL}")
     }
     

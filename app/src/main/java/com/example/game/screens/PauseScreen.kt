@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import com.example.game.GameConstants
 import com.example.game.SaveManager
 import com.example.game.core.GameStateManager
+import com.example.game.music.MusicManager
 
 class PauseScreen(
     private val gameStateManager: GameStateManager,
@@ -145,6 +146,7 @@ class PauseScreen(
                     selectMapButton.contains(event.x, event.y) -> "SELECT_MAP"
                     else -> ""
                 }
+                MusicManager.playSound(context, "torch")
                 return true
             }
             

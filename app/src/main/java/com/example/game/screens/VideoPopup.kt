@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import android.widget.VideoView
 import android.widget.FrameLayout
 import com.example.game.GameConstants
+import com.example.game.music.MusicManager
 
 class VideoPopup(
     private val context: Context
@@ -273,6 +274,7 @@ class VideoPopup(
                 // Check close button
                 if (closeButton.contains(x, y)) {
                     hide()
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
                 
@@ -285,6 +287,7 @@ class VideoPopup(
                             currentVideoName = newVideoName
                             startVideo() // Restart video with new selection
                         }
+                        MusicManager.playSound(context, "torch")
                         return true
                     }
                 }

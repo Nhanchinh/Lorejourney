@@ -8,6 +8,7 @@ import com.example.game.entity.EntityManager
 import com.example.game.entity.PlayerEntity
 import com.example.game.entity.ShadowEntity
 import com.example.game.map.TileConstants
+import com.example.game.music.MusicManager
 
 /**
  * Shadow mechanic cho level 3
@@ -86,6 +87,7 @@ class ShadowMechanic(
                     )
                     shadowEntities.add(newShadow)
                     spawnedTiles.add(tilePosition)
+                    MusicManager.playSound(context, "ghost")
                     println("🌟 Shadow spawned at tile ($playerTileX, $playerTileY) - Total shadows: ${shadowEntities.size}")
                 }
             }

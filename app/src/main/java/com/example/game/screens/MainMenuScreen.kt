@@ -15,6 +15,7 @@ import com.example.game.R
 import com.example.game.animation.AnimationManager
 import com.example.game.core.GameStateManager
 import kotlin.random.Random
+import com.example.game.music.MusicManager
 
 class MainMenuScreen(
     private val gameStateManager: GameStateManager,
@@ -120,6 +121,9 @@ class MainMenuScreen(
         loadAssets()
         initParticles()
         updateButtonPositions()
+        MusicManager.preloadSounds(context)
+        MusicManager.playWaitingHallMusic(context)
+
     }
     
     private fun loadAssets() {
@@ -363,6 +367,7 @@ class MainMenuScreen(
                     // SLIDE ANIMATION
                     animationManager.startTransition(com.example.game.animation.AnimationManager.TransitionType.SLIDE_LEFT)
                     gameStateManager.changeState(GameConstants.STATE_WORLD_SELECT)
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
                 
@@ -370,6 +375,7 @@ class MainMenuScreen(
                     // FADE ANIMATION  
                     animationManager.startTransition(com.example.game.animation.AnimationManager.TransitionType.FADE)
                     gameStateManager.changeState(GameConstants.STATE_SETTINGS)
+                    MusicManager.playSound(context, "torch")
                     return true
                 }
             }

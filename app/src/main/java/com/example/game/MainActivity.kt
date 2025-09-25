@@ -6,6 +6,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import com.example.game.engine.GameView
+import com.example.game.music.MusicManager
 
 class MainActivity : Activity() {
     
@@ -19,7 +20,7 @@ class MainActivity : Activity() {
         SaveManager.init(this)
         
         // Fullscreen
-        window.setFlags(
+        window.setFlags(    
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
@@ -50,5 +51,10 @@ class MainActivity : Activity() {
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             )
         }
+    }
+    override fun onPause() {
+        super.onPause()
+        // Gọi phương thức tạm dừng trong GameView
+        MusicManager.stopMusic()
     }
 }
