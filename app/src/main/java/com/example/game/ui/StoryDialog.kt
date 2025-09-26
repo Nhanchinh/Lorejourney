@@ -61,7 +61,7 @@ class StoryDialog(private val context: Context) {
         isAntiAlias = true
         color = Color.WHITE
         textAlign = Paint.Align.LEFT
-        textSize = 32f
+        textSize = 45f
         alpha = 240
     }
     
@@ -82,7 +82,7 @@ class StoryDialog(private val context: Context) {
         isAntiAlias = true
         color = Color.parseColor("#00E5FF")
         textAlign = Paint.Align.LEFT
-        textSize = 36f
+        textSize = 55f
         isFakeBoldText = true
         setShadowLayer(2f, 1f, 1f, Color.BLACK)
     }

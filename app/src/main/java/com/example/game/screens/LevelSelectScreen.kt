@@ -51,7 +51,7 @@ class LevelSelectScreen(
             "ĐƯỜNG HẦM BÍ ẨN: Những đường hầm này không có trong ký ức của Elara - chúng do lời nguyền tạo ra! Bóng tối dày đặc, cạm bẫy ẩn giấu ở mọi nơi. Năng lượng của mảnh pha lê đầu tiên đang rất gần...", 
             true, Color.parseColor("#FF9800"), Color.parseColor("#F57C00")),
         Chapter(4, 1, 4, "1-4", "Hầm Mộ Pha Lê Đầu Tiên", "Bình thường", 
-            "MẢNH PHÁ LÊ ĐẦU TIÊN: Cuối cùng! Mảnh pha lê đầu tiên xuất hiện, nhưng được bảo vệ bởi thử thách phức tạp. Elara thấy ký ức về những người bảo vệ pha lê trong quá khứ. Liệu cô có liên quan đến họ? Còn 2 mảnh nữa ở những vùng đất nguy hiểm hơn...", 
+            "MẢNH PHA LÊ ĐẦU TIÊN: Cuối cùng! Mảnh pha lê đầu tiên xuất hiện, nhưng được bảo vệ bởi thử thách phức tạp. Elara thấy ký ức về những người bảo vệ pha lê trong quá khứ. Liệu cô có liên quan đến họ? Còn 2 mảnh nữa ở những vùng đất nguy hiểm hơn...", 
             true, Color.parseColor("#FFA726"), Color.parseColor("#FF9800")),
             
         // World 2 - Vùng Đất Băng Giá (Levels 5-7)
@@ -97,9 +97,9 @@ class LevelSelectScreen(
     
     // World titles for display
     private val worldTitles = mapOf(
-        1 to "Rừng Huyền Bí",
-        2 to "Đền Trên Mây", 
-        3 to "Vương Quốc Vũ Trụ"
+        1 to "RỪNG HUYỀN BÍ",
+        2 to "ĐỀN TRÊN MÂY", 
+        3 to "VƯƠNG QUỐC VŨ TRỤ"
     )
     
     private var selectedChapter = 0 // Always start with first chapter in selected world
