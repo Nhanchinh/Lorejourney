@@ -38,6 +38,8 @@ class GameMap(private val simpleMap: SimpleGameMap) {
         simpleMap.draw(canvas, camera, pushLogic, player)
     }
     
+    val tileRenderer = simpleMap.tileRenderer
+    
     companion object {
         /**
          * Map level ID to world-based file structure

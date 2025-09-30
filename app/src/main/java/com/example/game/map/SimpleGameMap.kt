@@ -20,7 +20,7 @@ class SimpleGameMap(
     val playerSpawnX = mapData.playerSpawnX
     val playerSpawnY = mapData.playerSpawnY
     
-    private val tileRenderer = TileRenderer()
+    val tileRenderer = TileRenderer()
     
     init {
         // Khởi tạo sprite mode nếu cần
@@ -39,6 +39,7 @@ class SimpleGameMap(
             0 -> mapData.bottomLayer[y][x]
             1 -> mapData.mainLayer[y][x]
             2 -> mapData.activeLayer[y][x]
+            3 -> mapData.topLayer[y][x]
             else -> mapData.mainLayer[y][x] // Default to main layer
         }
     }
@@ -78,6 +79,7 @@ class SimpleGameMap(
                 0 -> mapData.bottomLayer[y][x] = tileId
                 1 -> mapData.mainLayer[y][x] = tileId
                 2 -> mapData.activeLayer[y][x] = tileId
+                3 -> mapData.topLayer[y][x] = tileId
             }
         }
     }
@@ -99,7 +101,7 @@ class SimpleGameMap(
         // Get animated objects if available
         val animatedObjects = pushLogic?.animator?.getAllAnimatedObjects() ?: emptyList()
         
-        // Render layers in order: bottom -> main -> active
+        // Render layers in order: bottom -> main -> active -> top
         // Bottom layer (background elements)
         for (y in startY..endY) {
             for (x in startX..endX) {
@@ -149,6 +151,8 @@ class SimpleGameMap(
         animatedObjects.forEach { animated ->
             tileRenderer.drawTile(canvas, animated.tileId, animated.x, animated.y, tileSize)
         }
+        
+        // Note: Top layer will be drawn after player in GameScreen.draw()
     }
     
     /**
@@ -217,6 +221,7 @@ class SimpleGameMap(
             val bottomLayer = Array(height) { IntArray(width) }
             val mainLayer = Array(height) { IntArray(width) }
             val activeLayer = Array(height) { IntArray(width) }
+            val topLayer = Array(height) { IntArray(width) }
             
             // Tạo map đơn giản: wall border, floor inside
             for (y in 0 until height) {
@@ -233,10 +238,13 @@ class SimpleGameMap(
                     
                     // Active layer: empty
                     activeLayer[y][x] = TileConstants.TILE_EMPTY
+                    
+                    // Top layer: empty
+                    topLayer[y][x] = TileConstants.TILE_EMPTY
                 }
             }
             
-            return MapLoader.MapData(width, height, 1, 1, bottomLayer, mainLayer, activeLayer)
+            return MapLoader.MapData(width, height, 1, 1, bottomLayer, mainLayer, activeLayer, topLayer)
         }
     }
 }

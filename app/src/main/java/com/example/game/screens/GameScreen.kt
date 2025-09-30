@@ -321,6 +321,9 @@ class GameScreen(
 
         gameMap.draw(canvas, camera, pushLogic, player)
         player.draw(canvas)
+        
+        // Draw top layer AFTER player so it can cover the player
+        drawTopLayer(canvas)
 
         // CHỈ CÓ 1 dòng này
         shadowMechanic?.draw(canvas)
@@ -471,6 +474,28 @@ class GameScreen(
                         infoPaint
                 )
                 canvas.drawText("Path size: ${info.pathSize}", 50f, 250f + (index * 80f), infoPaint)
+            }
+        }
+    }
+
+    private fun drawTopLayer(canvas: Canvas) {
+        val tileSize = GameConstants.TILE_SIZE.toFloat()
+        
+        val padding = 2
+        val startX = ((camera.x / tileSize).toInt() - padding).coerceAtLeast(0)
+        val endX = (((camera.x + GameConstants.SCREEN_WIDTH) / tileSize).toInt() + padding).coerceAtMost(gameMap.width - 1)
+        val startY = ((camera.y / tileSize).toInt() - padding).coerceAtLeast(0)
+        val endY = (((camera.y + GameConstants.SCREEN_HEIGHT) / tileSize).toInt() + padding).coerceAtMost(gameMap.height - 1)
+        
+        // Top layer (foreground effects, UI elements) - drawn AFTER player
+        for (y in startY..endY) {
+            for (x in startX..endX) {
+                val tileId = gameMap.getTile(x, y, 3) // Top layer
+                if (tileId != com.example.game.map.TileConstants.TILE_EMPTY) {
+                    val drawX = x * tileSize
+                    val drawY = y * tileSize
+                    gameMap.tileRenderer.drawTile(canvas, tileId, drawX, drawY, tileSize)
+                }
             }
         }
     }
