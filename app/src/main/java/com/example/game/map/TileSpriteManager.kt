@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.graphics.Paint
 import android.graphics.RectF
 
 /**
@@ -24,6 +25,11 @@ class TileSpriteManager(context: Context) {
     private var tileWidth: Int = 0
     private var tileHeight: Int = 0
     private var isInitialized = false
+    private val paintNoFilter: Paint = Paint().apply {
+        isFilterBitmap = false
+        isAntiAlias = false
+        isDither = false
+    }
     
     init {
         loadSpriteSheet(context)
@@ -81,19 +87,23 @@ class TileSpriteManager(context: Context) {
         val col = index % SPRITE_COLS
         val row = index / SPRITE_COLS
         
-        // Source rectangle trong sprite sheet
+        // Source rectangle trong sprite sheet (inset 1px để tránh bleeding cạnh)
         val srcLeft = col * tileWidth
         val srcTop = row * tileHeight
         val srcRight = srcLeft + tileWidth
         val srcBottom = srcTop + tileHeight
-        val srcRect = Rect(srcLeft, srcTop, srcRight, srcBottom)
+        val inset = 1
+        val srcRect = Rect(srcLeft + inset, srcTop + inset, srcRight - inset, srcBottom - inset)
         
-        // Destination rectangle trên canvas
-        val destRect = RectF(destX, destY, destX + destSize, destY + destSize)
+        // Destination rectangle trên canvas (snap to pixel grid)
+        val dx = kotlin.math.floor(destX).toFloat()
+        val dy = kotlin.math.floor(destY).toFloat()
+        val ds = kotlin.math.floor(destSize).toFloat()
+        val destRect = RectF(dx, dy, dx + ds, dy + ds)
         
         // Vẽ sprite
         spriteSheet?.let { sheet ->
-            canvas.drawBitmap(sheet, srcRect, destRect, null)
+            canvas.drawBitmap(sheet, srcRect, destRect, paintNoFilter)
         }
     }
     
@@ -117,19 +127,26 @@ class TileSpriteManager(context: Context) {
         val col = index % SPRITE_COLS
         val row = index / SPRITE_COLS
         
-        // Source rectangle trong sprite sheet
+        // Source rectangle trong sprite sheet (inset 1px để tránh bleeding cạnh)
         val srcLeft = col * tileWidth
         val srcTop = row * tileHeight
         val srcRight = srcLeft + tileWidth
         val srcBottom = srcTop + tileHeight
-        val srcRect = Rect(srcLeft, srcTop, srcRight, srcBottom)
+        val inset = 1
+        val srcRect = Rect(srcLeft + inset, srcTop + inset, srcRight - inset, srcBottom - inset)
         
-        // Destination rectangle trên canvas
-        val destRect = RectF(destX, destY, destX + destSize, destY + destSize)
+        // Destination rectangle trên canvas (snap to pixel grid)
+        val dx = kotlin.math.floor(destX).toFloat()
+        val dy = kotlin.math.floor(destY).toFloat()
+        val ds = kotlin.math.floor(destSize).toFloat()
+        val destRect = RectF(dx, dy, dx + ds, dy + ds)
         
         // Tạo paint với alpha
         val alphaPaint = android.graphics.Paint().apply {
             this.alpha = (alpha * 255).toInt().coerceIn(0, 255)
+            isFilterBitmap = false
+            isAntiAlias = false
+            isDither = false
         }
         
         // Vẽ sprite với alpha
