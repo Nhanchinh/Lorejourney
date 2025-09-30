@@ -50,7 +50,10 @@ class Camera {
     }
     
     fun apply(canvas: Canvas) {
-        canvas.translate(-x, -y)
+        // Snap translation to integer pixels to avoid tile seams
+        val snapX = kotlin.math.floor(x).toFloat()
+        val snapY = kotlin.math.floor(y).toFloat()
+        canvas.translate(-snapX, -snapY)
     }
     
     fun worldToScreen(worldX: Float, worldY: Float): Pair<Float, Float> {

@@ -312,6 +312,7 @@
                 <button class="layer-tab active" onclick="setLayer('bottom')" id="bottomTab">Bottom Layer</button>
                 <button class="layer-tab" onclick="setLayer('main')" id="mainTab">Main Layer</button>
                 <button class="layer-tab" onclick="setLayer('active')" id="activeTab">Active Layer</button>
+                <button class="layer-tab" onclick="setLayer('top')" id="topTab">Top Layer</button>
             </div>
             
             <div class="tools">
@@ -339,7 +340,8 @@
                     • Dòng 4: Vị trí Y của player spawn (0-based, từ trên xuống dưới)<br>
                     • Tiếp theo: Bottom Layer (background) - 13 dòng<br>
                     • Tiếp theo: Main Layer (static tiles + special items) - 13 dòng<br>
-                    • Cuối cùng: Active Layer (moveable/interactive objects) - 13 dòng<br>
+                    • Tiếp theo: Active Layer (moveable/interactive objects) - 13 dòng<br>
+                    • Cuối cùng: Top Layer (foreground effects, UI elements) - 13 dòng<br>
                     • Special tiles: 10=KEY, 11=BUTTON, 12=DOOR, 14=END<br>
                     • Có thể load từ file .txt để copy template
                 </div>
@@ -368,7 +370,8 @@
             weather: 0,
             bottomLayer: [],
             mainLayer: [],
-            activeLayer: []
+            activeLayer: [],
+            topLayer: []
         };
         
         const tileSize = 16;
@@ -727,6 +730,7 @@
                 case 'bottom': return mapData.bottomLayer;
                 case 'main': return mapData.mainLayer;
                 case 'active': return mapData.activeLayer;
+                case 'top': return mapData.topLayer;
                 default: return mapData.bottomLayer;
             }
         }
@@ -784,6 +788,7 @@
             mapData.bottomLayer = Array(height).fill().map(() => Array(width).fill(0));
             mapData.mainLayer = Array(height).fill().map(() => Array(width).fill({ type: 'tile', id: 0 }));
             mapData.activeLayer = Array(height).fill().map(() => Array(width).fill(0));
+            mapData.topLayer = Array(height).fill().map(() => Array(width).fill(0));
             
             setupMapCanvas();
             renderMap();
@@ -857,9 +862,32 @@
                             renderSpecialTile(ctx, mainValue.value, canvasX, canvasY, 0.4);
                         }
                         
+                        // Show top layer dimmed when on active layer
+                        if (mapData.topLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.topLayer[y][x], canvasX, canvasY, 0.3);
+                        }
+                        
                         // Current layer - active (full opacity)
                         if (mapData.activeLayer[y][x] > 0) {
                             renderTile(ctx, mapData.activeLayer[y][x], canvasX, canvasY, 1.0);
+                        }
+                    } else if (currentLayer === 'top') {
+                        // Show main layer dimmed when on top layer
+                        const mainValue = mapData.mainLayer[y][x];
+                        if (mainValue.type === 'tile' && mainValue.id > 0) {
+                            renderTile(ctx, mainValue.id, canvasX, canvasY, 0.4);
+                        } else if (mainValue.type === 'animated') {
+                            renderSpecialTile(ctx, mainValue.value, canvasX, canvasY, 0.4);
+                        }
+                        
+                        // Show active layer dimmed when on top layer
+                        if (mapData.activeLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.activeLayer[y][x], canvasX, canvasY, 0.4);
+                        }
+                        
+                        // Current layer - top (full opacity)
+                        if (mapData.topLayer[y][x] > 0) {
+                            renderTile(ctx, mapData.topLayer[y][x], canvasX, canvasY, 1.0);
                         }
                     }
                 }
@@ -1013,6 +1041,7 @@
                 mapData.bottomLayer = Array(templateHeight).fill().map(() => Array(templateWidth).fill(0));
                 mapData.mainLayer = Array(templateHeight).fill().map(() => Array(templateWidth).fill({ type: 'tile', id: 0 }));
                 mapData.activeLayer = Array(templateHeight).fill().map(() => Array(templateWidth).fill(0));
+                mapData.topLayer = Array(templateHeight).fill().map(() => Array(templateWidth).fill(0));
                 
                 // Read bottom layer (background layer)
                 for (let y = 0; y < templateHeight; y++) {
@@ -1052,8 +1081,18 @@
                     }
                 }
                 
+                // Read top layer (foreground effects, UI elements)
+                for (let y = 0; y < templateHeight; y++) {
+                    if (lineIndex < lines.length) {
+                        const rowData = lines[lineIndex++].replace(/,$/, '').split(',').map(x => parseInt(x.trim()));
+                        for (let x = 0; x < templateWidth && x < rowData.length; x++) {
+                            mapData.topLayer[y][x] = rowData[x];
+                        }
+                    }
+                }
+                
                 renderMap();
-                alert('Template loaded successfully! All 3 layers imported.');
+                alert('Template loaded successfully! All 4 layers imported.');
                 
             } catch (error) {
                 console.error('Error loading template:', error);
@@ -1135,6 +1174,12 @@
             // Active layer (moveable/interactive objects)
             for (let y = 0; y < mapData.height; y++) {
                 const row = mapData.activeLayer[y];
+                output += row.join(',') + '\n';
+            }
+            
+            // Top layer (foreground effects, UI elements)
+            for (let y = 0; y < mapData.height; y++) {
+                const row = mapData.topLayer[y];
                 output += row.join(',') + '\n';
             }
             

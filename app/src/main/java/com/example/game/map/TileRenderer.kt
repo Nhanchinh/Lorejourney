@@ -45,7 +45,11 @@ class TileRenderer {
     fun drawTile(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float) {
         // Nếu đang ở sprite mode và có sprite manager
         if (useSpriteMode && tileSpriteManager != null) {
-            drawTileSprite(canvas, tileId, x, y, size)
+            // Snap to integer pixels to avoid seams
+            val sx = kotlin.math.floor(x).toFloat()
+            val sy = kotlin.math.floor(y).toFloat()
+            val ss = kotlin.math.floor(size).toFloat()
+            drawTileSprite(canvas, tileId, sx, sy, ss)
             return
         }
     }
@@ -56,7 +60,10 @@ class TileRenderer {
     fun drawTileWithAlpha(canvas: Canvas, tileId: Int, x: Float, y: Float, size: Float, alpha: Float) {
         // Nếu đang ở sprite mode và có sprite manager
         if (useSpriteMode && tileSpriteManager != null) {
-            tileSpriteManager?.drawSpriteWithAlpha(canvas, tileId, x, y, size, alpha)
+            val sx = kotlin.math.floor(x).toFloat()
+            val sy = kotlin.math.floor(y).toFloat()
+            val ss = kotlin.math.floor(size).toFloat()
+            tileSpriteManager?.drawSpriteWithAlpha(canvas, tileId, sx, sy, ss, alpha)
             return
         }
     }
