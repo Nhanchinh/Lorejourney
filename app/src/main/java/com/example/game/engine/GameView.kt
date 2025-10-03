@@ -53,6 +53,16 @@ class GameView(
         }
     }
     
+    fun onPause() {
+        // Lưu trạng thái game hiện tại
+        gameStateManager?.saveCurrentState()
+    }
+    
+    fun onResume() {
+        // Khôi phục trạng thái game
+        gameStateManager?.restoreState()
+    }
+    
     fun update(deltaTime: Long) {
         gameStateManager?.update(deltaTime)
     }
