@@ -40,55 +40,55 @@ class LevelSelectScreen(
     
     // All chapters data - organized by worlds
     private val allChapters = listOf(
-        // World 1 - Đồng Cỏ Khởi Nguồn (Levels 1-4)
-        Chapter(1, 1, 1, "1-1", "Vào Đồng Cỏ Khởi Nguồn", "Dễ", 
-            "BẮT ĐẦU HÀNH TRÌNH: Elara - cô gái trừ tà trẻ tuổi - nghe thấy tiếng thì thầm cổ xưa trong giấc mơ. Thế lực bóng tối đã tạo ra lời nguyền bóp méo thế giới. Viên Pha Lê Cân Bằng bị chia thành 3 mảnh. Hành trình tìm mảnh đầu tiên bắt đầu tại Đồng Cỏ Khởi Nguồn.", 
+        // World 1 - Phòng Thử Nghiệm Đá (Levels 1-4)
+        Chapter(1, 1, 1, "1-1", "Phòng Khởi Đầu", "Dễ", 
+            "BẮT ĐẦU HÀNH TRÌNH: Elara - cô gái trừ tà trẻ tuổi - tỉnh dậy trong một phòng bí ẩn với những khối đá cổ xưa. Thế lực bóng tối đã tạo ra những thử thách logic bóp méo tâm trí. Viên Pha Lê Cân Bằng bị chia thành 3 mảnh, mỗi mảnh được bảo vệ bởi mê cung giải đố. Phòng đầu tiên chỉ cần đẩy đá đơn giản...", 
             true, Color.parseColor("#66BB6A"), Color.parseColor("#4CAF50")),
-        Chapter(2, 1, 2, "1-2", "Phế Tích Làng Cổ", "Dễ", 
-            "KÝ ỨC MỜ ẢO: Trong những phế tích làng cổ, lời nguyền đã thay đổi cả địa hình. Cây cối mọc chắn lối, đá tảng xuất hiện bất thường. Elara bắt đầu nhớ lại những mảnh ký ức mơ hồ - liệu cô đã từng đến đây trước đây?", 
+        Chapter(2, 1, 2, "1-2", "Phòng Mê Trận Đá", "Dễ", 
+            "THỬ THÁCH LOGIC: Phòng thứ hai phức tạp hơn với nhiều khối đá cần sắp xếp theo trật tự. Lời nguyền đã tạo ra những quy tắc kỳ lạ - đá chỉ di chuyển theo hướng nhất định. Elara bắt đầu nhớ lại ký ức mơ hồ về những người giải đố cổ đại...", 
             true, Color.parseColor("#81C784"), Color.parseColor("#66BB6A")),
-        Chapter(3, 1, 3, "1-3", "Mê Cung Ngầm Bị Lãng Quên", "Bình thường", 
-            "ĐƯỜNG HẦM BÍ ẨN: Những đường hầm này không có trong ký ức của Elara - chúng do lời nguyền tạo ra! Bóng tối dày đặc, cạm bẫy ẩn giấu ở mọi nơi. Năng lượng của mảnh pha lê đầu tiên đang rất gần...", 
+        Chapter(3, 1, 3, "1-3", "Mê Cung Đá Cổ", "Bình thường", 
+            "MÊ CUNG TƯ DUY: Mê cung đá phức tạp với nhiều lớp thử thách chồng chéo. Mỗi bước đi đều phải tính toán kỹ lưỡng - một sai lầm sẽ phải bắt đầu lại. Năng lượng của mảnh pha lê đầu tiên đang rất gần, ẩn sau bức tường đá cuối cùng...", 
             true, Color.parseColor("#FF9800"), Color.parseColor("#F57C00")),
-        Chapter(4, 1, 4, "1-4", "Hầm Mộ Pha Lê Đầu Tiên", "Bình thường", 
-            "MẢNH PHA LÊ ĐẦU TIÊN: Cuối cùng! Mảnh pha lê đầu tiên xuất hiện, nhưng được bảo vệ bởi thử thách phức tạp. Elara thấy ký ức về những người bảo vệ pha lê trong quá khứ. Liệu cô có liên quan đến họ? Còn 2 mảnh nữa ở những vùng đất nguy hiểm hơn...", 
+        Chapter(4, 1, 4, "1-4", "Buồng Pha Lê Đầu Tiên", "Bình thường", 
+            "MẢNH PHA LÊ ĐẦU TIÊN: Buồng cuối cùng với thử thách đẩy đá phức tạp nhất! Mảnh pha lê đầu tiên được bảo vệ bởi một trận đồ đá cổ xưa. Elara thấy ký ức về những người bảo vệ pha lê giải đố trong quá khứ. Liệu cô có liên quan đến họ? Còn 2 mảnh nữa ở những thế giới nguy hiểm hơn...", 
             true, Color.parseColor("#FFA726"), Color.parseColor("#FF9800")),
             
-        // World 2 - Vùng Đất Băng Giá (Levels 5-7)
-        Chapter(5, 2, 1, "2-1", "Bước Vào Vùng Băng Giá", "Khó", 
-            "THẾ GIỚI BĂNG GIÁ: Mảnh pha lê đầu tiên chỉ đường đến thế giới thứ hai - vùng đất băng tuyết lạnh giá. Đây không phải cái lạnh thông thường, mà là sự băng giá của lời nguyền! Luật vật lý ở đây hoàn toàn khác - quán tính và gió băng chi phối mọi chuyển động.", 
+        // World 2 - Phòng Băng Trượt (Levels 5-7)
+        Chapter(5, 2, 1, "2-1", "Phòng Băng Cơ Bản", "Khó", 
+            "THẾ GIỚI BĂNG GIÁ: Mảnh pha lê đầu tiên mở cánh cửa dẫn đến phòng băng trượt. Sàn nhà phủ đầy băng, mọi thứ trượt không ngừng! Luật vật lý ở đây hoàn toàn khác - quán tính chi phối mọi chuyển động. Đá và Elara đều trượt cho đến khi va vào tường hoặc vật cản.", 
             false, Color.parseColor("#42A5F5"), Color.parseColor("#2196F3")),
-        Chapter(6, 2, 2, "2-2", "Ngôi Đền Bị Chôn Vùi", "Khó", 
-            "ĐỀN CỔ BÍ ẨN: Những ngôi đền này cổ xưa hơn Elara tưởng tượng. Ai đã xây dựng chúng? Tảng băng di động tạo mê cung tự nhiên. Lời nguyền đang kiểm tra khả năng của cô. Ký ức về những người bảo vệ pha lê chiến đấu với bóng tối trong quá khứ lại xuất hiện...", 
+        Chapter(6, 2, 2, "2-2", "Mê Cung Băng Phức Tạp", "Khó", 
+            "MÊ CUNG TRƯỢT: Phòng băng với thiết kế mê cung phức tạp. Mỗi bước trượt phải tính toán chính xác - một sai lầm sẽ trượt vào chỗ bế tắc. Khối đá băng nặng hơn, trượt xa hơn. Ký ức về những người bảo vệ pha lê chinh phục băng giá trong quá khứ lại xuất hiện...", 
             false, Color.parseColor("#64B5F6"), Color.parseColor("#42A5F5")),
-        Chapter(7, 2, 3, "2-3", "Mảnh Pha Lê Thứ Hai", "Chuyên gia", 
-            "SỨC MẠNH VÀ ẢO ẢNH: Mảnh pha lê thứ hai! Nhưng bóng tối bắt đầu 'nói chuyện' với Elara. Ảo ảnh xuất hiện, gieo rắc nghi ngờ về sứ mệnh của cô. 'Liệu tôi có đang làm đúng?' Elara phải chiến thắng sự lừa phỉnh của bóng tối. Hai mảnh pha lê tập hợp, chỉ còn một mảnh cuối ở nơi nguy hiểm nhất...", 
+        Chapter(7, 2, 3, "2-3", "Buồng Pha Lê Băng", "Chuyên gia", 
+            "THÁCH THỨC BĂNG CUỐI: Mảnh pha lê thứ hai nằm trong buồng băng khó nhất! Bóng tối bắt đầu 'nói chuyện' với Elara, tạo ảo giác khiến cô lú lẫn về hướng trượt. 'Liệu tôi có đang đi đúng hướng?' Elara phải vượt qua sự lừa phỉnh và hoàn thành trận đồ băng phức tạp. Hai mảnh pha lê tập hợp, chỉ còn một mảnh cuối ở thế giới tối tăm nhất...", 
             false, Color.parseColor("#90CAF9"), Color.parseColor("#64B5F6")),
             
-        // World 3 - Thành Pháo Bóng Tối (Levels 8-15) - 8 maps
-        Chapter(8, 3, 1, "3-1", "Cổng Vào Thành Pháo", "Huyền thoại", 
-            "THÀNH TRÌ TỐI THƯỢNG: Hai mảnh pha lê dẫn đến pháo đài cuối cùng - thành trì tăm tối lơ lửng giữa ánh sáng mờ ảo. Đây là nơi mọi thứ bắt đầu! Bóng tối mạnh mẽ nhất tập trung ở đây. Hành lang ảo ảnh và thực tại đan xen khó phân biệt.", 
+        // World 3 - Phòng Băng Tối (Levels 8-15) - 8 maps
+        Chapter(8, 3, 1, "3-1", "Phòng Băng Tối Cổng", "Huyền thoại", 
+            "THẾ GIỚI BĂNG TỐI: Hai mảnh pha lê mở cánh cửa cuối cùng - phòng băng trong bóng tối tuyệt đối. Tầm nhìn bị hạn chế, chỉ thấy vài ô xung quanh! Băng trượt kết hợp với bóng tối tạo thử thách khó nhất. Phải dựa vào trí nhớ và logic thuần túy để vượt qua.", 
             false, Color.parseColor("#AB47BC"), Color.parseColor("#9C27B0")),
-        Chapter(9, 3, 2, "3-2", "Lò Rèn Của Bóng Tối", "Huyền thoại", 
-            "NGUỒN GỐC TÀ ÁC: Đây là nơi lời nguyền được tạo ra! Elara cảm nhận năng lượng tà ác nguyên thủy. Ký ức về tổ tiên cô trở nên rõ ràng - họ đã từng chiến đấu ở đây nhưng thất bại. Lời nguyền không chỉ là thực thể bên ngoài mà còn liên kết với nỗi sợ hãi trong tâm trí...", 
+        Chapter(9, 3, 2, "3-2", "Mê Cung Tối Băng", "Huyền thoại", 
+            "NGUỒN GỐC TÀ ÁC: Mê cung băng trong tăm tối tuyệt đối! Elara chỉ cảm nhận được vật thể khi va phải. Ký ức về tổ tiên cô trở nên rõ ràng - họ đã từng thất bại ở đây. Lời nguyền không chỉ là thử thách vật lý mà còn là thử thách tinh thần...", 
             false, Color.parseColor("#BA68C8"), Color.parseColor("#AB47BC")),
-        Chapter(10, 3, 3, "3-3", "Thư Viện Nguội Lạnh", "Huyền thoại", 
-            "BÍ MẬT CỔ XƯA: Thư viện chứa đựng tri thức bị lãng quên về nguồn gốc lời nguyền. Những cuốn sách cổ kể về cuộc chiến giữa ánh sáng và bóng tối từ thời xa xưa. Sự thật về quá khứ dần được hé lộ qua từng trang sách bí ẩn.", 
+        Chapter(10, 3, 3, "3-3", "Phòng Băng Ảo Giác", "Huyền thoại", 
+            "ẢO GIÁC BĂNG TỐI: Phòng băng tối với ảo giác lừa phỉnh. Đôi khi thấy ánh sáng nhấp nháy, nhưng đó chỉ là ảo ảnh của bóng tối. Khối đá băng ẩn hiện trong đêm tối. Sự thật về quá khứ dần được hé lộ qua từng bước trượt mù quáng.", 
             false, Color.parseColor("#CE93D8"), Color.parseColor("#BA68C8")),
-        Chapter(11, 3, 4, "3-4", "Hành Lang Ảo Ảnh", "Thần thoại", 
-            "THỰC TẠI VÀ ẢO TƯỞNG: Trong mê cung ảo ảnh này, thực tế và ảo tưởng đan xen. Elara khám phá sự thật sâu sắc: lời nguyền sinh ra từ chính nỗi sợ hãi và ký ức bị lãng quên của con người! Bóng tối không phải kẻ thù từ bên ngoài mà là phần đen tối trong tâm hồn...", 
+        Chapter(11, 3, 4, "3-4", "Buồng Băng Tối Tuyệt", "Thần thoại", 
+            "TỐI TUYỆT ĐỐI: Trong buồng này, tầm nhìn gần như bằng không. Elara chỉ nghe thấy tiếng băng cọ sát. Cô khám phá sự thật: lời nguyền sinh ra từ nỗi sợ hãi trong bóng tối! Phải chinh phục nỗi sợ để tiếp tục...", 
             false, Color.parseColor("#E1BEE7"), Color.parseColor("#CE93D8")),
-        Chapter(12, 3, 5, "3-5", "Tầng Thẳm Sâu Nhất", "Thần thoại", 
-            "BÍ MẬT CUỐI CÙNG: Tầng thẳm sâu nhất của thành pháo - nơi những bí mật đen tối nhất được chôn giấu. Ở đây, Elara khám phá hoàn toàn về nguồn gốc dòng tộc mình và lý do tại sao chỉ có cô mới có thể phá vỡ lời nguyền này.", 
+        Chapter(12, 3, 5, "3-5", "Phòng Ký Ức Băng", "Thần thoại", 
+            "BÍ MẬT CUỐI CÙNG: Phòng băng tối với những mảnh ký ức hiện lên như ánh sáng lờ mờ. Ở đây, Elara khám phá hoàn toàn về nguồn gốc dòng tộc mình và lý do tại sao chỉ có cô mới có thể phá vỡ lời nguyền băng tối này.", 
             false, Color.parseColor("#F3E5F5"), Color.parseColor("#E1BEE7")),
-        Chapter(13, 3, 6, "3-6", "Buồng Ký Ức", "Thần thoại", 
-            "SỰ THẬT VỀ DÒNG TỘCH: Buồng ký ức tiết lộ sự thật choáng váng - Elara là hậu duệ trực tiếp của những người bảo vệ pha lê! Những ký ức bị lãng quên của tổ tiên cô trở về, cùng với trách nhiệm kế thừa sứ mệnh thiêng liêng này.", 
+        Chapter(13, 3, 6, "3-6", "Mê Cung Băng Thế Hệ", "Thần thoại", 
+            "SỰ THẬT VỀ DÒNG TỘCH: Mê cung băng tối tiết lộ sự thật choáng váng - Elara là hậu duệ trực tiếp của những người bảo vệ pha lê! Những ký ức bị lãng quên của tổ tiên cô trở về qua từng bước trượt trên băng trong đêm tối.", 
             false, Color.parseColor("#E040FB"), Color.parseColor("#D500F9")),
-        Chapter(14, 3, 7, "3-7", "Tháp Trung Tâm", "Thần thánh", 
-            "THÀNH PHỐ CUỐI CÙNG: Tháp trung tâm - nơi mảnh pha lê cuối cùng chờ đợi! Elara chuẩn bị tinh thần cho thử thách khó khăn nhất. Bóng tối đã chờ đợi khoảnh khắc này từ lâu. Liệu cô có đủ sức mạnh và trí tuệ để hoàn thành những gì tổ tiên không thể làm được?", 
+        Chapter(14, 3, 7, "3-7", "Phòng Băng Chung Kết", "Thần thánh", 
+            "THÁCH THỨC CUỐI CÙNG: Phòng băng tối khổng lồ - nơi mảnh pha lê cuối cùng chờ đợi! Elara chuẩn bị tinh thần cho thử thách trượt băng trong tối tăm khó nhất. Bóng tối đã chờ đợi khoảnh khắc này từ lâu. Liệu cô có đủ sức mạnh và trí tuệ để hoàn thành?", 
             false, Color.parseColor("#C51162"), Color.parseColor("#E040FB")),
-        Chapter(15, 3, 8, "3-8", "Đối Mặt Bóng Tối", "Thần thánh", 
-            "HOÀN THÀNH SỨ MỆNH: Ba mảnh pha lê cuối cùng hợp nhất! Viên Pha Lê Cân Bằng được tái tạo trong thử thách cuối cùng. Elara sử dụng sức mạnh của pha lê để xua tan lời nguyền và mang ánh sáng trở lại thế giới. Nhưng giọng nói bí ẩn vang lên: 'Đây chưa phải là kết thúc...'", 
+        Chapter(15, 3, 8, "3-8", "Buồng Pha Lê Cuối", "Thần thánh", 
+            "HOÀN THÀNH SỨ MỆNH: Buồng băng tối cuối cùng với trận đồ phức tạp nhất! Ba mảnh pha lê hợp nhất trong ánh sáng xanh rực rỡ xé toạc bóng tối. Viên Pha Lê Cân Bằng được tái tạo! Elara chinh phục cả băng lẫn tối, mang ánh sáng trở lại. Nhưng giọng nói vang lên: 'Đây chưa phải là kết thúc...'", 
             false, Color.parseColor("#AD1457"), Color.parseColor("#C51162"))
     )
     
@@ -97,9 +97,9 @@ class LevelSelectScreen(
     
     // World titles for display
     private val worldTitles = mapOf(
-        1 to "RỪNG HUYỀN BÍ",
-        2 to "ĐỀN TRÊN MÂY", 
-        3 to "VƯƠNG QUỐC VŨ TRỤ"
+        1 to "PHÒNG THỬ NGHIỆM ĐÁ",
+        2 to "PHÒNG BĂNG TRƯỢT", 
+        3 to "PHÒNG BĂNG TỐI"
     )
     
     private var selectedChapter = 0 // Always start with first chapter in selected world

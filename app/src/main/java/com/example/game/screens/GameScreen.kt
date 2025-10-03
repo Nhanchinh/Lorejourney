@@ -127,6 +127,11 @@ class GameScreen(
         MusicManager.stopMusic()
     }
     
+    // Tiếp tục nhạc khi quay lại game  
+    fun onResume() {
+        MusicManager.playInGameMusic(context)
+    }
+    
     // Thêm biến để tracking level completion
     private var levelCompleted = false
     private var completionTimer = 0L

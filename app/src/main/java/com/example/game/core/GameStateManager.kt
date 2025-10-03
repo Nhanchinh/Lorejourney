@@ -5,7 +5,9 @@ import android.graphics.Canvas
 import android.view.MotionEvent
 import android.widget.FrameLayout
 import com.example.game.GameConstants
+import com.example.game.SaveManager
 import com.example.game.animation.AnimationManager
+import com.example.game.music.MusicManager
 import com.example.game.screens.GameScreen
 import com.example.game.screens.LevelSelectScreen
 import com.example.game.screens.MainMenuScreen
@@ -38,7 +40,19 @@ class GameStateManager(
     private var currentGameScreen: GameScreen? = null
     
     init {
-        currentScreen = MainMenuScreen(this, context, animationManager)
+        // Kiểm tra xem có saved game state không
+        val savedState = SaveManager.loadGameState()
+        if (savedState != null && savedState.gameState == GameConstants.STATE_PLAYING) {
+            // Khôi phục game đang chơi
+            currentState = GameConstants.STATE_PLAYING
+            nextLevelId = savedState.levelId
+            currentGameScreen = GameScreen(this, savedState.levelId, context, containerLayout)
+            currentScreen = currentGameScreen
+            println("🔄 Restored game: Level ${savedState.levelId}")
+        } else {
+            // Bắt đầu từ menu
+            currentScreen = MainMenuScreen(this, context, animationManager)
+        }
     }
     
     fun update(deltaTime: Long) {
@@ -146,5 +160,54 @@ class GameStateManager(
         nextState = GameConstants.STATE_PLAYING
         
         println("✅ Level $levelId restarted successfully!")
+    }
+    
+    /**
+     * Lưu trạng thái game hiện tại khi pause
+     */
+    fun saveCurrentState() {
+        when (currentState) {
+            GameConstants.STATE_PLAYING -> {
+                // Lưu trạng thái khi đang chơi
+                currentGameScreen?.let { gameScreen ->
+                    val progress = gameScreen.getCurrentProgress()
+                    SaveManager.saveGameState(
+                        gameState = currentState,
+                        levelId = nextLevelId,
+                        playerX = progress.playerX,
+                        playerY = progress.playerY
+                    )
+                    println("💾 Game state saved during gameplay")
+                }
+            }
+            GameConstants.STATE_PAUSED -> {
+                // Đã lưu rồi, không cần lưu lại
+                println("⏸️ Game is paused, state already saved")
+            }
+            else -> {
+                // Xóa saved state nếu không đang chơi game
+                SaveManager.clearGameState()
+                println("🗑️ Cleared game state (not in gameplay)")
+            }
+        }
+    }
+    
+    /**
+     * Khôi phục trạng thái game khi resume
+     */
+    fun restoreState() {
+        // Logic khôi phục đã được xử lý trong init()
+        // Method này có thể để trống hoặc dùng để refresh music
+        when (currentState) {
+            GameConstants.STATE_PLAYING -> {
+                MusicManager.playInGameMusic(context)
+                println("🎵 Resumed in-game music")
+            }
+            GameConstants.STATE_MENU, GameConstants.STATE_LEVEL_SELECT, 
+            GameConstants.STATE_WORLD_SELECT, GameConstants.STATE_SETTINGS -> {
+                MusicManager.playWaitingHallMusic(context)
+                println("🎵 Resumed menu music")
+            }
+        }
     }
 }

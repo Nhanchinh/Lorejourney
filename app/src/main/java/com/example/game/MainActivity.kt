@@ -52,9 +52,18 @@ class MainActivity : Activity() {
             )
         }
     }
+    
     override fun onPause() {
         super.onPause()
-        // Gọi phương thức tạm dừng trong GameView
+        // Lưu trạng thái game hiện tại
+        gameView.onPause()
+        // Dừng nhạc
         MusicManager.stopMusic()
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Khôi phục trạng thái game
+        gameView.onResume()
     }
 }
