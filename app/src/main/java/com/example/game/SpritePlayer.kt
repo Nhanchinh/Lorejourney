@@ -46,6 +46,7 @@ class SpritePlayer(
     // Snap state - ĐƠN GIẢN
     private var shouldSnap = false
     private var snapCooldown = 0L
+    private var wasBlockedByCollision = false // Track if stopped due to collision
     
     // Sprite sheet properties
     private var spriteSheet: Bitmap? = null
@@ -101,11 +102,7 @@ class SpritePlayer(
                 // Calculate frame dimensions (horizontal layout: 20 frames x 1 row)
                 frameWidth = bitmap.width / 44  // 20 frames total (5 animations × 4 frames each)
                 frameHeight = bitmap.height     // 1 row only
-                
-                println("✅ New sprite sheet loaded: ${bitmap.width}x${bitmap.height}")
-                println("✅ Frame size: ${frameWidth}x${frameHeight} (24x24 expected)")
-                println("✅ Aspect ratio: ${frameWidth.toFloat() / frameHeight.toFloat()}")
-                println("✅ Display size: $size pixels")
+                println("✅ Loaded sprite sheet with frame size: ${frameWidth}x${frameHeight}")
             }
         } catch (e: Exception) {
             println("❌ Failed to load sprite sheet: ${e.message}")
@@ -119,7 +116,7 @@ class SpritePlayer(
     
     // Footstep sound variables
     private var lastFootstepTime = 0L
-    private val footstepInterval = 450L // Phát âm thanh mỗi 500ms khi di chuyển
+    private val footstepInterval = 450L // Phát âm thanh mỗi 450ms khi di chuyển
     
     // Update method để handle push cooldown
     fun update(deltaTime: Long) {
@@ -174,8 +171,9 @@ class SpritePlayer(
             // Update direction
             updateDirection()
             
-            // Reset snap trigger
+            // Reset snap trigger and collision flag when starting to move
             shouldSnap = false
+            wasBlockedByCollision = false
             
             // If on ice and trying to move, check if we should start sliding
             if (isOnIce && iceSlideSpeed <= 0f) {
@@ -193,8 +191,8 @@ class SpritePlayer(
             velocityX *= 0.6f
             velocityY *= 0.6f
             
-            // Trigger snap when velocity gets low
-            if (!shouldSnap && Math.abs(velocityX) < 20f && Math.abs(velocityY) < 20f) {
+            // Trigger snap when velocity gets low AND not blocked by collision
+            if (!shouldSnap && Math.abs(velocityX) < 20f && Math.abs(velocityY) < 20f && !wasBlockedByCollision) {
                 shouldSnap = true
             }
         }
@@ -214,16 +212,19 @@ class SpritePlayer(
                 // Push succeeded - allow movement
                 x = newX
                 y = newY
+                wasBlockedByCollision = false // Push succeeded, not blocked
             } else {
-                // Normal collision - stop movement
+                // Normal collision - stop movement and mark as blocked
                 velocityX = 0f
                 velocityY = 0f
-                shouldSnap = true
+                wasBlockedByCollision = true // Blocked by collision, don't snap
+                shouldSnap = false // Explicitly prevent snapping
             }
         } else {
             // Normal movement
             x = newX
             y = newY
+            wasBlockedByCollision = false // Clear collision flag during normal movement
         }
     }
     
@@ -288,7 +289,7 @@ class SpritePlayer(
         val newY = y + slideVelY * deltaSeconds
         
         // Check if new position is valid
-        if (isPositionValid(newX, newY)) {
+        if (isPositionValidWithDirection(newX, newY, iceSlideDirection)) {
             x = newX
             y = newY
             
@@ -306,7 +307,8 @@ class SpritePlayer(
             iceSlideSpeed = 0f
             velocityX = 0f
             velocityY = 0f
-            shouldSnap = true
+            wasBlockedByCollision = true // Ice slide blocked by obstacle
+            shouldSnap = false // Don't snap when blocked on ice
         }
     }
     
@@ -334,8 +336,7 @@ class SpritePlayer(
                 velocityY = 0f
                 shouldSnap = false
                 snapCooldown = 100L // Short cooldown
-                currentFrame = 0
-            } else if (totalDist < 32f) {
+            } else if (totalDist < 47f) {
                 // Close - smooth snap
                 val snapSpeed = 5f
                 x = lerp(x, targetX, snapSpeed * deltaTime / 1000f)
@@ -354,21 +355,87 @@ class SpritePlayer(
         if (testX >= gameMap.width * tileSize - tileSize) return false
         if (testY >= gameMap.height * tileSize - tileSize) return false
         
-        // Tile collision check
+        // Kiểm tra va chạm theo hướng di chuyển hiện tại
+        return isPositionValidWithDirection(testX, testY, currentDirection)
+    }
+    
+    private fun isPositionValidWithDirection(testX: Float, testY: Float, direction: Direction): Boolean {
+        val tileSize = GameConstants.TILE_SIZE.toFloat()
+        val playerCollisionRadius = tileSize * 0.35f // Bán kính người chơi (40% tile size)
+        
         val centerX = testX + tileSize / 2
         val centerY = testY + tileSize / 2
-        val tileX = (centerX / tileSize).toInt()
-        val tileY = (centerY / tileSize).toInt()
         
-        // Check active layer for pushable stones
-        val activeTile = gameMap.getTile(tileX, tileY, 2) // Active layer
-        if (TileConstants.isPushable(activeTile)) {
-            println("🔍 Found pushable stone on active layer at ($tileX, $tileY): $activeTile")
-            return false // This will trigger push check
+        // Tính toán 2 điểm kiểm tra dựa trên hướng di chuyển
+        val (checkPoint1, checkPoint2) = when (direction) {
+            Direction.UP -> {
+                // Kiểm tra 2 điểm phía trên: trái và phải
+                Pair(
+                    Pair(centerX - playerCollisionRadius, centerY - playerCollisionRadius), // Top-left
+                    Pair(centerX + playerCollisionRadius, centerY - playerCollisionRadius)  // Top-right
+                )
+            }
+            Direction.DOWN -> {
+                // Kiểm tra 2 điểm phía dưới: trái và phải
+                Pair(
+                    Pair(centerX - playerCollisionRadius, centerY + playerCollisionRadius), // Bottom-left
+                    Pair(centerX + playerCollisionRadius, centerY + playerCollisionRadius)  // Bottom-right
+                )
+            }
+            Direction.LEFT -> {
+                // Kiểm tra 2 điểm phía trái: trên và dưới
+                Pair(
+                    Pair(centerX - playerCollisionRadius, centerY - playerCollisionRadius), // Top-left
+                    Pair(centerX - playerCollisionRadius, centerY + playerCollisionRadius)  // Bottom-left
+                )
+            }
+            Direction.RIGHT -> {
+                // Kiểm tra 2 điểm phía phải: trên và dưới
+                Pair(
+                    Pair(centerX + playerCollisionRadius, centerY - playerCollisionRadius), // Top-right
+                    Pair(centerX + playerCollisionRadius, centerY + playerCollisionRadius)  // Bottom-right
+                )
+            }
+            Direction.IDLE -> {
+                // Khi đứng yên, chỉ kiểm tra điểm trung tâm
+                val tileX = (centerX / tileSize).toInt()
+                val tileY = (centerY / tileSize).toInt()
+                
+                // Check active layer for pushable stones
+                val activeTile = gameMap.getTile(tileX, tileY, 2)
+                if (TileConstants.isPushable(activeTile)) {
+                    return false
+                }
+                
+                return gameMap.isWalkable(tileX, tileY)
+            }
         }
         
-        // Check walkability (main layer terrain)
-        return gameMap.isWalkable(tileX, tileY)
+        // Kiểm tra cả 2 điểm
+        val checkPoints = arrayOf(checkPoint1, checkPoint2)
+        
+        for ((checkX, checkY) in checkPoints) {
+            val tileX = (checkX / tileSize).toInt()
+            val tileY = (checkY / tileSize).toInt()
+            
+            // Check active layer for pushable stones
+            val activeTile = gameMap.getTile(tileX, tileY, 2)
+            if (TileConstants.isPushable(activeTile)) {
+                println("🔍 Found pushable stone on active layer at ($tileX, $tileY): $activeTile")
+                if (tryPushStone(checkX, checkY)) {
+                    return true
+                } else {
+                    return false
+                }
+            }
+            
+            // Check walkability (main layer terrain)
+            if (!gameMap.isWalkable(tileX, tileY)) {
+                return false
+            }
+        }
+        
+        return true
     }
     
     private fun updateDirection() {
@@ -500,9 +567,13 @@ class SpritePlayer(
             
             srcRect.set(srcX, srcY, srcX + frameWidth, srcY + frameHeight)
             
-            // Calculate destination rectangle on screen với tỷ lệ gốc
+            // Calculate destination rectangle on screen với offset lên trên
             val centerX = x + GameConstants.TILE_SIZE / 2f
             val centerY = y + GameConstants.TILE_SIZE / 2f
+            
+            // Offset nhân vật lên trên một chút (khoảng 8-12 pixels)
+            val yOffset = -10f // Số âm để đẩy lên trên
+            val adjustedCenterY = centerY + yOffset
             
             // Giữ nguyên tỷ lệ aspect ratio của sprite gốc (24x24 = 1:1)
             val spriteAspectRatio = frameWidth.toFloat() / frameHeight.toFloat()
@@ -513,14 +584,14 @@ class SpritePlayer(
             
             destRect.set(
                 centerX - displayWidth / 2,
-                centerY - displayHeight / 2,
+                adjustedCenterY - displayHeight / 2,
                 centerX + displayWidth / 2,
-                centerY + displayHeight / 2
+                adjustedCenterY + displayHeight / 2
             )
             
             canvas.drawBitmap(sprite, srcRect, destRect, paint)
         } else {
-            // Fallback drawing
+            // Fallback drawing với offset
             drawFallbackPlayer(canvas)
         }
     }
@@ -528,6 +599,11 @@ class SpritePlayer(
     private fun drawFallbackPlayer(canvas: Canvas) {
         val centerX = x + GameConstants.TILE_SIZE / 2f
         val centerY = y + GameConstants.TILE_SIZE / 2f
+        
+        // Áp dụng cùng offset như sprite drawing
+        val yOffset = -10f
+        val adjustedCenterY = centerY + yOffset
+        
         val radius = size / 2f
         
         val bodyPaint = Paint().apply {
@@ -542,8 +618,8 @@ class SpritePlayer(
             strokeWidth = 3f
         }
         
-        canvas.drawCircle(centerX, centerY, radius, bodyPaint)
-        canvas.drawCircle(centerX, centerY, radius, borderPaint)
+        canvas.drawCircle(centerX, adjustedCenterY, radius, bodyPaint)
+        canvas.drawCircle(centerX, adjustedCenterY, radius, borderPaint)
     }
     
     fun getCenterX(): Float = x + GameConstants.TILE_SIZE / 2f
@@ -568,61 +644,48 @@ class SpritePlayer(
         spriteSheet?.recycle()
     }
 
-    // THÊM METHOD MỚI: Try push stone
+    // Method để thử đẩy đá sử dụng hướng di chuyển hiện tại
     private fun tryPushStone(newX: Float, newY: Float): Boolean {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastPushTime < pushCooldown) {
             return false // Still in cooldown
         }
+        
         val tileSize = GameConstants.TILE_SIZE.toFloat()
+        
+        // Tính hướng đẩy từ currentDirection thay vì từ vị trí
+        val (dx, dy) = when (currentDirection) {
+            Direction.LEFT -> Pair(-1, 0)
+            Direction.RIGHT -> Pair(1, 0)
+            Direction.UP -> Pair(0, -1)
+            Direction.DOWN -> Pair(0, 1)
+            Direction.IDLE -> return false // Không đẩy khi đứng yên
+        }
         
         // Get current tile position
         val currentTileX = getCurrentTileX()
         val currentTileY = getCurrentTileY()
         
-        // Get target tile position (where we're trying to move)
-        val centerX = newX + tileSize / 2
-        val centerY = newY + tileSize / 2
-        val targetTileX = (centerX / tileSize).toInt()
-        val targetTileY = (centerY / tileSize).toInt()
-        
-        // Calculate push direction
-        val dx = targetTileX - currentTileX
-        val dy = targetTileY - currentTileY
-        
-        // Only allow pushing in cardinal directions
-        if ((dx != 0 && dy != 0) || (dx == 0 && dy == 0)) {
-            return false
-        }
+        // Tính vị trí đá dựa trên hướng di chuyển
+        val stoneTileX = currentTileX + dx
+        val stoneTileY = currentTileY + dy
         
         // Check if target tile has pushable stone - CHECK ACTIVE LAYER (layer 2)
-        val targetTile = gameMap.getTile(targetTileX, targetTileY, 2) // Active layer where pushable objects are
-        println("🔍 Checking active layer at ($targetTileX, $targetTileY): tile = $targetTile")
+        val targetTile = gameMap.getTile(stoneTileX, stoneTileY, 2) // Active layer where pushable objects are
         if (!TileConstants.isPushable(targetTile)) {
-            println("❌ No pushable stone found on active layer")
-            return false
-        }
-        print(" Attempting to push stone...3"  )
-        // Try to push the stone
-        println("🔄 Attempting push with PushLogic from ($currentTileX, $currentTileY) direction ($dx, $dy)")
-        if (pushLogic?.tryPush(currentTileX, currentTileY, dx, dy) == true) {
-            lastPushTime = currentTime
-            println("🪨 Successfully pushed stone from ($currentTileX, $currentTileY) direction ($dx, $dy)")
-            
-            // Move player to the stone's previous position
-            x = targetTileX * tileSize
-            y = targetTileY * tileSize
-            
-            // Stop movement after push
-            velocityX = 0f
-            velocityY = 0f
-            shouldSnap = true
-            
-            return true
-        } else {
-            println("❌ PushLogic.tryPush() returned false")
+            return false // Không có đá để đẩy
         }
         
-        return false
+        println("🔄 Found pushable stone at ($stoneTileX, $stoneTileY), attempting push in direction ($dx, $dy)")
+        
+        // Try to push the stone
+        if (pushLogic?.tryPush(currentTileX, currentTileY, dx, dy) == true) {
+            lastPushTime = currentTime
+            println("🪨 Successfully pushed stone!")
+            return true // Đẩy thành công
+        } else {
+            println("❌ PushLogic.tryPush() returned false")
+            return false // Đẩy thất bại
+        }
     }
 }

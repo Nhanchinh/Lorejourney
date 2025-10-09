@@ -238,12 +238,13 @@ class LevelSelectScreen(
                 if (nextChapter.worldId != selectedWorld) {
                     gameStateManager.selectedWorld = nextChapter.worldId
                 }
-                // Tìm index trong chapters của world mới
-                val chaptersInWorld = allChapters.filter { it.worldId == gameStateManager.selectedWorld }
-                val nextChapterIndex = chaptersInWorld.indexOfFirst { it.id == nextLevelId }
+                // Tìm index trong chapters của world MỚI (sử dụng nextChapter.worldId)
+                val chaptersInNewWorld = allChapters.filter { it.worldId == nextChapter.worldId }
+                val nextChapterIndex = chaptersInNewWorld.indexOfFirst { it.id == nextLevelId }
                 if (nextChapterIndex >= 0) {
                     selectedChapter = nextChapterIndex
                 }
+                println("🎯 Auto-selected level $nextLevelId in world ${nextChapter.worldId}, chapter index: $nextChapterIndex")
             }
             gameStateManager.lastCompletedLevel = -1
         }

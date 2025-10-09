@@ -202,7 +202,8 @@ class GameScreen(
 
         if (levelCompleted) {
             completionTimer += deltaTime
-            if (completionTimer >= completionDelay) {
+            // Chỉ tự động chuyển về level select nếu KHÔNG phải level cuối hoặc story dialog không active
+            if (completionTimer >= completionDelay && (levelId != 15 || !storyDialog.isActive())) {
                 gameStateManager.changeState(GameConstants.STATE_LEVEL_SELECT)
             }
             return
@@ -239,6 +240,22 @@ class GameScreen(
             levelCompleted = true
             gameStateManager.lastCompletedLevel = levelId
             SaveManager.unlockLevel(levelId + 1)
+            
+            // Hiển thị ending story cho level cuối (map 3-8 = level 15)
+            if (levelId == 15) {
+                showEndingStory()
+            }
+        }
+    }
+    
+    /**
+     * Hiển thị cốt truyện kết thúc game
+     */
+    private fun showEndingStory() {
+        val endingStory = StoryContent.getEndingStory()
+        storyDialog.show(endingStory.segments) {
+            // Sau khi xem xong ending, quay về level select
+            gameStateManager.changeState(GameConstants.STATE_LEVEL_SELECT)
         }
     }
 

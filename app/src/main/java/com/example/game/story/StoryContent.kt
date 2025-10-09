@@ -119,10 +119,40 @@ object StoryContent {
     )
     
     /**
+     * Story kết thúc game - hiển thị sau khi hoàn thành level cuối
+     */
+    private val endingStory = StoryEntry(
+        title = "Kết Thúc Hành Trình",
+        segments = listOf(
+            "Ba mảnh pha lê từ từ bay lên, tỏa ra ánh sáng rực rỡ như ba vì sao sáng nhất trong đêm tối. Chúng xoay quanh nhau trong điệu múa cổ xưa.",
+            "ELARA: Cuối cùng... Viên Pha Lê Cân Bằng đã được tái tạo! Tôi có thể cảm nhận được sức mạnh của tổ tiên đang chảy qua người mình.",
+            "Những ký ức cuối cùng hiện ra rõ ràng... Nữ hoàng Lyralei, tổ tiên của Elara, xuất hiện trong ánh sáng dịu dàng.",
+            "LYRALEI: Con gái yêu dấu của ta... con đã chứng minh được rằng dòng máu bảo vệ pha lê vẫn chảy mạnh mẽ trong huyết quản của con.",
+            "ELARA: Tổ tiên Lyralei... tất cả những thử thách này... đều là để kiểm tra con phải không?",
+            "LYRALEI: Đúng vậy, Elara. Lời nguyền không phải là sự trả thù, mà là bài kiểm tra cuối cùng để tìm ra người kế thừa xứng đáng.",
+            "ELARA: Con hiểu rồi... Con sẽ tiếp tục bảo vệ thế giới này, duy trì cân bằng giữa ánh sáng và bóng tối.",
+            "Viên Pha Lê Cân Bằng rung động mạnh mẽ, xé toạc màn đêm tối! Những mê cung biến mất, thay vào đó là khu vườn tươi đẹp và thành phố huy hoàng.",
+            "LYRALEI: Hành trình này chỉ là khởi đầu, con yêu. Vũ trụ còn vô vàn thế giới khác đang chờ đợi một người bảo vệ như con...",
+            "ELARA: Con hứa sẽ không phụ lòng tin của tổ tiên. Từ giờ, con là người bảo vệ mới của những thế giới này!",
+            "Ánh sáng cuối cùng tỏa ra, bao trùm khắp không gian. Khi ánh sáng tan đi, Elara đứng trong khu vườn tươi đẹp, tay cầm Viên Pha Lê Cân Bằng.",
+            "Viên pha lê rung động nhẹ nhàng trong tay cô, như thể đang hát những khúc ca của vũ trụ... Và câu chuyện của Elara sẽ còn tiếp tục...",
+            "CẢM ƠN BẠN ĐÃ CHƠI LORE JOURNEY!",
+            "HÃY CHỜ ĐỢI NHỮNG CUỘC PHIÊU LƯU MỚI CÙNG ELARA..."
+        )
+    )
+
+    /**
      * Lấy story cho level cụ thể
      */
     fun getStoryForLevel(levelId: Int): StoryEntry? {
         return storyData[levelId]
+    }
+    
+    /**
+     * Lấy ending story - hiển thị sau khi hoàn thành game
+     */
+    fun getEndingStory(): StoryEntry {
+        return endingStory
     }
     
     /**
